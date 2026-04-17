@@ -1,0 +1,103 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Groupe Chimique Tunisien",
+        "kind": "industrial"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [
+              10.108,
+              33.938
+            ],
+            [
+              10.128,
+              33.938
+            ],
+            [
+              10.132,
+              33.928
+            ],
+            [
+              10.126,
+              33.922
+            ],
+            [
+              10.11,
+              33.922
+            ],
+            [
+              10.105,
+              33.93
+            ],
+            [
+              10.108,
+              33.938
+            ]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chimney 1",
+        "kind": "stack"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1165,
+          33.9325
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chimney 2",
+        "kind": "stack"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.119,
+          33.9305
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chimney 3",
+        "kind": "stack"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.121,
+          33.9285
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Chimney 4",
+        "kind": "stack"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1145,
+          33.9295
+        ]
+      }
+    }
+  ]
+}

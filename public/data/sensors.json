@@ -1,0 +1,423 @@
+[
+  {
+    "id": 1,
+    "lon": 10.11732,
+    "lat": 33.93585,
+    "ring": 1,
+    "so2": 131,
+    "no2": -6,
+    "aqi": 48,
+    "status": "simulated"
+  },
+  {
+    "id": 2,
+    "lon": 10.12002,
+    "lat": 33.93617,
+    "ring": 1,
+    "so2": 113,
+    "no2": -3,
+    "aqi": 50,
+    "status": "simulated"
+  },
+  {
+    "id": 3,
+    "lon": 10.12374,
+    "lat": 33.93331,
+    "ring": 1,
+    "so2": 168,
+    "no2": 12,
+    "aqi": 63,
+    "status": "simulated"
+  },
+  {
+    "id": 4,
+    "lon": 10.12342,
+    "lat": 33.93188,
+    "ring": 1,
+    "so2": 200,
+    "no2": 22,
+    "aqi": 77,
+    "status": "simulated"
+  },
+  {
+    "id": 5,
+    "lon": 10.12274,
+    "lat": 33.92871,
+    "ring": 1,
+    "so2": 264,
+    "no2": 43,
+    "aqi": 99,
+    "status": "simulated"
+  },
+  {
+    "id": 6,
+    "lon": 10.12008,
+    "lat": 33.92681,
+    "ring": 1,
+    "so2": 327,
+    "no2": 65,
+    "aqi": 110,
+    "status": "simulated"
+  },
+  {
+    "id": 7,
+    "lon": 10.11888,
+    "lat": 33.9258,
+    "ring": 1,
+    "so2": 341,
+    "no2": 73,
+    "aqi": 122,
+    "status": "simulated"
+  },
+  {
+    "id": 8,
+    "lon": 10.11472,
+    "lat": 33.92627,
+    "ring": 1,
+    "so2": 345,
+    "no2": 75,
+    "aqi": 124,
+    "status": "simulated"
+  },
+  {
+    "id": 9,
+    "lon": 10.11185,
+    "lat": 33.92937,
+    "ring": 1,
+    "so2": 286,
+    "no2": 55,
+    "aqi": 101,
+    "status": "simulated"
+  },
+  {
+    "id": 10,
+    "lon": 10.11083,
+    "lat": 33.93044,
+    "ring": 1,
+    "so2": 277,
+    "no2": 52,
+    "aqi": 97,
+    "status": "simulated"
+  },
+  {
+    "id": 11,
+    "lon": 10.11237,
+    "lat": 33.93326,
+    "ring": 1,
+    "so2": 203,
+    "no2": 26,
+    "aqi": 72,
+    "status": "simulated"
+  },
+  {
+    "id": 12,
+    "lon": 10.11497,
+    "lat": 33.93696,
+    "ring": 1,
+    "so2": 137,
+    "no2": 5,
+    "aqi": 53,
+    "status": "simulated"
+  },
+  {
+    "id": 13,
+    "lon": 10.11711,
+    "lat": 33.94479,
+    "ring": 2,
+    "so2": 26,
+    "no2": -2,
+    "aqi": 10,
+    "status": "simulated"
+  },
+  {
+    "id": 14,
+    "lon": 10.12582,
+    "lat": 33.94478,
+    "ring": 2,
+    "so2": 30,
+    "no2": -4,
+    "aqi": 13,
+    "status": "simulated"
+  },
+  {
+    "id": 15,
+    "lon": 10.12736,
+    "lat": 33.94295,
+    "ring": 2,
+    "so2": 27,
+    "no2": -7,
+    "aqi": 15,
+    "status": "simulated"
+  },
+  {
+    "id": 16,
+    "lon": 10.13285,
+    "lat": 33.93764,
+    "ring": 2,
+    "so2": 49,
+    "no2": 1,
+    "aqi": 23,
+    "status": "simulated"
+  },
+  {
+    "id": 17,
+    "lon": 10.13588,
+    "lat": 33.93233,
+    "ring": 2,
+    "so2": 84,
+    "no2": 15,
+    "aqi": 32,
+    "status": "simulated"
+  },
+  {
+    "id": 18,
+    "lon": 10.13327,
+    "lat": 33.93011,
+    "ring": 2,
+    "so2": 93,
+    "no2": 18,
+    "aqi": 41,
+    "status": "simulated"
+  },
+  {
+    "id": 19,
+    "lon": 10.13344,
+    "lat": 33.92397,
+    "ring": 2,
+    "so2": 122,
+    "no2": 25,
+    "aqi": 41,
+    "status": "simulated"
+  },
+  {
+    "id": 20,
+    "lon": 10.12858,
+    "lat": 33.91836,
+    "ring": 2,
+    "so2": 159,
+    "no2": 37,
+    "aqi": 57,
+    "status": "simulated"
+  },
+  {
+    "id": 21,
+    "lon": 10.12447,
+    "lat": 33.91819,
+    "ring": 2,
+    "so2": 171,
+    "no2": 46,
+    "aqi": 59,
+    "status": "simulated"
+  },
+  {
+    "id": 22,
+    "lon": 10.11862,
+    "lat": 33.91693,
+    "ring": 2,
+    "so2": 172,
+    "no2": 47,
+    "aqi": 57,
+    "status": "simulated"
+  },
+  {
+    "id": 23,
+    "lon": 10.11159,
+    "lat": 33.91845,
+    "ring": 2,
+    "so2": 179,
+    "no2": 48,
+    "aqi": 66,
+    "status": "simulated"
+  },
+  {
+    "id": 24,
+    "lon": 10.10611,
+    "lat": 33.9207,
+    "ring": 2,
+    "so2": 173,
+    "no2": 44,
+    "aqi": 61,
+    "status": "simulated"
+  },
+  {
+    "id": 25,
+    "lon": 10.10191,
+    "lat": 33.92313,
+    "ring": 2,
+    "so2": 154,
+    "no2": 45,
+    "aqi": 61,
+    "status": "simulated"
+  },
+  {
+    "id": 26,
+    "lon": 10.09949,
+    "lat": 33.92879,
+    "ring": 2,
+    "so2": 126,
+    "no2": 31,
+    "aqi": 47,
+    "status": "simulated"
+  },
+  {
+    "id": 27,
+    "lon": 10.09945,
+    "lat": 33.93392,
+    "ring": 2,
+    "so2": 121,
+    "no2": 25,
+    "aqi": 48,
+    "status": "simulated"
+  },
+  {
+    "id": 28,
+    "lon": 10.10251,
+    "lat": 33.93776,
+    "ring": 2,
+    "so2": 93,
+    "no2": 12,
+    "aqi": 34,
+    "status": "simulated"
+  },
+  {
+    "id": 29,
+    "lon": 10.10612,
+    "lat": 33.94261,
+    "ring": 2,
+    "so2": 72,
+    "no2": 2,
+    "aqi": 30,
+    "status": "simulated"
+  },
+  {
+    "id": 30,
+    "lon": 10.11098,
+    "lat": 33.94469,
+    "ring": 2,
+    "so2": 49,
+    "no2": -1,
+    "aqi": 19,
+    "status": "simulated"
+  },
+  {
+    "id": 31,
+    "lon": 10.12037,
+    "lat": 33.95908,
+    "ring": 3,
+    "so2": 11,
+    "no2": -2,
+    "aqi": 8,
+    "status": "simulated"
+  },
+  {
+    "id": 32,
+    "lon": 10.13931,
+    "lat": 33.9542,
+    "ring": 3,
+    "so2": 19,
+    "no2": -1,
+    "aqi": 12,
+    "status": "simulated"
+  },
+  {
+    "id": 33,
+    "lon": 10.14897,
+    "lat": 33.94484,
+    "ring": 3,
+    "so2": 20,
+    "no2": 1,
+    "aqi": 10,
+    "status": "simulated"
+  },
+  {
+    "id": 34,
+    "lon": 10.15259,
+    "lat": 33.93376,
+    "ring": 3,
+    "so2": 30,
+    "no2": 7,
+    "aqi": 13,
+    "status": "simulated"
+  },
+  {
+    "id": 35,
+    "lon": 10.14792,
+    "lat": 33.91831,
+    "ring": 3,
+    "so2": 53,
+    "no2": 11,
+    "aqi": 20,
+    "status": "simulated"
+  },
+  {
+    "id": 36,
+    "lon": 10.13224,
+    "lat": 33.90864,
+    "ring": 3,
+    "so2": 64,
+    "no2": 19,
+    "aqi": 23,
+    "status": "simulated"
+  },
+  {
+    "id": 37,
+    "lon": 10.12036,
+    "lat": 33.90303,
+    "ring": 3,
+    "so2": 73,
+    "no2": 25,
+    "aqi": 28,
+    "status": "simulated"
+  },
+  {
+    "id": 38,
+    "lon": 10.10062,
+    "lat": 33.90814,
+    "ring": 3,
+    "so2": 340,
+    "no2": 23,
+    "aqi": 142,
+    "status": "simulated",
+    "highlight": "chatt-essalam"
+  },
+  {
+    "id": 39,
+    "lon": 10.08664,
+    "lat": 33.92046,
+    "ring": 3,
+    "so2": 66,
+    "no2": 19,
+    "aqi": 26,
+    "status": "simulated"
+  },
+  {
+    "id": 40,
+    "lon": 10.08684,
+    "lat": 33.92918,
+    "ring": 3,
+    "so2": 53,
+    "no2": 13,
+    "aqi": 20,
+    "status": "simulated"
+  },
+  {
+    "id": 41,
+    "lon": 10.08702,
+    "lat": 33.94539,
+    "ring": 3,
+    "so2": 41,
+    "no2": 8,
+    "aqi": 15,
+    "status": "simulated"
+  },
+  {
+    "id": 42,
+    "lon": 10.10332,
+    "lat": 33.95591,
+    "ring": 3,
+    "so2": 22,
+    "no2": 0,
+    "aqi": 10,
+    "status": "simulated"
+  }
+]

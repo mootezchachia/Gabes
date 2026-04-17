@@ -1,0 +1,48 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "École Chatt Essalam",
+        "kind": "school",
+        "incident": "2025-10-14"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1054,
+          33.9121
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Foyer Amina",
+        "kind": "home"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.1098,
+          33.9189
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Hôpital Habib Bourguiba Gabès",
+        "kind": "hospital"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          10.0983,
+          33.8838
+        ]
+      }
+    }
+  ]
+}
