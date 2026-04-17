@@ -84,10 +84,10 @@ export function Hero() {
         {/* cta */}
         <div className="mt-12 flex flex-col sm:flex-row gap-3">
           <Link
-            href="/simulator"
+            href="/monitor"
             className="group inline-flex items-center gap-2 bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black font-medium text-[14px] px-6 py-3.5 rounded-md transition-colors"
           >
-            Ouvrir le simulateur
+            Ouvrir le moniteur
             <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
           <a

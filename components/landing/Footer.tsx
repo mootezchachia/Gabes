@@ -24,7 +24,7 @@ export function Footer() {
               Plateforme
             </div>
             <ul className="space-y-2.5 text-[13px]">
-              <li><Link href="/simulator" className="hover:text-[color:var(--nafas-accent2)] transition-colors">Simulateur</Link></li>
+              <li><Link href="/monitor" className="hover:text-[color:var(--nafas-accent2)] transition-colors">Moniteur</Link></li>
               <li><a href="#crise" className="hover:text-[color:var(--nafas-accent2)] transition-colors">Chronologie</a></li>
               <li><a href="#plateforme" className="hover:text-[color:var(--nafas-accent2)] transition-colors">Six axes</a></li>
               <li><span className="text-[color:var(--nafas-ink3)]">Triage médical · v2</span></li>

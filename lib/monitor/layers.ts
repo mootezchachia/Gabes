@@ -1,4 +1,4 @@
-import { ScatterplotLayer, GeoJsonLayer, IconLayer } from "@deck.gl/layers";
+import { ScatterplotLayer, GeoJsonLayer } from "@deck.gl/layers";
 import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import type { Feature, FeatureCollection, Point } from "geojson";
 
@@ -126,94 +126,6 @@ export function gctStacksLayer(geojson: FeatureCollection, pulse: number, visibl
     getLineColor: [226, 75, 74, 220],
     getFillColor: [226, 75, 74, 200],
     updateTriggers: { getRadius: pulse },
-  });
-}
-
-/**
- * Oracle zones — slow-pulse outline + soft fill. `revealed` is how many of
- * the polygons to draw (0..5), enabling the staggered b3 reveal.
- */
-export function oracleZonesLayer(
-  geojson: FeatureCollection,
-  revealed: number,
-  pulse: number,
-  visible = true,
-) {
-  const partial: FeatureCollection = {
-    type: "FeatureCollection",
-    features: geojson.features.slice(0, Math.max(0, Math.min(revealed, geojson.features.length))),
-  };
-  const alpha = 60 + Math.sin(pulse * 1.8) * 20;
-  return new GeoJsonLayer({
-    id: "oracle-zones",
-    data: partial,
-    visible,
-    filled: true,
-    stroked: true,
-    extruded: false,
-    getFillColor: (f) => {
-      const t = (f as Feature).properties?.type;
-      if (t === "tahallub") return [62, 201, 154, alpha];
-      if (t === "hizam") return [29, 158, 117, alpha];
-      if (t === "mashrabiyya") return [239, 159, 39, alpha];
-      if (t === "fosfo") return [55, 138, 221, alpha];
-      return [247, 246, 242, alpha];
-    },
-    getLineColor: (f) => {
-      const t = (f as Feature).properties?.type;
-      if (t === "tahallub") return [62, 201, 154, 230];
-      if (t === "hizam") return [29, 158, 117, 230];
-      if (t === "mashrabiyya") return [239, 159, 39, 230];
-      if (t === "fosfo") return [55, 138, 221, 230];
-      return [247, 246, 242, 230];
-    },
-    lineWidthMinPixels: 1.5,
-    pickable: true,
-    updateTriggers: { getFillColor: pulse },
-  });
-}
-
-/**
- * Healing layer — during b4, the zones bloom in solid accent-green at alpha
- * controlled by algaeProgress (0..1). Rendered on top of oracleZonesLayer.
- */
-export function healingLayer(
-  geojson: FeatureCollection,
-  algaeProgress: number,
-  visible = true,
-) {
-  const a = Math.max(0, Math.min(1, algaeProgress));
-  if (a <= 0.001) {
-    return new GeoJsonLayer({ id: "healing", data: { type: "FeatureCollection", features: [] }, visible });
-  }
-  return new GeoJsonLayer({
-    id: "healing",
-    data: geojson,
-    visible,
-    filled: true,
-    stroked: true,
-    getFillColor: (f) => {
-      const t = (f as Feature).properties?.type;
-      const base: [number, number, number] =
-        t === "tahallub" ? [62, 201, 154] :
-        t === "hizam" ? [29, 158, 117] :
-        t === "mashrabiyya" ? [239, 159, 39] :
-        t === "fosfo" ? [55, 138, 221] :
-        [247, 246, 242];
-      return [...base, Math.round(a * 170)];
-    },
-    getLineColor: (f) => {
-      const t = (f as Feature).properties?.type;
-      const base: [number, number, number] =
-        t === "tahallub" ? [62, 201, 154] :
-        t === "hizam" ? [29, 158, 117] :
-        t === "mashrabiyya" ? [239, 159, 39] :
-        t === "fosfo" ? [55, 138, 221] :
-        [247, 246, 242];
-      return [...base, Math.round(a * 255)];
-    },
-    lineWidthMinPixels: 2,
-    updateTriggers: { getFillColor: a, getLineColor: a },
   });
 }
 

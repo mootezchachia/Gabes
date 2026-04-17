@@ -7,30 +7,34 @@ import type { FeatureCollection } from "geojson";
 import {
   gctPolygonLayer,
   gctStacksLayer,
-  healingLayer,
   landmarksLayer,
-  oracleZonesLayer,
   plumeLayer,
   sensorsGlowLayer,
   sensorsLayer,
   type Sensor,
-} from "@/lib/layers";
-import { useSim } from "@/lib/sim/store";
+} from "@/lib/monitor/layers";
+import { useMonitor } from "@/lib/monitor/store";
 
 interface Props {
   map: MapboxMap | null;
-  plumeIntensity?: number;
 }
 
-export function DeckOverlay({ map, plumeIntensity = 1 }: Props) {
+/**
+ * Monitor deck.gl overlay. Subscribes to the store's `activeLayers` flags
+ * and renders only the enabled data layers. New factories (emitters,
+ * incidents, infra, wind, s5p) added by Agent F will be slotted in here.
+ */
+export function DeckOverlay({ map }: Props) {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [gct, setGct] = useState<FeatureCollection | null>(null);
   const [landmarks, setLandmarks] = useState<FeatureCollection | null>(null);
-  const [oracleZones, setOracleZones] = useState<FeatureCollection | null>(null);
 
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
+
+  const layers = useMonitor((s) => s.activeLayers);
+  const scope = useMonitor((s) => s.scope);
 
   useEffect(() => {
     let alive = true;
@@ -38,23 +42,21 @@ export function DeckOverlay({ map, plumeIntensity = 1 }: Props) {
       fetch("/data/sensors.json").then((r) => r.json()),
       fetch("/data/gct.geojson").then((r) => r.json()),
       fetch("/data/landmarks.geojson").then((r) => r.json()),
-      fetch("/data/oracle-zones.json").then((r) => r.json()),
     ])
-      .then(([s, g, l, oz]) => {
+      .then(([s, g, l]) => {
         if (!alive) return;
         setSensors(s);
         setGct(g);
         setLandmarks(l);
-        setOracleZones(oz);
       })
-      .catch((e) => console.error("[simulator] data load failed", e));
+      .catch((e) => console.error("[monitor] data load failed", e));
     return () => {
       alive = false;
     };
   }, []);
 
   useEffect(() => {
-    if (!map || !sensors.length || !gct || !landmarks || !oracleZones) return;
+    if (!map || !sensors.length || !gct || !landmarks) return;
 
     const overlay = new MapboxOverlay({ layers: [] });
     map.addControl(overlay as unknown as IControl);
@@ -62,22 +64,21 @@ export function DeckOverlay({ map, plumeIntensity = 1 }: Props) {
 
     const tick = () => {
       tRef.current += 0.04;
-
-      const s = useSim.getState();
-      const algae = s.algaeProgress;
-      const revealed = s.oracleZonesRevealed;
+      const t = tRef.current;
+      // Sensors only visible when scoped to Gabès city — at med zoom they'd be
+      // illegible clutter.
+      const sensorsVisible = layers.sensors && scope === "gabes";
+      const gctVisible = layers.emitters;
 
       overlay.setProps({
         layers: [
-          gctPolygonLayer(gct, true),
-          plumeLayer(sensors, plumeIntensity, plumeIntensity > 0.03),
-          oracleZonesLayer(oracleZones, revealed, tRef.current, revealed > 0),
-          healingLayer(oracleZones, algae, algae > 0.01),
-          sensorsGlowLayer(sensors, tRef.current, true),
-          sensorsLayer(sensors, tRef.current, true),
-          gctStacksLayer(gct, tRef.current, true),
-          landmarksLayer(landmarks, true),
-        ],
+          gctVisible ? gctPolygonLayer(gct, true) : null,
+          layers.plume ? plumeLayer(sensors, 1, true) : null,
+          sensorsVisible ? sensorsGlowLayer(sensors, t, true) : null,
+          sensorsVisible ? sensorsLayer(sensors, t, true) : null,
+          gctVisible ? gctStacksLayer(gct, t, true) : null,
+          layers.infra ? landmarksLayer(landmarks, true) : null,
+        ].filter(Boolean),
       });
       rafRef.current = requestAnimationFrame(tick);
     };
@@ -92,7 +93,7 @@ export function DeckOverlay({ map, plumeIntensity = 1 }: Props) {
       }
       overlayRef.current = null;
     };
-  }, [map, sensors, gct, landmarks, oracleZones, plumeIntensity]);
+  }, [map, sensors, gct, landmarks, layers, scope]);
 
   return null;
 }
