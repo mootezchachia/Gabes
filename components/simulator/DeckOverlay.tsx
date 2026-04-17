@@ -7,57 +7,45 @@ import type { FeatureCollection } from "geojson";
 import {
   gctPolygonLayer,
   gctStacksLayer,
+  healingLayer,
   landmarksLayer,
+  oracleZonesLayer,
   plumeLayer,
   sensorsGlowLayer,
   sensorsLayer,
   type Sensor,
 } from "@/lib/layers";
+import { useSim } from "@/lib/sim/store";
 
 interface Props {
   map: MapboxMap | null;
   plumeIntensity?: number;
-  layersVisible?: {
-    plume?: boolean;
-    sensors?: boolean;
-    gct?: boolean;
-    landmarks?: boolean;
-  };
 }
 
-export function DeckOverlay({
-  map,
-  plumeIntensity = 1,
-  layersVisible,
-}: Props) {
+export function DeckOverlay({ map, plumeIntensity = 1 }: Props) {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [gct, setGct] = useState<FeatureCollection | null>(null);
   const [landmarks, setLandmarks] = useState<FeatureCollection | null>(null);
+  const [oracleZones, setOracleZones] = useState<FeatureCollection | null>(null);
+
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
 
-  // defaults
-  const v = {
-    plume: layersVisible?.plume ?? true,
-    sensors: layersVisible?.sensors ?? true,
-    gct: layersVisible?.gct ?? true,
-    landmarks: layersVisible?.landmarks ?? true,
-  };
-
-  // fetch data once
   useEffect(() => {
     let alive = true;
     Promise.all([
       fetch("/data/sensors.json").then((r) => r.json()),
       fetch("/data/gct.geojson").then((r) => r.json()),
       fetch("/data/landmarks.geojson").then((r) => r.json()),
+      fetch("/data/oracle-zones.json").then((r) => r.json()),
     ])
-      .then(([s, g, l]) => {
+      .then(([s, g, l, oz]) => {
         if (!alive) return;
         setSensors(s);
         setGct(g);
         setLandmarks(l);
+        setOracleZones(oz);
       })
       .catch((e) => console.error("[simulator] data load failed", e));
     return () => {
@@ -65,9 +53,8 @@ export function DeckOverlay({
     };
   }, []);
 
-  // attach overlay + render loop
   useEffect(() => {
-    if (!map || !sensors.length || !gct || !landmarks) return;
+    if (!map || !sensors.length || !gct || !landmarks || !oracleZones) return;
 
     const overlay = new MapboxOverlay({ layers: [] });
     map.addControl(overlay as unknown as IControl);
@@ -75,14 +62,21 @@ export function DeckOverlay({
 
     const tick = () => {
       tRef.current += 0.04;
+
+      const s = useSim.getState();
+      const algae = s.algaeProgress;
+      const revealed = s.oracleZonesRevealed;
+
       overlay.setProps({
         layers: [
-          gctPolygonLayer(gct, v.gct),
-          plumeLayer(sensors, plumeIntensity, v.plume),
-          sensorsGlowLayer(sensors, tRef.current, v.sensors),
-          sensorsLayer(sensors, tRef.current, v.sensors),
-          gctStacksLayer(gct, tRef.current, v.gct),
-          landmarksLayer(landmarks, v.landmarks),
+          gctPolygonLayer(gct, true),
+          plumeLayer(sensors, plumeIntensity, plumeIntensity > 0.03),
+          oracleZonesLayer(oracleZones, revealed, tRef.current, revealed > 0),
+          healingLayer(oracleZones, algae, algae > 0.01),
+          sensorsGlowLayer(sensors, tRef.current, true),
+          sensorsLayer(sensors, tRef.current, true),
+          gctStacksLayer(gct, tRef.current, true),
+          landmarksLayer(landmarks, true),
         ],
       });
       rafRef.current = requestAnimationFrame(tick);
@@ -98,7 +92,7 @@ export function DeckOverlay({
       }
       overlayRef.current = null;
     };
-  }, [map, sensors, gct, landmarks, plumeIntensity, v.plume, v.sensors, v.gct, v.landmarks]);
+  }, [map, sensors, gct, landmarks, oracleZones, plumeIntensity]);
 
   return null;
 }
