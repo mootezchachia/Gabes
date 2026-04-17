@@ -12,6 +12,8 @@ import { SubtitleStrip } from "@/components/simulator/SubtitleStrip";
 import { AminaCard } from "@/components/simulator/AminaCard";
 import { DeployButton } from "@/components/simulator/DeployButton";
 import { SkipButton } from "@/components/simulator/SkipButton";
+import { AudioControl } from "@/components/simulator/AudioControl";
+import { SandboxDock } from "@/components/simulator/SandboxDock";
 import { useSim } from "@/lib/sim/store";
 
 const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
@@ -32,6 +34,8 @@ export default function SimulatorPage() {
           <SubtitleStrip />
           <DeployButton />
           <SkipButton />
+          <AudioControl />
+          <SandboxDock />
         </>
       ) : (
         <MissingTokenBanner />
