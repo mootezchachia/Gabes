@@ -1,0 +1,78 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z1",
+        "type": "tahallub",
+        "label": "Tahallub Nord — 5 ha Ulva",
+        "rationale": "Bathymétrie 4–10 m, faible turbidité, courant favorable. Retrait estimé : 225 kg P/an.",
+        "area_ha": 5.0,
+        "p_uptake_kg_yr": 225
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[10.055, 33.908], [10.070, 33.908], [10.072, 33.894], [10.057, 33.894], [10.055, 33.908]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z2",
+        "type": "tahallub",
+        "label": "Tahallub Sud — 3 ha Posidonia",
+        "rationale": "Ancienne herbière décimée, substrat vaseux réhabilitable. Transplantation Posidonia oceanica depuis Kerkennah.",
+        "area_ha": 3.0,
+        "p_uptake_kg_yr": 135
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[10.048, 33.870], [10.062, 33.870], [10.065, 33.855], [10.050, 33.855], [10.048, 33.870]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z3",
+        "type": "hizam",
+        "label": "Hizam Akhdar — corridor RN1",
+        "rationale": "2 km × 30 m. Tamarix aphylla + Atriplex halimus + Phragmites australis. Filtre SO₂ / cadmium / ruissellement entre GCT et zone résidentielle.",
+        "area_ha": 6.0,
+        "sp_pm25_pct": 18
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[10.098, 33.930], [10.128, 33.924], [10.130, 33.919], [10.100, 33.925], [10.098, 33.930]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z4",
+        "type": "mashrabiyya",
+        "label": "Mashrabiyya École Chatt Essalam",
+        "rationale": "Façade paramétrique phosphogypse + charbon actif grignons d'olive. −40 % PM₂.₅ en filtre passif. Testée sur l'école évacuée le 14 octobre 2025.",
+        "area_ha": 0.2
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[10.1048, 33.9126], [10.1062, 33.9126], [10.1062, 33.9116], [10.1048, 33.9116], [10.1048, 33.9126]]]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z5",
+        "type": "fosfo",
+        "label": "Fosfo-Blok — usine pilote",
+        "rationale": "Réutilisation directe du phosphogypse GCT stabilisé en blocs de construction. 100 kg de déchet → 85 blocs de 20 kg. Economie circulaire.",
+        "area_ha": 1.5
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[10.134, 33.938], [10.146, 33.938], [10.146, 33.928], [10.134, 33.928], [10.134, 33.938]]]
+      }
+    }
+  ]
+}

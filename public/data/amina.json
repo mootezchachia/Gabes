@@ -1,0 +1,18 @@
+{
+  "warning": {
+    "title": "SO₂ 340 µg/m³",
+    "subtitle": "Seuil OMS dépassé",
+    "body": "Évite le trajet nord vers l'école Chatt Essalam.",
+    "action": "Voir trajet alternatif",
+    "tone": "danger",
+    "time": "07:42"
+  },
+  "clean": {
+    "title": "Air propre",
+    "subtitle": "Seuils respectés",
+    "body": "Trajet libre vers l'école.",
+    "action": "Bonne journée",
+    "tone": "accent",
+    "time": "07:42"
+  }
+}

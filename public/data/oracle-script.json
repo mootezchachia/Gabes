@@ -1,0 +1,31 @@
+{
+  "beats": {
+    "b1": [
+      { "t": 0.05, "text": "Ghannouch, 07h42. Le golfe commence à s'ouvrir à l'est." },
+      { "t": 0.32, "text": "Amina, 38 ans, trois enfants. Elle ouvre son téléphone avant de sortir." },
+      { "t": 0.55, "text": "NAFAS lui indique la qualité de l'air rue par rue." },
+      { "t": 0.78, "text": "« Chaque matin, je choisis la rue où mes enfants respirent. »" }
+    ],
+    "b2": [
+      { "t": 0.05, "text": "À 800 mètres au nord se dressent les cheminées du Groupe Chimique Tunisien." },
+      { "t": 0.32, "text": "Le panache dérive vers le sud-sud-ouest — droit sur l'école Chatt Essalam." },
+      { "t": 0.56, "text": "Le 14 octobre 2025, 121 enfants ont été hospitalisés en douze minutes." },
+      { "t": 0.80, "text": "Aucune infrastructure publique n'avait prévu ce pic." }
+    ],
+    "b3": [
+      { "t": 0.02, "text": "ORACLE croise Sentinel-5P, bathymétrie, vents dominants et proximité résidentielle." },
+      { "t": 0.22, "text": "Zone #1 — Tahallub Nord. 5 hectares d'Ulva. 225 kg de phosphore retiré par an." },
+      { "t": 0.42, "text": "Zone #2 — Tahallub Sud. Transplantation de Posidonia. Recolonisation +8 %/an documentée." },
+      { "t": 0.58, "text": "Zone #3 — Hizam Akhdar. Corridor végétal entre GCT et habitations. Filtre vivant." },
+      { "t": 0.74, "text": "Zone #4 — Mashrabiyya sur l'école Chatt Essalam. Façade filtrante, −40 % PM₂.₅." },
+      { "t": 0.90, "text": "Zone #5 — Fosfo-Blok. Le phosphogypse stabilisé redevient matériau." }
+    ],
+    "b4": [
+      { "t": 0.04, "text": "Scénario ORACLE. Nous comprimons dix années en vingt secondes." },
+      { "t": 0.28, "text": "Les zones algales étendent leur couverture. Le phosphore dissous chute." },
+      { "t": 0.52, "text": "La ceinture végétale capte SO₂ et cadmium. Le panache s'amincit." },
+      { "t": 0.78, "text": "2035. Les seuils OMS sont respectés 94 % des jours." },
+      { "t": 0.94, "text": "« Air propre. Trajet libre. » Amina n'a plus à choisir." }
+    ]
+  }
+}
