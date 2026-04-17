@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Map as MapboxMap } from "mapbox-gl";
 import { Map } from "@/components/simulator/Map";
 import { DeckOverlay } from "@/components/simulator/DeckOverlay";
@@ -20,22 +20,39 @@ const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
 
 export default function SimulatorPage() {
   const [map, setMap] = useState<MapboxMap | null>(null);
+  const [safeMode, setSafeMode] = useState(false);
   const plumeIntensity = useSim((s) => s.plumeIntensity);
+
+  // Read ?safe=1 from URL for diagnostic mode
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("safe") === "1") setSafeMode(true);
+  }, []);
 
   return (
     <>
       {HAS_TOKEN ? (
         <>
-          <Map onReady={setMap} />
-          <DeckOverlay map={map} plumeIntensity={plumeIntensity} />
-          <Tour map={map} />
-          <AminaCard map={map} />
-          <YearCounter />
-          <SubtitleStrip />
-          <DeployButton />
-          <SkipButton />
-          <AudioControl />
-          <SandboxDock />
+          <Map onReady={setMap} safeMode={safeMode} />
+          {!safeMode && (
+            <>
+              <DeckOverlay map={map} plumeIntensity={plumeIntensity} />
+              <Tour map={map} />
+              <AminaCard map={map} />
+              <YearCounter />
+              <SubtitleStrip />
+              <DeployButton />
+              <SkipButton />
+              <AudioControl />
+              <SandboxDock />
+            </>
+          )}
+          {safeMode && (
+            <div className="absolute top-5 left-1/2 -translate-x-1/2 z-20 px-4 py-2 rounded-full bg-black/60 backdrop-blur border border-white/10 text-[11px] font-[family-name:var(--font-jetbrains)] tracking-wider uppercase text-[color:var(--nafas-amber)]">
+              Safe mode · default dark-v11 · no terrain · pitch 0
+            </div>
+          )}
         </>
       ) : (
         <MissingTokenBanner />

@@ -11,9 +11,11 @@ if (TOKEN) mapboxgl.accessToken = TOKEN;
 
 interface MapProps {
   onReady?: (m: mapboxgl.Map) => void;
+  /** When true: minimal map for diagnostics. No repaint, no terrain, pitch 0. */
+  safeMode?: boolean;
 }
 
-export function Map({ onReady }: MapProps) {
+export function Map({ onReady, safeMode = false }: MapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
@@ -25,9 +27,9 @@ export function Map({ onReady }: MapProps) {
       container: containerRef.current,
       style: NAFAS_STYLE_URL,
       center: GABES.center,
-      zoom: 10.8,
-      pitch: 52,
-      bearing: -18,
+      zoom: safeMode ? 11.4 : 10.4,
+      pitch: safeMode ? 0 : 42,
+      bearing: safeMode ? 0 : -18,
       antialias: true,
       attributionControl: false,
     });
@@ -35,33 +37,32 @@ export function Map({ onReady }: MapProps) {
 
     map.on("error", (e) => {
       const msg = (e as { error?: { message?: string } }).error?.message ?? "";
-      if (msg.includes("does not exist in the map")) {
-        // Harmless — our repaint targets a layer this style version removed.
-        return;
-      }
+      if (msg.includes("does not exist in the map")) return;
       console.error("[nafas · mapbox]", e);
     });
 
     map.on("style.load", () => {
-      map.setFog({
-        color: "rgb(10, 15, 20)",
-        "high-color": "rgb(17, 24, 33)",
-        "horizon-blend": 0.18,
-        "space-color": "rgb(7, 11, 16)",
-        "star-intensity": 0.1,
-      });
-
-      if (!map.getSource("mapbox-dem")) {
-        map.addSource("mapbox-dem", {
-          type: "raster-dem",
-          url: "mapbox://mapbox.mapbox-terrain-dem-v1",
-          tileSize: 512,
-          maxzoom: 14,
+      if (!safeMode) {
+        map.setFog({
+          color: "rgb(32, 44, 58)",
+          "high-color": "rgb(20, 30, 44)",
+          "horizon-blend": 0.08,
+          "space-color": "rgb(10, 15, 20)",
+          "star-intensity": 0.08,
         });
-      }
-      map.setTerrain({ source: "mapbox-dem", exaggeration: 1.5 });
 
-      repaintNafas(map);
+        if (!map.getSource("mapbox-dem")) {
+          map.addSource("mapbox-dem", {
+            type: "raster-dem",
+            url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+            tileSize: 512,
+            maxzoom: 14,
+          });
+        }
+        map.setTerrain({ source: "mapbox-dem", exaggeration: 1.15 });
+
+        repaintNafas(map);
+      }
       onReady?.(map);
     });
 
@@ -70,7 +71,16 @@ export function Map({ onReady }: MapProps) {
       mapRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [safeMode]);
 
-  return <div ref={containerRef} className="absolute inset-0" />;
+  // NB: Mapbox injects `.mapboxgl-map { position: relative }` which overrides
+  // Tailwind `absolute inset-0`, collapsing height to 0. Give explicit w/h
+  // from the fixed parent instead of relying on inset.
+  return (
+    <div
+      ref={containerRef}
+      className="w-full h-full"
+      style={{ position: "absolute", inset: 0 }}
+    />
+  );
 }
