@@ -3,60 +3,62 @@ import type { Map as MapboxMap } from "mapbox-gl";
 export const NAFAS_STYLE_URL = "mapbox://styles/mapbox/dark-v11";
 
 /**
- * Runtime repaint of Mapbox dark-v11 into NAFAS cool palette.
- * Wrapped in try/catch per layer so Mapbox style version bumps can't crash us.
+ * Instead of hardcoding layer IDs (which drift across Mapbox style versions and
+ * cause noisy `Po._checkLayer` error events), walk the live style and tint
+ * layers by their metadata / source-layer / type. Any layer id we don't touch
+ * keeps its default dark-v11 paint.
  */
 export function repaintNafas(map: MapboxMap) {
-  const safe = (fn: () => void) => {
+  const style = map.getStyle();
+  if (!style?.layers) return;
+
+  const tint = (layerId: string, key: string, value: unknown) => {
     try {
-      fn();
+      map.setPaintProperty(layerId, key, value as never);
     } catch {
-      /* layer missing in this style version — ignore */
+      /* wrong layer type for this property — skip */
     }
   };
 
-  safe(() => map.setPaintProperty("background", "background-color", "#070B10"));
-  safe(() => map.setPaintProperty("land", "background-color", "#0A0F14"));
-  safe(() => map.setPaintProperty("water", "fill-color", "#061628"));
-  safe(() => map.setPaintProperty("waterway", "line-color", "#0B2338"));
+  for (const layer of style.layers) {
+    const id = layer.id.toLowerCase();
+    const sourceLayer = (layer as { "source-layer"?: string })["source-layer"]?.toLowerCase() ?? "";
+    const type = layer.type;
 
-  // tone down roads / admin boundaries
-  for (const id of [
-    "road-primary",
-    "road-secondary-tertiary",
-    "road-street",
-    "road-minor",
-    "road-motorway-trunk",
-    "road-path",
-  ]) {
-    safe(() => map.setPaintProperty(id, "line-color", "#19222E"));
-    safe(() => map.setPaintProperty(id, "line-opacity", 0.55));
+    // water — deep moody blue
+    if (type === "fill" && (sourceLayer === "water" || id.includes("water"))) {
+      tint(layer.id, "fill-color", "#0A2740");
+    }
+    if (type === "line" && id.includes("water")) {
+      tint(layer.id, "line-color", "#11385C");
+    }
+
+    // land / land-structure
+    if (type === "background") {
+      tint(layer.id, "background-color", "#0B121A");
+    }
+    if (type === "fill" && (sourceLayer === "landuse" || id.includes("land"))) {
+      tint(layer.id, "fill-color", "#0D1620");
+    }
+
+    // roads — dim but visible
+    if (type === "line" && (id.startsWith("road") || sourceLayer === "road")) {
+      tint(layer.id, "line-color", id.includes("motorway") ? "#2A3B52" : "#1A2635");
+      tint(layer.id, "line-opacity", 0.6);
+    }
+
+    // admin boundaries — faint
+    if (type === "line" && id.includes("admin")) {
+      tint(layer.id, "line-color", "#2A3647");
+      tint(layer.id, "line-opacity", 0.45);
+    }
+
+    // labels — keep readable
+    if (type === "symbol") {
+      const isImportant = id.includes("country") || id.includes("settlement-major") || id.includes("state");
+      tint(layer.id, "text-color", isImportant ? "#C9CED6" : "#7D8691");
+      tint(layer.id, "text-halo-color", "#0A0F14");
+      tint(layer.id, "text-halo-width", 1.2);
+    }
   }
-
-  // admin boundaries
-  for (const id of ["admin-0-boundary", "admin-1-boundary", "admin-0-boundary-disputed"]) {
-    safe(() => map.setPaintProperty(id, "line-color", "#2A3647"));
-    safe(() => map.setPaintProperty(id, "line-opacity", 0.4));
-  }
-
-  // labels
-  for (const id of [
-    "settlement-major-label",
-    "settlement-minor-label",
-    "settlement-subdivision-label",
-    "country-label",
-    "place-label",
-    "water-point-label",
-    "water-line-label",
-    "natural-point-label",
-    "poi-label",
-    "airport-label",
-  ]) {
-    safe(() => map.setPaintProperty(id, "text-color", "#7D8691"));
-    safe(() => map.setPaintProperty(id, "text-halo-color", "#0A0F14"));
-    safe(() => map.setPaintProperty(id, "text-halo-width", 1.2));
-  }
-
-  // hide hillshade (we add our own 3D terrain exaggeration)
-  safe(() => map.setLayoutProperty("hillshade", "visibility", "none"));
 }
