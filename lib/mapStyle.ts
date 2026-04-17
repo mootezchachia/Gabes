@@ -12,9 +12,11 @@ export function repaintNafas(map: MapboxMap) {
   const style = map.getStyle();
   if (!style?.layers) return;
 
-  const tint = (layerId: string, key: string, value: unknown) => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const tint = (layerId: string, key: any, value: unknown) => {
     try {
-      map.setPaintProperty(layerId, key, value as never);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (map.setPaintProperty as any)(layerId, key, value);
     } catch {
       /* wrong layer type for this property — skip */
     }

@@ -19,7 +19,7 @@ export function Map({ onReady }: MapProps) {
 
   useEffect(() => {
     if (!containerRef.current) return;
-    if (!TOKEN) return; // noop without token — banner shown separately
+    if (!TOKEN) return;
 
     const map = new mapboxgl.Map({
       container: containerRef.current,
@@ -34,21 +34,15 @@ export function Map({ onReady }: MapProps) {
     mapRef.current = map;
 
     map.on("error", (e) => {
-      // Downgrade Mapbox's noisy internal errors for missing style layers
-      // (emitted even though we catch the throw) to warnings so console
-      // stays readable. Real fatal errors still surface.
       const msg = (e as { error?: { message?: string } }).error?.message ?? "";
       if (msg.includes("does not exist in the map")) {
-        console.warn("[nafas · mapbox]", msg);
-      } else {
-        console.error("[nafas · mapbox]", e);
+        // Harmless — our repaint targets a layer this style version removed.
+        return;
       }
+      console.error("[nafas · mapbox]", e);
     });
 
     map.on("style.load", () => {
-      const layerCount = map.getStyle()?.layers?.length ?? 0;
-      console.log(`[nafas] style loaded · ${layerCount} layers · token ok`);
-      // fog / atmosphere
       map.setFog({
         color: "rgb(10, 15, 20)",
         "high-color": "rgb(17, 24, 33)",
@@ -57,7 +51,6 @@ export function Map({ onReady }: MapProps) {
         "star-intensity": 0.1,
       });
 
-      // 3D terrain
       if (!map.getSource("mapbox-dem")) {
         map.addSource("mapbox-dem", {
           type: "raster-dem",
