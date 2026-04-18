@@ -55,8 +55,14 @@ export function PlacementAIDialog() {
       });
 
       if (!res.ok || !res.body) {
-        const data = await res.json().catch(() => ({ error: res.statusText }));
-        throw new Error(data.error || `HTTP ${res.status}`);
+        const data = await res.json().catch(() => null as null | Record<string, unknown>);
+        const msg =
+          (data?.error as string | undefined) ||
+          (data?.message as string | undefined) ||
+          (data?.msg as string | undefined) ||
+          res.statusText ||
+          `HTTP ${res.status}`;
+        throw new Error(`${msg} (HTTP ${res.status})`);
       }
 
       const reader = res.body.getReader();

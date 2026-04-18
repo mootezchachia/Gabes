@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { create } from "zustand";
+import { isTypingTarget } from "@/lib/app/inputTarget";
 
 /**
  * Active admin tool on /app/carte. Stored in Zustand so the Tool Rail, the
@@ -52,9 +53,10 @@ export function useToolKeybinds(enabled: boolean) {
   useEffect(() => {
     if (!enabled) return;
     const onKey = (e: KeyboardEvent) => {
-      // Ignore when typing in an input.
-      const t = e.target as HTMLElement | null;
-      if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)) return;
+      // Bail early for inputs, textareas, Base UI Select comboboxes, dialogs,
+      // and any role='textbox' — centralised so every shortcut handler in
+      // the app agrees on what "typing" means.
+      if (isTypingTarget(e.target)) return;
       if (e.metaKey || e.ctrlKey || e.altKey) return;
 
       switch (e.key.toLowerCase()) {

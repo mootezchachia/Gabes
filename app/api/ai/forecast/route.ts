@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { requireSupabaseUrl } from "@/lib/supabase/env";
+import { requireSupabaseUrl, requireSupabaseAnonKey } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -32,6 +32,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.text();
   const url = `${requireSupabaseUrl()}/functions/v1/ai_forecast`;
+  const anonKey = requireSupabaseAnonKey();
 
   let upstream: Response;
   try {
@@ -39,6 +40,8 @@ export async function POST(req: NextRequest) {
       method: "POST",
       headers: {
         "content-type": "application/json",
+        // See /api/ai/placement for why both headers are required.
+        apikey: anonKey,
         authorization: `Bearer ${session.access_token}`,
       },
       body,

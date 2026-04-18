@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { User, Stethoscope, Factory, Ruler, Landmark } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { useMonitor } from "@/lib/monitor/store";
+import { isTypingTarget } from "@/lib/app/inputTarget";
 
 type AudienceKey = "habitant" | "medecin" | "gct" | "architecte" | "municipalite";
 
@@ -37,6 +38,7 @@ export function AudienceSwitcher() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
+      if (isTypingTarget(e.target)) return;
       const match = AUDIENCES.find((a) => a.hotkey === e.key);
       if (match) {
         e.preventDefault();

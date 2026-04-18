@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import { requireSupabaseUrl } from "@/lib/supabase/env";
+import { requireSupabaseUrl, requireSupabaseAnonKey } from "@/lib/supabase/env";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
 
   const body = await req.text();
   const url = `${requireSupabaseUrl()}/functions/v1/ai_placement`;
+  const anonKey = requireSupabaseAnonKey();
 
   let upstream: Response;
   try {
@@ -45,6 +46,10 @@ export async function POST(req: NextRequest) {
       headers: {
         "content-type": "application/json",
         accept: "text/event-stream",
+        // Supabase edge gateway requires BOTH apikey (project identity) AND
+        // authorization (user JWT). Forwarding only authorization causes the
+        // platform layer to reject with 401 before the function runs.
+        apikey: anonKey,
         authorization: `Bearer ${session.access_token}`,
       },
       body,
