@@ -1,0 +1,166 @@
+-- =========================================================================
+-- NAFAS V2 — Historical sensor readings backfill (7 days)
+--
+-- Fills 7 × 24 × 30 = 5040 ticks per sensor (2-minute cadence) using an
+-- inline Pasquill-Gifford Gaussian plume from the GCT stack for air
+-- sensors, and baseline + seasonal signal for water sensors.
+-- ~5k rows × 13 sensors ≈ 65k rows, wrapped in a single transaction.
+--
+-- Mirrors the TypeScript implementation in lib/sim/pasquill.ts. Kept
+-- intentionally concise; the authoritative simulator is the edge function.
+-- =========================================================================
+
+BEGIN;
+
+-- ---- Inline Pasquill helpers (plpgsql) ----------------------------------
+CREATE OR REPLACE FUNCTION sim_pasquill_air(
+  p_sensor_lon NUMERIC, p_sensor_lat NUMERIC,
+  p_wind_speed NUMERIC, p_wind_dir NUMERIC,  -- deg meteorological (from)
+  p_t TIMESTAMPTZ,
+  p_baseline NUMERIC
+) RETURNS NUMERIC LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE
+  v_gct_lon CONSTANT NUMERIC := 10.1178;
+  v_gct_lat CONSTANT NUMERIC := 33.9312;
+  v_stack_h CONSTANT NUMERIC := 40.0;
+  v_q       CONSTANT NUMERIC := 220.0; -- g/s, tuned: ~340 µg/m³ @ 800m downwind class D
+  v_dx NUMERIC; v_dy NUMERIC;
+  v_dxm NUMERIC; v_dym NUMERIC;
+  v_theta NUMERIC; v_cos NUMERIC; v_sin NUMERIC;
+  v_x NUMERIC; v_y NUMERIC;
+  v_u NUMERIC;
+  v_sy NUMERIC; v_sz NUMERIC;
+  v_c NUMERIC;
+  v_hour INT;
+  v_diurnal NUMERIC;
+  v_noise NUMERIC;
+BEGIN
+  -- meters from GCT to sensor (equirectangular near 33.9N)
+  v_dx := (p_sensor_lon - v_gct_lon);
+  v_dy := (p_sensor_lat - v_gct_lat);
+  v_dxm := v_dx * 111320.0 * cos(radians(v_gct_lat));
+  v_dym := v_dy * 110540.0;
+
+  -- rotate into wind frame: x aligned with wind direction (to), y perpendicular
+  -- wind comes FROM p_wind_dir, so plume travels TO p_wind_dir+180.
+  v_theta := radians(p_wind_dir + 180.0);
+  v_cos := cos(v_theta);
+  v_sin := sin(v_theta);
+  v_x := v_dxm * v_cos + v_dym * v_sin;      -- along-wind
+  v_y := -v_dxm * v_sin + v_dym * v_cos;      -- cross-wind
+
+  -- Wind speed clamp
+  v_u := GREATEST(p_wind_speed, 0.5);
+
+  -- Upwind (or very close): baseline only, with some noise
+  IF v_x <= 20.0 THEN
+    v_noise := 1.0 + (random() - 0.5) * 0.2;
+    RETURN GREATEST(p_baseline * v_noise, 1.0);
+  END IF;
+
+  -- Briggs rural, class D
+  v_sy := 0.08 * v_x / sqrt(1.0 + 0.0001 * v_x);
+  v_sz := 0.06 * v_x / sqrt(1.0 + 0.0015 * v_x);
+
+  -- Ground-level concentration with double reflection at ground (z=0, H=stack)
+  v_c := (v_q / (PI() * v_u * v_sy * v_sz))
+       * exp(- (v_y * v_y) / (2.0 * v_sy * v_sy))
+       * exp(- (v_stack_h * v_stack_h) / (2.0 * v_sz * v_sz));
+
+  -- g/m³ → µg/m³
+  v_c := v_c * 1e6;
+
+  -- Diurnal multiplier: stronger at dawn (inversion), weaker at noon.
+  v_hour := EXTRACT(HOUR FROM p_t)::int;
+  v_diurnal := CASE
+    WHEN v_hour BETWEEN 5 AND 8  THEN 1.6
+    WHEN v_hour BETWEEN 9 AND 11 THEN 1.1
+    WHEN v_hour BETWEEN 12 AND 15 THEN 0.7
+    WHEN v_hour BETWEEN 16 AND 18 THEN 0.9
+    WHEN v_hour BETWEEN 19 AND 21 THEN 1.2
+    ELSE 1.3
+  END;
+
+  -- ±15% noise
+  v_noise := 1.0 + (random() - 0.5) * 0.30;
+
+  RETURN GREATEST(p_baseline + v_c * v_diurnal * v_noise, 1.0);
+END $$;
+
+-- Water baseline simulator
+CREATE OR REPLACE FUNCTION sim_water(
+  p_type sensor_type,
+  p_baseline NUMERIC,
+  p_t TIMESTAMPTZ
+) RETURNS NUMERIC LANGUAGE plpgsql IMMUTABLE AS $$
+DECLARE
+  v_doy NUMERIC;
+  v_season NUMERIC;
+  v_noise NUMERIC;
+BEGIN
+  v_doy := EXTRACT(DOY FROM p_t)::numeric;
+  v_season := sin(2 * PI() * (v_doy - 80) / 365.0);
+  v_noise := (random() - 0.5);
+  RETURN CASE p_type
+    WHEN 'ph'            THEN p_baseline + 0.15 * v_season + 0.10 * v_noise
+    WHEN 'turbidity'     THEN GREATEST(0.1, p_baseline + 1.5 * v_season + 0.8 * v_noise)
+    WHEN 'chlorophyll_a' THEN GREATEST(0.05, p_baseline + 0.4 * v_season + 0.20 * v_noise)
+    WHEN 'temperature'   THEN p_baseline + 6.0 * v_season + 0.5 * v_noise
+    ELSE p_baseline
+  END;
+END $$;
+
+-- ---- Generate readings ---------------------------------------------------
+WITH ticks AS (
+  SELECT generate_series(
+    now() - interval '7 days',
+    now(),
+    interval '2 minutes'
+  ) AS taken_at
+),
+-- deterministic-ish wind time series: diurnal + slow drift
+wind AS (
+  SELECT
+    taken_at,
+    -- 2-4 m/s typical; stronger midday
+    2.5 + 1.5 * sin(2 * PI() * EXTRACT(HOUR FROM taken_at) / 24.0) AS ws,
+    -- NW wind dominant (300-340°) in Gabès autumn-winter
+    300 + 30 * sin(2 * PI() * EXTRACT(EPOCH FROM taken_at) / 86400.0) AS wd
+  FROM ticks
+)
+INSERT INTO sensor_readings (sensor_id, value, taken_at, source)
+SELECT
+  s.id,
+  CASE
+    WHEN s.type IN ('so2','no2','pm25','pm10') THEN
+      sim_pasquill_air(
+        ST_X(s.location::geometry)::numeric,
+        ST_Y(s.location::geometry)::numeric,
+        w.ws::numeric, w.wd::numeric, w.taken_at,
+        COALESCE((s.metadata->>'baseline')::numeric, 15.0)
+      )
+    WHEN s.type IN ('ph','turbidity','chlorophyll_a','temperature') THEN
+      sim_water(
+        s.type,
+        COALESCE((s.metadata->>'baseline')::numeric, CASE s.type
+          WHEN 'ph' THEN 8.1
+          WHEN 'turbidity' THEN 3.0
+          WHEN 'chlorophyll_a' THEN 0.8
+          WHEN 'temperature' THEN 19.0
+          ELSE 0
+        END),
+        w.taken_at
+      )
+    ELSE 0
+  END AS value,
+  w.taken_at,
+  'simulated'
+FROM sensors s
+CROSS JOIN wind w
+WHERE s.active = true AND s.source = 'simulated';
+
+COMMIT;
+
+-- =========================================================================
+-- end 0003_seed_readings.sql
+-- =========================================================================
