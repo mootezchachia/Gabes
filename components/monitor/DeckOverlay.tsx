@@ -163,13 +163,16 @@ export function DeckOverlay({ map }: Props) {
           })
         : [];
 
+      const sourceGlow = plumeVisible ? sourceGlowLayer([GABES.gct[0], GABES.gct[1]], t, true) : [];
+
       overlay.setProps({
         layers: [
           // ground plane first
           gctVisible && gct ? gctPolygonLayer(gct, true) : null,
 
-          // plume: 4-layer stack — source glow, heatmap haze, mid-glow, columns
-          plumeVisible ? sourceGlowLayer([GABES.gct[0], GABES.gct[1]], t, true) : null,
+          // plume body: source glow pair → heatmap haze → sensor-driven heatmap
+          //             → mid-glow discs → sparse vertical columns
+          ...sourceGlow,
           plumeVisible ? plumeGroundHazeLayer(plumeCells, true) : null,
           plumeVisible ? plumeLayer(sensors, 1, true) : null,
           plumeVisible ? plumeMidGlowLayer(plumeCells, true) : null,

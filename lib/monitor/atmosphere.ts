@@ -249,8 +249,8 @@ export function buildPlumeField({
 
 /**
  * Ground haze — HeatmapLayer driven by the same plume cells.
- * Sits at elevation 0. Gives a diffuse amber puddle on the ground that
- * connects all the columns into a continuous plume body.
+ * Sits at elevation 0. THIS is the plume body. Big radius, mid alpha.
+ * It connects the drift cone into a continuous cloud.
  */
 export function plumeGroundHazeLayer(cells: PlumeCell[], visible = true) {
   return new HeatmapLayer<PlumeCell>({
@@ -259,26 +259,27 @@ export function plumeGroundHazeLayer(cells: PlumeCell[], visible = true) {
     visible,
     getPosition: (c) => [c.lon, c.lat],
     getWeight: (c) => c.intensity,
-    radiusPixels: 90,
-    intensity: 1.3,
-    threshold: 0.05,
-    // Warm amber ramp, all low-alpha so it reads as haze not heatmap
+    radiusPixels: 150,
+    intensity: 1.8,
+    threshold: 0.03,
+    // Warm amber → desaturated red. Stronger alpha so haze carries
+    // the plume visually without needing column extrusion to do it.
     colorRange: [
       [239, 159, 39, 0],
-      [239, 159, 39, 28],
-      [232, 120, 48, 55],
-      [210, 90, 56, 80],
-      [170, 60, 55, 100],
-      [122, 40, 48, 120],
+      [239, 159, 39, 55],
+      [232, 120, 50, 110],
+      [210, 90, 58, 160],
+      [170, 60, 55, 190],
+      [122, 40, 48, 220],
     ],
     updateTriggers: { getWeight: cells },
   });
 }
 
 /**
- * Mid-glow — a soft filled disc at each cell base. Fills inter-column gaps
- * with warm haze so the column grid dissolves visually into a continuous
- * cloud. Large radius, very low alpha.
+ * Mid-glow — large filled discs at each cell base. Bigger than before.
+ * Does most of the plume "body" work in 2D so the ColumnLayer can be
+ * very sparse. Fills gaps + softens edges of the heatmap.
  */
 export function plumeMidGlowLayer(cells: PlumeCell[], visible = true) {
   return new ScatterplotLayer<PlumeCell>({
@@ -286,18 +287,17 @@ export function plumeMidGlowLayer(cells: PlumeCell[], visible = true) {
     data: cells,
     visible,
     getPosition: (c) => [c.lon, c.lat],
-    getRadius: (c) => 220 + c.intensity * 180,
+    getRadius: (c) => 320 + c.intensity * 280,
     radiusUnits: "meters",
-    radiusMinPixels: 6,
+    radiusMinPixels: 10,
     stroked: false,
     filled: true,
     getFillColor: (c) => {
       const t = Math.min(1, c.intensity * 1.3);
-      // amber → warm-red, very low alpha so layers can overlap without crushing blacks
       const r = Math.round(239 + (200 - 239) * t);
-      const g = Math.round(159 + (80 - 159) * t);
-      const b = Math.round(50 + (50 - 50) * t);
-      const a = Math.round(20 + t * 40);
+      const g = Math.round(159 + (78 - 159) * t);
+      const b = Math.round(52 + (48 - 52) * t);
+      const a = Math.round(30 + t * 55);
       return [r, g, b, a];
     },
     updateTriggers: { getFillColor: cells, getRadius: cells },
@@ -305,31 +305,36 @@ export function plumeMidGlowLayer(cells: PlumeCell[], visible = true) {
 }
 
 /**
- * Column stack — rounded, softer than before.
- *   - radius: 260 → 170 (more cells, smaller columns = denser haze)
- *   - diskResolution: 16 → 40 (hexagonal faces read as round)
- *   - alpha ceiling: 200 → 110 (columns merge; no hard silhouettes)
- *   - height range: 80–500 → 60–400 (shorter, less monolithic)
+ * Column stack — SPARSE vertical emphasis only.
+ *
+ * Previously the column grid tried to BE the plume. That read as a
+ * hexagonal cylinder farm. Now: we only extrude the top ~18% most
+ * intense cells, so the columns become a few tall plumes rising from
+ * the center of the amber cloud rather than a field of bars.
+ *
+ * The 2D layers (ground heatmap + mid-glow discs) carry the plume body.
  */
 export function volumetricPlumeLayer(cells: PlumeCell[], visible = true) {
+  // Keep only the top-intensity cells. Threshold tuned so we get ~15-25
+  // columns of real vertical emphasis, not 200.
+  const vertical = cells.filter((c) => c.intensity > 0.38);
+
   return new ColumnLayer<PlumeCell>({
     id: "plume-volumetric",
-    data: cells,
+    data: vertical,
     visible,
     getPosition: (c) => [c.lon, c.lat],
-    radius: 170,
+    radius: 140,
     radiusUnits: "meters",
-    diskResolution: 40,
+    diskResolution: 48,
     extruded: true,
-    getElevation: (c) => c.height,
+    getElevation: (c) => c.height * 1.6, // amplified since we only keep the tallest
     getFillColor: (c) => {
-      // Warm amber fringe → deep-red-orange core. Alpha stays low so columns
-      // blend with each other and with the mid-glow underneath.
       const t = Math.min(1, c.intensity * 1.1);
-      const r = Math.round(239 + (180 - 239) * t);
-      const g = Math.round(159 + (52 - 159) * t);
-      const b = Math.round(48 + (46 - 48) * t);
-      const a = Math.round(38 + t * 72); // 38..110
+      const r = Math.round(239 + (200 - 239) * t);
+      const g = Math.round(159 + (70 - 159) * t);
+      const b = Math.round(50 + (50 - 50) * t);
+      const a = Math.round(28 + t * 45); // 28..73 — very soft
       return [r, g, b, a];
     },
     material: false,
@@ -354,18 +359,34 @@ export function sourceGlowLayer(
   visible = true,
 ) {
   const breathe = 0.9 + 0.1 * Math.sin(pulse * 0.35);
-  return new ScatterplotLayer<{ lon: number; lat: number }>({
-    id: "plume-source-glow",
-    data: [{ lon: source[0], lat: source[1] }],
-    visible,
-    getPosition: (d) => [d.lon, d.lat],
-    getRadius: 1150 * breathe,
-    radiusUnits: "meters",
-    stroked: false,
-    filled: true,
-    getFillColor: [239, 159, 39, 48],
-    updateTriggers: { getRadius: pulse },
-  });
+  // Two stacked discs: wide outer wash + concentrated inner core.
+  // Anchors the plume visually to GCT at any zoom.
+  return [
+    new ScatterplotLayer<{ lon: number; lat: number }>({
+      id: "plume-source-glow-outer",
+      data: [{ lon: source[0], lat: source[1] }],
+      visible,
+      getPosition: (d) => [d.lon, d.lat],
+      getRadius: 1800 * breathe,
+      radiusUnits: "meters",
+      stroked: false,
+      filled: true,
+      getFillColor: [239, 159, 39, 42],
+      updateTriggers: { getRadius: pulse },
+    }),
+    new ScatterplotLayer<{ lon: number; lat: number }>({
+      id: "plume-source-glow-inner",
+      data: [{ lon: source[0], lat: source[1] }],
+      visible,
+      getPosition: (d) => [d.lon, d.lat],
+      getRadius: 650 * breathe,
+      radiusUnits: "meters",
+      stroked: false,
+      filled: true,
+      getFillColor: [255, 200, 100, 85],
+      updateTriggers: { getRadius: pulse },
+    }),
+  ];
 }
 
 /* -------------------------------------------------------------------------- */

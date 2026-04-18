@@ -24,11 +24,16 @@ function ambientWord(h: number): string {
 
 const MARKS = [0, 6, 12, 18, 24];
 const PEAKS = [
-  { h: 8.5, label: "08:30" },
-  { h: 14.5, label: "14:30 · pic" },
-  { h: 20, label: "20:00" },
+  { h: 8.5, label: "matin" },
+  { h: 14.5, label: "pic" },
+  { h: 20, label: "soir" },
 ];
 
+/**
+ * Editorial time scrubber. 24-hour cycle of Gabès pollution dynamics.
+ * Uses the unified `.hud-bar` glass; thumb has a soft halo pulse; peak
+ * markers are clickable shortcuts to key moments of the day.
+ */
 export function TimeStrip() {
   const hour = useMonitor((s) => s.hourOfDay);
   const playing = useMonitor((s) => s.timePlaying);
@@ -58,27 +63,27 @@ export function TimeStrip() {
     <div
       role="group"
       aria-label="Horloge simulée · 24h"
-      className="absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[min(720px,calc(100vw-32px))] rounded-[14px] border border-white/[0.08] bg-[color:var(--nafas-bg)]/62 px-4 py-3 backdrop-blur-2xl shadow-[0_24px_60px_-24px_rgba(0,0,0,0.9),0_0_0_1px_rgba(255,255,255,0.02)_inset]"
-      style={{
-        backgroundImage:
-          "linear-gradient(180deg, rgba(26,35,48,0.38) 0%, rgba(10,15,20,0.55) 100%)",
-      }}
+      className="hud-bar absolute bottom-5 left-1/2 -translate-x-1/2 z-40 w-[min(760px,calc(100vw-32px))] px-5 py-3.5"
     >
       {/* top row: play + readout + reset */}
-      <div className="flex items-center gap-3 mb-2.5">
+      <div className="flex items-center gap-3.5 mb-3">
         <button
           type="button"
           aria-label={playing ? "Pause" : "Lecture"}
           onClick={() => setPlaying(!playing)}
-          className="size-7 rounded-full bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black grid place-items-center transition-colors cursor-pointer"
+          className="relative size-[30px] rounded-full bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black grid place-items-center transition-colors cursor-pointer shadow-[0_0_18px_-4px_rgba(61,201,154,0.75)]"
         >
-          {playing ? <Pause className="size-[13px]" strokeWidth={2.2} /> : <Play className="size-[13px] ml-[1px]" strokeWidth={2.2} />}
+          {playing ? (
+            <Pause className="size-[13px]" strokeWidth={2.2} />
+          ) : (
+            <Play className="size-[13px] ml-[1px]" strokeWidth={2.2} />
+          )}
         </button>
 
         <div className="flex-1 min-w-0 flex items-baseline gap-3">
           <div
-            style={{ fontFamily: DISPLAY }}
-            className="text-[22px] leading-none font-light tracking-[-0.02em] text-[color:var(--nafas-surface)]"
+            style={{ fontFamily: DISPLAY, fontVariantNumeric: "tabular-nums" }}
+            className="text-[26px] leading-none font-light tracking-[-0.02em] text-[color:var(--nafas-surface)]"
           >
             {hourLabel(hour)}
           </div>
@@ -98,18 +103,20 @@ export function TimeStrip() {
             setHour(now.getHours() + now.getMinutes() / 60);
             setPlaying(false);
           }}
-          className="flex items-center gap-1.5 rounded-full border border-white/10 px-2.5 py-1 hover:bg-white/5 transition-colors cursor-pointer"
+          className="flex items-center gap-1.5 rounded-md border border-white/10 px-2.5 py-1 hover:bg-white/5 hover:border-white/20 transition-colors cursor-pointer"
           style={{ fontFamily: MONO }}
         >
           <RotateCcw className="size-[11px] text-[color:var(--nafas-ink3)]" strokeWidth={1.8} />
-          <span className="text-[10px] uppercase tracking-[0.16em] text-[color:var(--nafas-ink3)]">Maintenant</span>
+          <span className="text-[10px] uppercase tracking-[0.16em] text-[color:var(--nafas-ink3)]">
+            Maintenant
+          </span>
         </button>
       </div>
 
       {/* scrubber */}
-      <div className="relative h-7 select-none">
+      <div className="relative h-10 select-none">
         {/* track */}
-        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[2px] rounded-full bg-white/8 overflow-hidden">
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 h-[3px] rounded-full bg-white/[0.07] overflow-hidden">
           <div
             className="absolute inset-y-0 left-0 bg-gradient-to-r from-[color:var(--nafas-accent)] via-[color:var(--nafas-amber)] to-[color:var(--nafas-danger)]"
             style={{ width: `${pct}%` }}
@@ -120,29 +127,50 @@ export function TimeStrip() {
         {MARKS.map((m) => (
           <div
             key={m}
-            className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center gap-1 text-[color:var(--nafas-ink3)]/70"
-            style={{ left: `${(m / 24) * 100}%`, transform: `translate(-50%, -50%)`, fontFamily: MONO }}
-          >
-            <div className="h-1.5 w-px bg-white/15" />
-          </div>
+            aria-hidden
+            className="absolute top-1/2 h-2 w-px bg-white/15"
+            style={{ left: `${(m / 24) * 100}%`, transform: "translate(-50%, -50%)" }}
+          />
         ))}
 
-        {/* peak markers */}
+        {/* peak markers — clickable */}
         {PEAKS.map((p) => (
-          <div
+          <button
             key={p.h}
-            aria-hidden
-            className="absolute -top-1 size-[5px] rounded-full bg-[color:var(--nafas-danger)]/80 shadow-[0_0_8px_-1px_rgba(226,75,74,0.8)]"
-            style={{ left: `${(p.h / 24) * 100}%`, transform: `translate(-50%, 0)` }}
-          />
+            type="button"
+            aria-label={`Aller à ${p.label}`}
+            onClick={() => {
+              setHour(p.h);
+              setPlaying(false);
+            }}
+            className="group absolute top-1/2 flex flex-col items-center gap-1 cursor-pointer"
+            style={{ left: `${(p.h / 24) * 100}%`, transform: "translate(-50%, -50%)" }}
+          >
+            <span
+              aria-hidden
+              className="size-[6px] rounded-full bg-[color:var(--nafas-danger)]/85 shadow-[0_0_10px_-1px_rgba(226,75,74,0.8)] group-hover:size-[8px] transition-all"
+            />
+            <span
+              className="absolute top-[10px] text-[8.5px] font-[family-name:var(--font-jetbrains)] tracking-[0.2em] uppercase text-[color:var(--nafas-danger)]/0 group-hover:text-[color:var(--nafas-danger)]/85 transition-colors whitespace-nowrap"
+            >
+              {p.label}
+            </span>
+          </button>
         ))}
 
         {/* thumb */}
         <div
-          className="absolute top-1/2 -translate-y-1/2 flex flex-col items-center pointer-events-none"
-          style={{ left: `${pct}%`, transform: `translate(-50%, -50%)` }}
+          className="absolute top-1/2 flex items-center justify-center pointer-events-none"
+          style={{ left: `${pct}%`, transform: "translate(-50%, -50%)" }}
         >
-          <div className="size-3.5 rounded-full bg-[color:var(--nafas-surface)] border-2 border-[color:var(--nafas-accent)] shadow-[0_0_14px_-2px_rgba(61,201,154,0.75)]" />
+          <span
+            aria-hidden
+            className="absolute size-[26px] rounded-full bg-[color:var(--nafas-accent2)]/20 animate-pulse"
+          />
+          <span
+            aria-hidden
+            className="size-[14px] rounded-full bg-[color:var(--nafas-surface)] border-2 border-[color:var(--nafas-accent)] shadow-[0_0_18px_-2px_rgba(61,201,154,0.85)]"
+          />
         </div>
 
         {/* invisible range input covering whole strip */}
@@ -163,14 +191,14 @@ export function TimeStrip() {
 
       {/* bottom labels */}
       <div
-        style={{ fontFamily: MONO }}
-        className="mt-1.5 flex justify-between text-[9px] uppercase tracking-[0.18em] text-[color:var(--nafas-ink3)]/60"
+        style={{ fontFamily: MONO, fontVariantNumeric: "tabular-nums" }}
+        className="mt-1 grid grid-cols-5 text-[9px] uppercase tracking-[0.22em] text-[color:var(--nafas-ink3)]/55"
       >
-        <span>00h</span>
-        <span>06h</span>
-        <span>12h</span>
-        <span>18h</span>
-        <span>24h</span>
+        <span className="text-left">00h</span>
+        <span className="text-center">06h</span>
+        <span className="text-center">12h</span>
+        <span className="text-center">18h</span>
+        <span className="text-right">24h</span>
       </div>
     </div>
   );
