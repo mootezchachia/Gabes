@@ -4,7 +4,7 @@ import { useEffect, useRef } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { NAFAS_STYLE_URL, repaintNafas } from "@/lib/mapStyle";
-import { SCOPE_CAMERA, useMonitor } from "@/lib/monitor/store";
+import { AUDIENCE_CAMERA, SCOPE_CAMERA, useMonitor } from "@/lib/monitor/store";
 
 const TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 if (TOKEN) mapboxgl.accessToken = TOKEN;
@@ -27,6 +27,8 @@ export function Map({ onReady }: MapProps) {
   const mapRef = useRef<mapboxgl.Map | null>(null);
 
   const scope = useMonitor((s) => s.scope);
+  const audience = useMonitor((s) => s.audience);
+  const setScope = useMonitor((s) => s.setScope);
   const selectedEvent = useMonitor((s) => s.selectedEvent);
   const flyToToken = useMonitor((s) => s.flyToToken);
 
@@ -118,6 +120,25 @@ export function Map({ onReady }: MapProps) {
       essential: true,
     });
   }, [selectedEvent, flyToToken]);
+
+  // audience change → ease to audience preset; force gabes scope so presets are meaningful
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (scope !== "gabes") {
+      setScope("gabes");
+      return;
+    }
+    const cam = AUDIENCE_CAMERA[audience];
+    map.easeTo({
+      center: cam.center,
+      zoom: cam.zoom,
+      pitch: cam.pitch,
+      bearing: cam.bearing,
+      duration: 1600,
+      essential: true,
+    });
+  }, [audience, scope, setScope]);
 
   return (
     <div

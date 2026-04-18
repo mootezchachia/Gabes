@@ -112,3 +112,15 @@ export const SCOPE_CAMERA: Record<
   tunisia: { center: [9.8, 34.2], zoom: 6.4, pitch: 0, bearing: 0 },
   gabes: { center: [10.09, 33.88], zoom: 10.6, pitch: 42, bearing: -18 },
 };
+
+// Camera presets per audience (only applied when scope === "gabes")
+export const AUDIENCE_CAMERA: Record<
+  MonitorState["audience"],
+  { center: [number, number]; zoom: number; pitch: number; bearing: number }
+> = {
+  habitant: { center: [10.112, 33.918], zoom: 12.6, pitch: 58, bearing: -10 },
+  medecin: { center: [10.098, 33.884], zoom: 11.8, pitch: 40, bearing: -18 },
+  gct: { center: [10.118, 33.931], zoom: 12.2, pitch: 62, bearing: 8 },
+  architecte: { center: [10.105, 33.9], zoom: 11.2, pitch: 50, bearing: -26 },
+  municipalite: { center: [10.09, 33.88], zoom: 10.6, pitch: 30, bearing: -18 },
+};

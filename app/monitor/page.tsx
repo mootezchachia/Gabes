@@ -11,6 +11,8 @@ import { Legend } from "@/components/monitor/Legend";
 import { AminaModal } from "@/components/monitor/AminaModal";
 import { ColdOpen } from "@/components/monitor/ColdOpen";
 import { InspectCard } from "@/components/monitor/InspectCard";
+import { AudienceSwitcher } from "@/components/monitor/AudienceSwitcher";
+import { AudienceFraming } from "@/components/monitor/AudienceFraming";
 import { useMonitor } from "@/lib/monitor/store";
 
 const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
@@ -62,6 +64,8 @@ export default function MonitorPage() {
             <TopBar />
             {HAS_TOKEN && (
               <>
+                <AudienceSwitcher />
+                <AudienceFraming />
                 <TimeStrip />
                 <Legend />
               </>
