@@ -20,10 +20,8 @@ import {
   buildPlumeField,
   criticalHaloLayer,
   plumeGroundHazeLayer,
-  plumeMidGlowLayer,
   sourceGlowLayer,
   stepWindField,
-  volumetricPlumeLayer,
   windHeadLayer,
   windStreakLayer,
   windVectorForHour,
@@ -170,13 +168,13 @@ export function DeckOverlay({ map }: Props) {
           // ground plane first
           gctVisible && gct ? gctPolygonLayer(gct, true) : null,
 
-          // plume body: source glow pair → heatmap haze → sensor-driven heatmap
-          //             → mid-glow discs → sparse vertical columns
+          // plume body — strip-down pass: heatmap IS the plume.
+          // Mid-glow discs + column extrusion removed (they read as flat coins
+          // and hex bars on a 2D basemap). Real volumetric smoke will live on
+          // /monitor3d via Cesium.ParticleSystem.
           ...sourceGlow,
           plumeVisible ? plumeGroundHazeLayer(plumeCells, true) : null,
           plumeVisible ? plumeLayer(sensors, 1, true) : null,
-          plumeVisible ? plumeMidGlowLayer(plumeCells, true) : null,
-          plumeVisible ? volumetricPlumeLayer(plumeCells, true) : null,
 
           // ambient events / incidents / infra
           layers.emitters && emitters ? emittersLayer(emitters, t, true) : null,

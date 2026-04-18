@@ -38,6 +38,9 @@ prod.log
 # vercel
 .vercel
 
+# cesium static assets — regenerated via `npm run postinstall`
+/public/cesium
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
