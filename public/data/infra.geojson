@@ -1,0 +1,13 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.1054, 33.9121] }, "properties": { "kind": "school", "name": "École Chatt Essalam", "city": "Ghannouch" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.0983, 33.8838] }, "properties": { "kind": "hospital", "name": "Hôpital Habib Bourguiba Gabès", "city": "Gabès" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.097, 33.884] }, "properties": { "kind": "school", "name": "Lycée Houmet Essouk", "city": "Gabès" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.111, 33.906] }, "properties": { "kind": "school", "name": "École 2 Mars Ghannouch", "city": "Ghannouch" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.741, 34.739] }, "properties": { "kind": "hospital", "name": "Hôpital Hedi Chaker", "city": "Sfax" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [10.755, 34.745] }, "properties": { "kind": "school", "name": "École Bab Bhar", "city": "Sfax" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [17.240, 40.466] }, "properties": { "kind": "hospital", "name": "Ospedale SS. Annunziata", "city": "Taranto" } },
+    { "type": "Feature", "geometry": { "type": "Point", "coordinates": [6.910, 36.874] }, "properties": { "kind": "school", "name": "Collège Skikda Centre", "city": "Skikda" } }
+  ]
+}

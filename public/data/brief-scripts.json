@@ -1,0 +1,54 @@
+{
+  "briefs": [
+    {
+      "id": "morning-plume",
+      "text": "07h42 à Ghannouch. Le vent de terre pousse un panache de SO₂ vers Chatt Essalam à 14 km/h. La station de l'école primaire affiche déjà 286 µg/m³, sept fois le seuil OMS. La sonnerie sonne dans dix-huit minutes.",
+      "tags": ["morning", "plume", "school"]
+    },
+    {
+      "id": "evening-wind-shift",
+      "text": "19h05. Le vent bascule plein sud à 220° et libère Chatt Essalam pour la soirée. Les capteurs périphériques retombent sous 40 µg/m³. Le panache dérive désormais vers la Sebkha, au large des zones habitées. Une fenêtre de respiration jusqu'à l'aube.",
+      "tags": ["evening", "wind-shift", "relief"]
+    },
+    {
+      "id": "weekend-protest",
+      "text": "Samedi matin, les grilles du GCT. Le collectif Stop Pollution ramène son sit-in pour la vingt-troisième fois depuis 2013. Quatre mille signataires, sept députés régionaux, zéro représentant du ministère. Le SO₂ ambiant: 91 µg/m³, presque un jour calme.",
+      "tags": ["weekend", "protest", "stop-pollution"]
+    },
+    {
+      "id": "sfax-convergence",
+      "text": "Ce midi, convergence rare. Le panache SIAPE de Sfax descend vers le sud à 18 km/h, le panache GCT remonte vers le nord à 11 km/h. Leur rencontre au large de Chebba double la charge aérosol mesurée à 47 µg/m³ fluorures. Premier cas documenté depuis 2019.",
+      "tags": ["convergence", "siape", "sfax"]
+    },
+    {
+      "id": "taranto-ruling",
+      "text": "Tarente, Italie. La cour de Potenza confirme aujourd'hui la peine de 22 ans pour les dirigeants Riva, reconnus coupables de désastre environnemental. Le jugement cite explicitement les 54% de surmortalité pédiatrique documentés par l'ISS Sentieri. Gabès suit à 320 kilomètres de distance.",
+      "tags": ["taranto", "ilva", "ruling"]
+    },
+    {
+      "id": "wind-reversal-forecast",
+      "text": "Météo ANPE pour les 24 heures. Vent d'est soutenu à 16 km/h jusqu'à demain 06h, puis bascule ouest prévu avec affaiblissement sous 8 km/h. Fenêtre de calme relatif pour Chatt Essalam entre 22h et 05h. Les panaches reprendront direction urbaine mardi matin.",
+      "tags": ["forecast", "wind", "calm-window"]
+    },
+    {
+      "id": "ships-gulf",
+      "text": "Le trafic maritime contribue à 14% des PM₂.₅ mesurées au large de Kerkennah selon l'étude CNRS-INSTM 2024. Cent soixante-quatre navires croisent le Golfe de Gabès chaque semaine, la plupart sans scrubbers. La zone SECA Méditerranée s'applique pourtant depuis le 1er mai 2025.",
+      "tags": ["shipping", "gulf", "pm25"]
+    },
+    {
+      "id": "posidonia-decline",
+      "text": "Les herbiers de posidonies du sud de Ghannouch ont perdu 38% de leur surface entre 2002 et 2022. Étude INSTM publiée dans Marine Pollution Bulletin. La corrélation avec les pics annuels de SO₂ atteint r=−0,81. La prairie sous-marine s'efface au rythme des émissions.",
+      "tags": ["posidonia", "marine", "anti-correlation"]
+    },
+    {
+      "id": "phosphogypsum-radiation",
+      "text": "Nouvelle mesure indépendante sur la digue nord. L'uranium-238 atteint 840 becquerels par kilogramme dans le phosphogypse frais, six fois le bruit de fond régional. Le document est transmis à l'ARN. Aucune barrière physique ne sépare pour l'instant la digue de la plage publique.",
+      "tags": ["phosphogypsum", "radiation", "uranium"]
+    },
+    {
+      "id": "winter-inversion",
+      "text": "Inversion thermique nocturne confirmée par le ballon-sonde de 03h. La couche limite plafonne à 142 mètres, piégeant les émissions de la veille au-dessus de Chatt Essalam. PM₂.₅ à 78 µg/m³ à 06h, avant même le premier démarrage industriel. La journée commence déjà en dette respiratoire.",
+      "tags": ["winter", "inversion", "pm25"]
+    }
+  ]
+}

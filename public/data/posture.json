@@ -1,0 +1,22 @@
+[
+  { "city": "Gabès", "country": "TN", "severity": "CRIT", "note": "Plume SO₂ actif · 318 µg/m³ Chatt Essalam" },
+  { "city": "Ghannouch", "country": "TN", "severity": "CRIT", "note": "Épicentre GCT · vent 340° 14 km/h" },
+  { "city": "Sfax", "country": "TN", "severity": "ALERTE", "note": "SIAPE · aérosols fluorés 2,1× normale" },
+  { "city": "Gafsa", "country": "TN", "severity": "ALERTE", "note": "Bassin minier · poussières phosphate" },
+  { "city": "Redeyef", "country": "TN", "severity": "ALERTE", "note": "Extraction active · oued Melah trouble" },
+  { "city": "Tunis", "country": "TN", "severity": "STABLE", "note": "Capitale · NO₂ Radès surveillance routine" },
+  { "city": "Kerkennah", "country": "TN", "severity": "SURV", "note": "Dérive marine · pêcheurs alertes hydrocarbures" },
+  { "city": "Djerba", "country": "TN", "severity": "SURV", "note": "Est · odeur phosphogypse signalée matinée" },
+  { "city": "Monastir", "country": "TN", "severity": "STABLE", "note": "Touristique · qualité air dans les normes" },
+  { "city": "Bizerte", "country": "TN", "severity": "STABLE", "note": "Côte Nord · vent offshore dégagé" },
+  { "city": "Taranto", "country": "IT", "severity": "ALERTE", "note": "ILVA · Tamburi PM₁₀ 62 µg/m³" },
+  { "city": "Priolo", "country": "IT", "severity": "ALERTE", "note": "Augusta · benzène 6,8 µg/m³ avis ASP" },
+  { "city": "Skikda", "country": "DZ", "severity": "SURV", "note": "Pétrochimie · torchère intermittente" },
+  { "city": "Arzew", "country": "DZ", "severity": "STABLE", "note": "Raffinerie · exploitation normale" },
+  { "city": "Misrata", "country": "LY", "severity": "STABLE", "note": "Industrie naissante · oxyde fer signalé" },
+  { "city": "Jorf Lasfar", "country": "MA", "severity": "SURV", "note": "OCP · charge export phosphate élevée" },
+  { "city": "Huelva", "country": "ES", "severity": "SURV", "note": "Fertiberia · remédiation phosphogypse en cours" },
+  { "city": "Fos-sur-Mer", "country": "FR", "severity": "ALERTE", "note": "Étude INSERM · surincidence cancer confirmée" },
+  { "city": "Alexandrie", "country": "EG", "severity": "STABLE", "note": "MIDOR AMOC · COV surveillance baie" },
+  { "city": "Ashkelon", "country": "IL", "severity": "STABLE", "note": "Charbon · calendrier fermeture 2027" }
+]

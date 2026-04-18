@@ -5,13 +5,18 @@ import { MapboxOverlay } from "@deck.gl/mapbox";
 import type { IControl, Map as MapboxMap } from "mapbox-gl";
 import type { FeatureCollection } from "geojson";
 import {
+  emittersLayer,
   gctPolygonLayer,
   gctStacksLayer,
+  incidentsLayer,
+  infraLayer,
   landmarksLayer,
   plumeLayer,
   sensorsGlowLayer,
   sensorsLayer,
+  windLayer,
   type Sensor,
+  type WindPoint,
 } from "@/lib/monitor/layers";
 import { useMonitor } from "@/lib/monitor/store";
 
@@ -20,14 +25,18 @@ interface Props {
 }
 
 /**
- * Monitor deck.gl overlay. Subscribes to the store's `activeLayers` flags
- * and renders only the enabled data layers. New factories (emitters,
- * incidents, infra, wind, s5p) added by Agent F will be slotted in here.
+ * Med-scope deck.gl overlay. Reads the store's `activeLayers` flags and
+ * renders only enabled data layers. Sensors + GCT polygon clutter the Med
+ * view, so they are auto-gated on scope === 'gabes'.
  */
 export function DeckOverlay({ map }: Props) {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [gct, setGct] = useState<FeatureCollection | null>(null);
   const [landmarks, setLandmarks] = useState<FeatureCollection | null>(null);
+  const [emitters, setEmitters] = useState<FeatureCollection | null>(null);
+  const [incidents, setIncidents] = useState<FeatureCollection | null>(null);
+  const [infra, setInfra] = useState<FeatureCollection | null>(null);
+  const [wind] = useState<WindPoint[]>([]);
 
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const rafRef = useRef<number>(0);
@@ -35,49 +44,91 @@ export function DeckOverlay({ map }: Props) {
 
   const layers = useMonitor((s) => s.activeLayers);
   const scope = useMonitor((s) => s.scope);
+  const setSelectedEvent = useMonitor((s) => s.setSelectedEvent);
+  const flyTo = useMonitor((s) => s.flyTo);
 
+  // Load all data once
   useEffect(() => {
     let alive = true;
+    const fetchJson = async (url: string) => {
+      try {
+        const r = await fetch(url);
+        if (!r.ok) return null;
+        return await r.json();
+      } catch {
+        return null;
+      }
+    };
     Promise.all([
-      fetch("/data/sensors.json").then((r) => r.json()),
-      fetch("/data/gct.geojson").then((r) => r.json()),
-      fetch("/data/landmarks.geojson").then((r) => r.json()),
-    ])
-      .then(([s, g, l]) => {
-        if (!alive) return;
-        setSensors(s);
-        setGct(g);
-        setLandmarks(l);
-      })
-      .catch((e) => console.error("[monitor] data load failed", e));
+      fetchJson("/data/sensors.json"),
+      fetchJson("/data/gct.geojson"),
+      fetchJson("/data/landmarks.geojson"),
+      fetchJson("/data/emitters.geojson"),
+      fetchJson("/data/incidents.geojson"),
+      fetchJson("/data/infra.geojson"),
+    ]).then(([s, g, l, em, inc, inf]) => {
+      if (!alive) return;
+      if (s) setSensors(s);
+      if (g) setGct(g);
+      if (l) setLandmarks(l);
+      if (em) setEmitters(em);
+      if (inc) setIncidents(inc);
+      if (inf) setInfra(inf);
+    });
     return () => {
       alive = false;
     };
   }, []);
 
   useEffect(() => {
-    if (!map || !sensors.length || !gct || !landmarks) return;
+    if (!map) return;
 
-    const overlay = new MapboxOverlay({ layers: [] });
+    const overlay = new MapboxOverlay({
+      layers: [],
+      onClick: (info) => {
+        if (!info.object) return;
+        const props = info.object.properties as
+          | { id?: string; title?: string; name?: string; body?: string; note?: string; date?: string; severity?: string; source_url?: string }
+          | undefined;
+        if (!props || !info.coordinate) return;
+        const lon = info.coordinate[0] ?? 0;
+        const lat = info.coordinate[1] ?? 0;
+        const sev: "high" | "medium" | "low" =
+          props.severity === "medium" || props.severity === "low" ? props.severity : "high";
+        setSelectedEvent({
+          id: props.id ?? `pt-${lon.toFixed(3)}-${lat.toFixed(3)}`,
+          lon,
+          lat,
+          title: props.title ?? props.name ?? "Point sélectionné",
+          body: props.body ?? props.note ?? "",
+          date: props.date ?? new Date().toISOString(),
+          severity: sev,
+          sourceUrl: props.source_url,
+        });
+        flyTo();
+      },
+    });
     map.addControl(overlay as unknown as IControl);
     overlayRef.current = overlay;
 
     const tick = () => {
       tRef.current += 0.04;
       const t = tRef.current;
-      // Sensors only visible when scoped to Gabès city — at med zoom they'd be
-      // illegible clutter.
       const sensorsVisible = layers.sensors && scope === "gabes";
-      const gctVisible = layers.emitters;
+      const gctVisible = layers.emitters && scope === "gabes";
 
       overlay.setProps({
         layers: [
-          gctVisible ? gctPolygonLayer(gct, true) : null,
-          layers.plume ? plumeLayer(sensors, 1, true) : null,
+          gctVisible && gct ? gctPolygonLayer(gct, true) : null,
+          layers.plume && scope === "gabes" ? plumeLayer(sensors, 1, true) : null,
+          layers.emitters && emitters ? emittersLayer(emitters, t, true) : null,
+          layers.incidents && incidents ? incidentsLayer(incidents, t, true) : null,
+          layers.infra && infra ? infraLayer(infra, true) : null,
+          layers.wind ? windLayer(wind, true) : null,
           sensorsVisible ? sensorsGlowLayer(sensors, t, true) : null,
           sensorsVisible ? sensorsLayer(sensors, t, true) : null,
-          gctVisible ? gctStacksLayer(gct, t, true) : null,
-          layers.infra ? landmarksLayer(landmarks, true) : null,
+          gctVisible && gct ? gctStacksLayer(gct, t, true) : null,
+          layers.infra && scope === "gabes" && landmarks ? landmarksLayer(landmarks, true) : null,
         ].filter(Boolean),
       });
       rafRef.current = requestAnimationFrame(tick);
@@ -93,7 +144,7 @@ export function DeckOverlay({ map }: Props) {
       }
       overlayRef.current = null;
     };
-  }, [map, sensors, gct, landmarks, layers, scope]);
+  }, [map, sensors, gct, landmarks, emitters, incidents, infra, wind, layers, scope, setSelectedEvent, flyTo]);
 
   return null;
 }

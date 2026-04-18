@@ -1,9 +1,20 @@
 "use client";
-// STUB — replaced by Agent C
+
+import { BriefAI } from "./BriefAI";
+import { Posture } from "./Posture";
+import { EventsFeed } from "./EventsFeed";
+
 export function RightPanel() {
   return (
-    <aside className="absolute top-12 right-0 bottom-72 w-[340px] z-30 bg-[color:var(--nafas-bg2)]/70 backdrop-blur border-l border-white/10 p-4 overflow-y-auto text-[11px] font-[family-name:var(--font-jetbrains)] tracking-wider uppercase text-[color:var(--nafas-ink3)]">
-      RightPanel · Agent C pending
+    <aside
+      className="absolute top-12 right-0 bottom-72 z-30 flex w-[340px] flex-col gap-5 overflow-y-auto border-l border-white/10 bg-[color:var(--nafas-bg2)]/70 p-5 backdrop-blur-xl"
+      aria-label="Panneau latéral droit — Brief AI, Posture, Événements"
+    >
+      <BriefAI />
+      <div className="h-px w-full bg-white/5" aria-hidden />
+      <Posture />
+      <div className="h-px w-full bg-white/5" aria-hidden />
+      <EventsFeed />
     </aside>
   );
 }

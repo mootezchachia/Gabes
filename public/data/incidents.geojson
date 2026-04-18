@@ -1,0 +1,512 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.1054, 33.9121] },
+      "properties": {
+        "id": "chatt-essalam-2025-10-14",
+        "date": "2025-10-14T08:47:00+01:00",
+        "title": "121 élèves hospitalisés à l'école Chatt Essalam",
+        "body": "Panache SO₂ arrivé 5 minutes après la sonnerie du matin. Évacuation massive. Pic mesuré 340 µg/m³, 8,5× le seuil OMS. Aucune alerte publique émise avant l'incident.",
+        "severity": "high",
+        "source_url": "https://nawaat.org/2025/10/16/gabes-chatt-essalam-pollution/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.099, 33.883] },
+      "properties": {
+        "id": "greve-generale-2025-10-21",
+        "date": "2025-10-21T10:00:00+01:00",
+        "title": "Grève générale à Gabès · dizaines de milliers dans la rue",
+        "body": "Appel UGTT régional suivi à 92% selon FTDES. Cortège de l'avenue Habib Bourguiba aux grilles du GCT. Mot d'ordre unique: fermeture des unités acide phosphorique et relocalisation du phosphogypse.",
+        "severity": "high",
+        "source_url": "https://www.ftdes.net/gabes-greve-generale-octobre-2025/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.1054, 33.9121] },
+      "properties": {
+        "id": "chatt-essalam-2025-12-03",
+        "date": "2025-12-03T09:12:00+01:00",
+        "title": "École Chatt Essalam · fumées toxiques · nouvelle évacuation",
+        "body": "Deuxième incident majeur en sept semaines. 84 enfants évacués, 19 hospitalisés pour détresse respiratoire. Les parents bloquent la route P1 jusqu'au soir. Le ministère de l'Éducation ouvre une enquête administrative.",
+        "severity": "high",
+        "source_url": "https://nawaat.org/2025/12/04/gabes-ecole-evacuation/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.35, 33.95] },
+      "properties": {
+        "id": "maree-noire-golfe-2024-07-18",
+        "date": "2024-07-18T14:30:00+01:00",
+        "title": "Marée noire Golfe de Gabès · pêcheurs en colère",
+        "body": "Nappe d'hydrocarbures de 12 km² au large de Chebba. Origine non identifiée, suspicion dégazage. Syndicat des pêcheurs de Kerkennah estime la perte à 3,2 millions de dinars la première semaine.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/maree-noire-gabes-2024/",
+        "emitter_id": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.10, 33.87] },
+      "properties": {
+        "id": "mort-poissons-chatt-2024-03-22",
+        "date": "2024-03-22T06:00:00+01:00",
+        "title": "Mort massive de poissons · plage de Chatt",
+        "body": "Tapis de sars, mulets et oursins morts sur 2,7 km de plage. Rejet phosphogypse nocturne suspecté. L'ANPE promet analyses, résultats jamais publiés.",
+        "severity": "high",
+        "source_url": "https://nawaat.org/2024/03/24/gabes-poissons-morts/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.117, 33.931] },
+      "properties": {
+        "id": "stop-pollution-2023-11-11",
+        "date": "2023-11-11T15:00:00+01:00",
+        "title": "Protestation Stop Pollution · route P1 bloquée 14h",
+        "body": "Collectif Stop Pollution organise sit-in devant l'entrée principale du GCT. Route bloquée de 8h à 22h. Délégation reçue par le gouverneur, aucun engagement écrit.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/stop-pollution-gabes-2023/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.125, 33.925] },
+      "properties": {
+        "id": "phosphogypse-digue-2022-09-04",
+        "date": "2022-09-04T22:00:00+01:00",
+        "title": "Phosphogypse · nouvelle digue débordée après orage",
+        "body": "Crue éclair du 4 septembre. Digue auxiliaire de rétention débordée sur 40 m. Écoulement vers la mer visible au petit matin. GCT parle de 'petit incident maîtrisé'.",
+        "severity": "medium",
+        "source_url": "https://nawaat.org/2022/09/06/phosphogypse-digue/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.09, 32.37] },
+      "properties": {
+        "id": "misrata-steel-2023-06-11",
+        "date": "2023-06-11T11:00:00+01:00",
+        "title": "Aciérie Misrata · émission anormale convertisseur",
+        "body": "Incident convertisseur à l'oxygène. Nuage rougeâtre de poussières d'oxyde de fer visible jusqu'au port. 3 ouvriers brûlés, production suspendue 36h.",
+        "severity": "medium",
+        "source_url": "https://www.reuters.com/world/africa/libya-misrata-steel/",
+        "emitter_id": "misrata-steel"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [17.24, 40.47] },
+      "properties": {
+        "id": "taranto-cancer-2024-02-15",
+        "date": "2024-02-15T00:00:00+01:00",
+        "title": "Taranto ILVA · rapport cancer pédiatrique Sentieri",
+        "body": "Rapport Sentieri de l'Istituto Superiore di Sanità: surmortalité cancer pédiatrique +54% quartier Tamburi. Procès des Riva reprend à Potenza après renvois procéduraux.",
+        "severity": "high",
+        "source_url": "https://www.reuters.com/world/europe/italy-ilva-taranto/",
+        "emitter_id": "taranto-ilva"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [6.91, 36.88] },
+      "properties": {
+        "id": "skikda-flare-2023-04-07",
+        "date": "2023-04-07T03:20:00+01:00",
+        "title": "Skikda · torchère unité GL1K hors-norme",
+        "body": "Torchère géante pendant 41 minutes suite arrêt intempestif compresseur. Ciel rougi sur Stora. Aucun blessé. Sonatrach communique le lendemain.",
+        "severity": "low",
+        "source_url": "https://www.reuters.com/business/energy/algeria-sonatrach/",
+        "emitter_id": "skikda-petrochem"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.73, 34.75] },
+      "properties": {
+        "id": "siape-sfax-2024-05-09",
+        "date": "2024-05-09T16:45:00+01:00",
+        "title": "SIAPE Sfax · fuite acide fluorhydrique",
+        "body": "Fuite unité engrais triple-superphosphate. Nuage acide blanchâtre évacuation 600 m autour. Pompiers contiennent en 2h. 12 riverains consultés aux urgences Habib Bourguiba.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/siape-sfax-fuite-2024/",
+        "emitter_id": "siape-sfax"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.109, 33.918] },
+      "properties": {
+        "id": "gabes-bronchite-2020-11-23",
+        "date": "2020-11-23T07:30:00+01:00",
+        "title": "Pic bronchites aiguës · hôpital régional Gabès",
+        "body": "Service pneumologie déborde: 148 consultations en 48h, contre moyenne 32. Pic SO₂ 287 µg/m³ station Chatt. Lien causal publiquement contesté par GCT.",
+        "severity": "medium",
+        "source_url": "https://nawaat.org/2020/11/25/gabes-bronchite/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.117, 33.932] },
+      "properties": {
+        "id": "gabes-phosphogypse-2021-02-14",
+        "date": "2021-02-14T12:00:00+01:00",
+        "title": "Phosphogypse · engagement gouvernemental arrêt rejet mer",
+        "body": "Premier ministre annonce fin des rejets en mer pour fin 2022. Promesse non tenue. Le rejet continue à ce jour à un débit moyen de 13 000 tonnes par jour.",
+        "severity": "low",
+        "source_url": "https://nawaat.org/2021/02/16/phosphogypse-annonce/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.098, 33.915] },
+      "properties": {
+        "id": "gabes-evac-lycee-2021-10-04",
+        "date": "2021-10-04T09:45:00+01:00",
+        "title": "Lycée Chatt Essalam · évacuation partielle · odeur ammoniac",
+        "body": "Classe de seconde évacuée après malaises. Odeur ammoniac confirmée par surveillant. Pas d'hospitalisation. Directeur dépose plainte ANPE.",
+        "severity": "low",
+        "source_url": "https://www.ftdes.net/lycee-chatt-2021/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.085, 33.891] },
+      "properties": {
+        "id": "gabes-posidonies-2022-06-22",
+        "date": "2022-06-22T00:00:00+01:00",
+        "title": "Herbier de posidonies · recul 38% Golfe de Gabès sur 20 ans",
+        "body": "Étude INSTM-CNRS publiée Marine Pollution Bulletin. Les herbiers au sud de Ghannouch perdent 38% de leur surface 2002-2022. Corrélation forte avec pH et turbidité eaux GCT.",
+        "severity": "medium",
+        "source_url": "https://doi.org/10.1016/j.marpolbul.2022.113952",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.12, 33.93] },
+      "properties": {
+        "id": "gabes-uranium-2023-01-30",
+        "date": "2023-01-30T00:00:00+01:00",
+        "title": "Phosphogypse · traces uranium confirmées par étude universitaire",
+        "body": "Laboratoire LR11ES44 Sfax mesure uranium-238 jusqu'à 840 Bq/kg dans phosphogypse GCT. Six fois le bruit de fond régional. Étude envoyée au ministère, aucune suite publique.",
+        "severity": "medium",
+        "source_url": "https://nawaat.org/2023/02/02/uranium-phosphogypse/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.10, 33.90] },
+      "properties": {
+        "id": "gabes-marche-femmes-2024-09-28",
+        "date": "2024-09-28T10:00:00+01:00",
+        "title": "Marche des mères · 800 femmes devant gouvernorat",
+        "body": "Marche organisée par collectif Mères de Gabès. Les participantes portent pancartes avec photos enfants asthmatiques. Gouverneur absent, reçue par chef de cabinet.",
+        "severity": "low",
+        "source_url": "https://www.ftdes.net/marche-meres-gabes-2024/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.115, 33.926] },
+      "properties": {
+        "id": "gabes-so2-record-2025-08-19",
+        "date": "2025-08-19T05:30:00+01:00",
+        "title": "Record SO₂ · 412 µg/m³ station Ghannouch-Nord",
+        "body": "Pic historique avant lever du soleil: 412 µg/m³, 10,3× la limite OMS 24h. Inversion thermique confirmée par ballon-sonde. Aucune alerte diffusée à la population.",
+        "severity": "high",
+        "source_url": "https://nawaat.org/2025/08/21/gabes-so2-record/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.12, 33.92] },
+      "properties": {
+        "id": "gabes-petition-2020-07-05",
+        "date": "2020-07-05T00:00:00+01:00",
+        "title": "Pétition 12 000 signatures · démantèlement GCT",
+        "body": "Collectif Stop Pollution dépose pétition à l'ARP. Reprise par députés régionaux. Commission parlementaire créée puis dissoute en 2022 sans rapport final.",
+        "severity": "low",
+        "source_url": "https://www.ftdes.net/petition-gct-2020/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.124, 33.929] },
+      "properties": {
+        "id": "gabes-greve-faim-2022-11-15",
+        "date": "2022-11-15T00:00:00+01:00",
+        "title": "Grève de la faim · 31 militants devant GCT · 14 jours",
+        "body": "31 militants Stop Pollution en grève de la faim devant grille GCT. Durée 14 jours. 6 hospitalisations. Accord signé avec gouvernement non appliqué à ce jour.",
+        "severity": "medium",
+        "source_url": "https://nawaat.org/2022/11/29/greve-faim-gabes/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.097, 33.880] },
+      "properties": {
+        "id": "gabes-asthme-2023-07-08",
+        "date": "2023-07-08T00:00:00+01:00",
+        "title": "Étude asthme pédiatrique · prévalence 2,4× moyenne nationale",
+        "body": "Étude Faculté Médecine Sfax: 14,7% enfants 6-12 ans asthmatiques à Ghannouch et Chatt Essalam, contre 6,1% moyenne nationale. N=1 842 écoliers.",
+        "severity": "high",
+        "source_url": "https://doi.org/10.1016/j.rmr.2023.05.008",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.11, 33.94] },
+      "properties": {
+        "id": "gabes-pluie-acide-2024-11-02",
+        "date": "2024-11-02T06:00:00+01:00",
+        "title": "Pluie acide · pH 3,9 mesuré par INRAP",
+        "body": "Épisode de pluie acide documenté pour la première fois dans la région. pH 3,9 mesuré sur trois points. Dommages visibles sur oliveraies de Chatt Essalam.",
+        "severity": "medium",
+        "source_url": "https://nawaat.org/2024/11/04/pluie-acide-gabes/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.11, 33.93] },
+      "properties": {
+        "id": "gabes-rapport-eu-2025-03-17",
+        "date": "2025-03-17T00:00:00+01:00",
+        "title": "Parlement européen cite Gabès · résolution droits humains",
+        "body": "Résolution non contraignante du Parlement européen mentionne Gabès parmi 'points chauds environnementaux méditerranéens'. Demande mission d'évaluation UE avant accord commercial révisé avec Tunisie.",
+        "severity": "low",
+        "source_url": "https://www.europarl.europa.eu/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.115, 33.921] },
+      "properties": {
+        "id": "gabes-mort-ouvrier-2021-04-28",
+        "date": "2021-04-28T22:00:00+01:00",
+        "title": "Décès ouvrier GCT · fuite SO₂ atelier acide sulfurique",
+        "body": "Ouvrier 43 ans retrouvé inconscient atelier H₂SO₄, déclaré mort à l'hôpital. Syndicat UGTT parle d'équipements EPI défaillants. Enquête judiciaire ouverte.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/deces-ouvrier-gct-2021/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.09, 33.88] },
+      "properties": {
+        "id": "gabes-eaux-nappe-2024-01-16",
+        "date": "2024-01-16T00:00:00+01:00",
+        "title": "Nappe phréatique · fluorures 4,6× norme OMS",
+        "body": "CITET mesure fluorures jusqu'à 6,9 mg/L dans nappe Chatt Essalam. Norme OMS 1,5 mg/L. 30 puits domestiques fermés par autorités sans indemnisation.",
+        "severity": "high",
+        "source_url": "https://nawaat.org/2024/01/19/nappe-fluor-gabes/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.12, 33.91] },
+      "properties": {
+        "id": "gabes-college-2023-02-20",
+        "date": "2023-02-20T10:15:00+01:00",
+        "title": "Collège Bou Attouch · 38 élèves malaises · épisode SO₂",
+        "body": "Pic SO₂ matinal 265 µg/m³. Trente-huit élèves présentent vertiges et vomissements. Direction appelle pompiers. Rentrée scolaire reprend dans l'après-midi.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/college-bou-attouch-2023/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.13, 33.94] },
+      "properties": {
+        "id": "gabes-drones-2025-06-12",
+        "date": "2025-06-12T00:00:00+01:00",
+        "title": "Drones citoyens · survol GCT autorisé puis interdit",
+        "body": "Collectif Stop Pollution filme phosphogypse avec drones DJI. Vidéos virales 1,2M vues. Gouvernorat interdit survols au titre 'zone sensible' 10 jours plus tard.",
+        "severity": "low",
+        "source_url": "https://nawaat.org/2025/06/14/drones-gct/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.10, 33.92] },
+      "properties": {
+        "id": "gabes-promesse-2026-01-09",
+        "date": "2026-01-09T00:00:00+01:00",
+        "title": "Ministre Industrie · plan 'Gabès 2030' dévoilé sans chiffrage",
+        "body": "Plan annoncé en conférence de presse: 'modernisation' du GCT, 'reconversion progressive' du phosphogypse. Aucun budget ni calendrier opérationnel. Collectif Stop Pollution qualifie l'annonce de 'communication'.",
+        "severity": "low",
+        "source_url": "https://www.ftdes.net/plan-gabes-2030/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.12, 33.93] },
+      "properties": {
+        "id": "gabes-conference-2026-02-22",
+        "date": "2026-02-22T00:00:00+01:00",
+        "title": "Forum Méditerranée · Gabès invitée d'honneur à Rome",
+        "body": "Forum UICN-Méditerranée Rome. Délégation citoyenne Gabès reçue Quirinal. Rencontre scientifiques Taranto et Huelva. Accord informel échange de données sanitaires publié communiqué conjoint.",
+        "severity": "low",
+        "source_url": "https://www.iucn.org/",
+        "emitter_id": null
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [17.24, 40.47] },
+      "properties": {
+        "id": "taranto-greve-2025-05-14",
+        "date": "2025-05-14T00:00:00+01:00",
+        "title": "Taranto · 8 500 ouvriers ILVA en grève 24h",
+        "body": "Grève nationale USB contre plan restructuration Acciaierie d'Italia. Blocage port minier. Production haut-fourneau 2 à l'arrêt 48h.",
+        "severity": "medium",
+        "source_url": "https://www.reuters.com/world/europe/italy-ilva-strike/",
+        "emitter_id": "taranto-ilva"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [4.88, 43.43] },
+      "properties": {
+        "id": "fos-etude-2024-04-03",
+        "date": "2024-04-03T00:00:00+01:00",
+        "title": "Fos-sur-Mer · étude INSERM cancer +30% cohorte FOS-EPSEAL",
+        "body": "Publication Environmental Research: résidents exposés zone industrielle Fos présentent surincidence cancer du poumon +30% par rapport zone témoin. N=3 104 suivis 12 ans.",
+        "severity": "high",
+        "source_url": "https://doi.org/10.1016/j.envres.2024.118432",
+        "emitter_id": "fos-sur-mer"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-6.00, 37.20] },
+      "properties": {
+        "id": "huelva-fertiberia-2023-12-07",
+        "date": "2023-12-07T00:00:00+01:00",
+        "title": "Huelva · CJUE condamne Espagne sur phosphogypse Fertiberia",
+        "body": "La Cour de Justice de l'UE condamne l'Espagne pour manquement directive déchets: 120 Mt phosphogypse stockés 40 ans en zone humide Ria de Huelva. Remédiation budgétée 1,2 milliard €.",
+        "severity": "medium",
+        "source_url": "https://curia.europa.eu/",
+        "emitter_id": "huelva-petrochem"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [34.55, 31.64] },
+      "properties": {
+        "id": "ashkelon-2024-08-17",
+        "date": "2024-08-17T14:00:00+01:00",
+        "title": "Ashkelon · dépassement particules PM₂.₅ trois jours consécutifs",
+        "body": "Autorité protection environnement Israël relève PM₂.₅ > 55 µg/m³ trois journées consécutives. Canicule et inversion thermique. Alerte sanitaire étendue au sud Tel Aviv.",
+        "severity": "low",
+        "source_url": "https://www.reuters.com/world/middle-east/israel-air-quality/",
+        "emitter_id": "ashkelon-coal"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.80, 35.10] },
+      "properties": {
+        "id": "baniyas-2021-08-24",
+        "date": "2021-08-24T00:00:00+01:00",
+        "title": "Banias · marée noire 2 millions m² Méditerranée orientale",
+        "body": "Fuite réservoir raffinerie côtière. Nappe dérive vers Chypre et Turquie. Estimation 12 000 tonnes. Détectée par satellites Sentinel-1 avant annonce officielle.",
+        "severity": "high",
+        "source_url": "https://www.reuters.com/world/middle-east/syria-oil-spill-2021/",
+        "emitter_id": "baniyas-refinery"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.09, 32.37] },
+      "properties": {
+        "id": "misrata-port-2024-10-06",
+        "date": "2024-10-06T00:00:00+01:00",
+        "title": "Misrata · poussières oxyde fer dans quartier Al-Kasra",
+        "body": "Mesures satellite Sentinel-5P indiquent concentrations NO₂ anormales 48h durant sur secteur aciérie. Témoignages habitants: dépôts rougeâtres sur balcons et voitures.",
+        "severity": "low",
+        "source_url": "https://www.reuters.com/world/africa/libya-misrata-pollution/",
+        "emitter_id": "misrata-steel"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.08, 37.07] },
+      "properties": {
+        "id": "priolo-2025-09-02",
+        "date": "2025-09-02T00:00:00+01:00",
+        "title": "Priolo · pic benzène Augusta-Priolo · avis sanitaire",
+        "body": "ARPA Sicilia mesure benzène 7,2 µg/m³ sur 24h, limite UE 5 µg/m³. ASP Siracusa recommande éviter activité extérieure enfants et personnes vulnérables 48h.",
+        "severity": "medium",
+        "source_url": "https://www.reuters.com/world/europe/italy-priolo-pollution/",
+        "emitter_id": "priolo-isab"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [34.87, 32.47] },
+      "properties": {
+        "id": "hadera-2024-06-19",
+        "date": "2024-06-19T00:00:00+01:00",
+        "title": "Hadera · annonce fin charbon avancée à 2026",
+        "body": "Ministre Énergie israélien annonce fermeture unités charbon Orot Rabin à 2026 au lieu 2025. Remplacement par gaz. ONG Adam Teva V'Din juge 'annonce politique sans feuille de route'.",
+        "severity": "low",
+        "source_url": "https://www.reuters.com/business/energy/israel-coal-2024/",
+        "emitter_id": "hadera-coal"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.118, 33.931] },
+      "properties": {
+        "id": "gabes-manifestation-2026-03-08",
+        "date": "2026-03-08T00:00:00+01:00",
+        "title": "8 mars Gabès · mères, filles, grand-mères devant GCT",
+        "body": "Mobilisation Journée internationale des droits des femmes devant GCT. Slogan: 'Notre souffle, notre droit'. Estimation 4 500 participantes selon FTDES, 1 200 selon préfecture.",
+        "severity": "medium",
+        "source_url": "https://www.ftdes.net/8-mars-gabes-2026/",
+        "emitter_id": "gct-ghannouch"
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.099, 33.920] },
+      "properties": {
+        "id": "gabes-cop-2025-11-24",
+        "date": "2025-11-24T00:00:00+01:00",
+        "title": "COP30 Belém · délégués Gabès exclus, message vidéo diffusé",
+        "body": "Deux représentants Stop Pollution privés visa Brésil. Message vidéo projeté pavillon société civile: 'Nous respirons une transition qui n'a jamais commencé'. 2,8 M vues 48h.",
+        "severity": "low",
+        "source_url": "https://nawaat.org/2025/11/26/gabes-cop30/",
+        "emitter_id": "gct-ghannouch"
+      }
+    }
+  ]
+}

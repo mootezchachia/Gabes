@@ -10,6 +10,8 @@ import { LeftSidebar } from "@/components/monitor/LeftSidebar";
 import { RightPanel } from "@/components/monitor/RightPanel";
 import { BottomRow } from "@/components/monitor/BottomRow";
 import { AminaModal } from "@/components/monitor/AminaModal";
+import { TimeframePills } from "@/components/monitor/TimeframePills";
+import { Legend } from "@/components/monitor/Legend";
 
 const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
 
@@ -33,6 +35,12 @@ export default function MonitorPage() {
       <LeftSidebar />
       <RightPanel />
       <BottomRow />
+      {HAS_TOKEN && (
+        <>
+          <TimeframePills />
+          <Legend />
+        </>
+      )}
       <AminaModal />
     </>
   );

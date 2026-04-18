@@ -1,0 +1,1109 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.1178, 33.9312] },
+      "properties": {
+        "id": "gct-ghannouch",
+        "name": "Groupe Chimique Tunisien · Ghannouch",
+        "country": "TN",
+        "type": "phosphate",
+        "severity": "high",
+        "co2_mt_yr": 4.5,
+        "city": "Ghannouch",
+        "note": "Phosphogypse rejeté en mer, traces uranium, 46 épisodes SO₂ >WHO 2020–2025",
+        "source_url": "https://nawaat.org/2025/10/16/gabes-chatt-essalam-pollution/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.73, 34.75] },
+      "properties": {
+        "id": "siape-sfax",
+        "name": "SIAPE · Sfax",
+        "country": "TN",
+        "type": "phosphate",
+        "severity": "medium",
+        "co2_mt_yr": 1.8,
+        "city": "Sfax",
+        "note": "Aérosols fluorés, dépôts phosphogypse sud-port, fermeture partielle 2017 annoncée jamais exécutée",
+        "source_url": "https://www.ftdes.net/siape-sfax/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-8.65, 33.11] },
+      "properties": {
+        "id": "ocp-jorf-lasfar",
+        "name": "OCP · Jorf Lasfar",
+        "country": "MA",
+        "type": "phosphate",
+        "severity": "medium",
+        "co2_mt_yr": 3.2,
+        "city": "El Jadida",
+        "note": "Plus grand complexe phosphaté du monde, 10 Mt/an acide phosphorique",
+        "source_url": "https://www.ocpgroup.ma/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-9.24, 32.30] },
+      "properties": {
+        "id": "ocp-safi",
+        "name": "OCP · Safi",
+        "country": "MA",
+        "type": "phosphate",
+        "severity": "low",
+        "co2_mt_yr": 1.4,
+        "city": "Safi",
+        "note": "Complexe historique Maroc Phosphore, modernisation 2022",
+        "source_url": "https://www.ocpgroup.ma/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.78, 34.42] },
+      "properties": {
+        "id": "cpg-gafsa",
+        "name": "Compagnie des Phosphates de Gafsa",
+        "country": "TN",
+        "type": "mine",
+        "severity": "medium",
+        "co2_mt_yr": 0.9,
+        "city": "Metlaoui",
+        "note": "Extraction à ciel ouvert, poussières fluorées, source matière première GCT",
+        "source_url": "https://www.ftdes.net/bassin-minier-gafsa/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.32, 35.82] },
+      "properties": {
+        "id": "arzew-refinery",
+        "name": "Raffinerie d'Arzew",
+        "country": "DZ",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 3.6,
+        "city": "Arzew",
+        "note": "Pôle pétrolier Sonatrach, 3,75 Mt/an capacité",
+        "source_url": "https://www.sonatrach.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [6.91, 36.88] },
+      "properties": {
+        "id": "skikda-petrochem",
+        "name": "Skikda · complexe pétrochimique",
+        "country": "DZ",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 5.1,
+        "city": "Skikda",
+        "note": "Explosion GNL 2004, 27 morts, modernisation en cours",
+        "source_url": "https://www.sonatrach.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.27, 32.93] },
+      "properties": {
+        "id": "hassi-rmel-gas",
+        "name": "Hassi R'Mel · champ gazier",
+        "country": "DZ",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 2.2,
+        "city": "Hassi R'Mel",
+        "note": "Plus grand champ gazier Afrique du Nord, torchères visibles depuis ISS",
+        "source_url": "https://www.sonatrach.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [12.72, 32.78] },
+      "properties": {
+        "id": "zawiya-refinery",
+        "name": "Raffinerie de Zawiya",
+        "country": "LY",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 2.8,
+        "city": "Zawiya",
+        "note": "120 000 bpj, bombardée 2011, opérations intermittentes",
+        "source_url": "https://noc.ly/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [11.75, 33.10] },
+      "properties": {
+        "id": "mellitah-gas",
+        "name": "Mellitah Oil & Gas",
+        "country": "LY",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 1.1,
+        "city": "Mellitah",
+        "note": "Terminal GreenStream vers Gela (Sicile), coentreprise Eni-NOC",
+        "source_url": "https://noc.ly/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.09, 32.37] },
+      "properties": {
+        "id": "misrata-steel",
+        "name": "Libyan Iron & Steel · Misrata",
+        "country": "LY",
+        "type": "steel",
+        "severity": "medium",
+        "co2_mt_yr": 2.6,
+        "city": "Misrata",
+        "note": "Unique complexe sidérurgique Libye, 1,3 Mt/an, port captif",
+        "source_url": "https://lisco.ly/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [17.24, 40.47] },
+      "properties": {
+        "id": "taranto-ilva",
+        "name": "ILVA · Tarente",
+        "country": "IT",
+        "type": "steel",
+        "severity": "high",
+        "co2_mt_yr": 8.1,
+        "city": "Taranto",
+        "note": "Plus grande aciérie Europe, cluster cancer pédiatrique +54%, procès en cours",
+        "source_url": "https://www.reuters.com/business/energy/italys-ilva-taranto/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [13.53, 37.29] },
+      "properties": {
+        "id": "porto-empedocle",
+        "name": "Porto Empedocle · centrale",
+        "country": "IT",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 1.9,
+        "city": "Porto Empedocle",
+        "note": "Ancienne centrale charbon, conversion gaz débattue, émissions SO₂ Sicile",
+        "source_url": "https://www.enel.it/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.22, 37.23] },
+      "properties": {
+        "id": "augusta-petrochem",
+        "name": "Augusta · pôle pétrochimique",
+        "country": "IT",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 4.3,
+        "city": "Augusta",
+        "note": "Triangle industriel Siracusa-Priolo-Augusta, raffineries Sonatrach et Isab",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.40, 40.84] },
+      "properties": {
+        "id": "porto-torres",
+        "name": "Porto Torres · complexe Eni",
+        "country": "IT",
+        "type": "petrochem",
+        "severity": "low",
+        "co2_mt_yr": 1.2,
+        "city": "Porto Torres",
+        "note": "Reconversion bioraffinerie Versalis, anciens bassins pollués en remédiation",
+        "source_url": "https://www.eni.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [23.54, 38.04] },
+      "properties": {
+        "id": "elefsina-refinery",
+        "name": "Raffinerie d'Eleusis",
+        "country": "GR",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 2.0,
+        "city": "Elefsina",
+        "note": "Golfe saronique, 100 000 bpj, cimenterie Titan adjacente",
+        "source_url": "https://www.helleniq.gr/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [26.97, 38.81] },
+      "properties": {
+        "id": "aliaga-steel",
+        "name": "Aliağa · cluster sidérurgique",
+        "country": "TR",
+        "type": "steel",
+        "severity": "medium",
+        "co2_mt_yr": 5.4,
+        "city": "Aliağa",
+        "note": "22 aciéries électriques, premier recycleur navires Méditerranée orientale",
+        "source_url": "https://www.reuters.com/business/environment/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-5.73, 35.78] },
+      "properties": {
+        "id": "samir-tangier",
+        "name": "SAMIR · raffinerie Mohammedia",
+        "country": "MA",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 1.5,
+        "city": "Mohammedia",
+        "note": "À l'arrêt depuis 2015 liquidation judiciaire, stocks et cuves actifs",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.22, 35.80] },
+      "properties": {
+        "id": "bethioua-cement",
+        "name": "Cimenterie de Béthioua",
+        "country": "DZ",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 1.3,
+        "city": "Béthioua",
+        "note": "3,5 Mt/an clinker, poussières visibles sur littoral Oran",
+        "source_url": "https://www.gica.dz/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [31.65, 31.42] },
+      "properties": {
+        "id": "damietta-lng",
+        "name": "Damiette · terminal GNL",
+        "country": "EG",
+        "type": "gas",
+        "severity": "medium",
+        "co2_mt_yr": 3.0,
+        "city": "Damietta",
+        "note": "7,56 Mt/an GNL, redémarrage 2021 après 8 ans d'arrêt",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [29.87, 31.13] },
+      "properties": {
+        "id": "alex-petrochem",
+        "name": "Alexandrie · pôle pétrochimique",
+        "country": "EG",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 3.9,
+        "city": "Alexandria",
+        "note": "Raffineries MIDOR et AMOC, émissions COV côte baie Abou Qir",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [34.55, 31.64] },
+      "properties": {
+        "id": "ashkelon-coal",
+        "name": "Centrale Rutenberg · Ashkelon",
+        "country": "IL",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 9.8,
+        "city": "Ashkelon",
+        "note": "2 250 MW charbon, calendrier fermeture 2027 confirmé",
+        "source_url": "https://www.reuters.com/business/environment/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [34.87, 32.47] },
+      "properties": {
+        "id": "hadera-coal",
+        "name": "Centrale Orot Rabin · Hadera",
+        "country": "IL",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 7.4,
+        "city": "Hadera",
+        "note": "1 440 MW charbon, retrait progressif vers gaz",
+        "source_url": "https://www.reuters.com/business/environment/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-1.00, 37.60] },
+      "properties": {
+        "id": "cartagena-refinery",
+        "name": "Raffinerie de Carthagène",
+        "country": "ES",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 4.2,
+        "city": "Cartagena",
+        "note": "220 000 bpj Repsol, projet hydrogène vert 2028",
+        "source_url": "https://www.repsol.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [1.24, 41.13] },
+      "properties": {
+        "id": "tarragona-petrochem",
+        "name": "Tarragone · pôle pétrochimique",
+        "country": "ES",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 5.8,
+        "city": "Tarragona",
+        "note": "Plus grand cluster chimique Europe du Sud, 40 entreprises",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-4.11, 38.68] },
+      "properties": {
+        "id": "puertollano-thermal",
+        "name": "Puertollano · centrale thermique",
+        "country": "ES",
+        "type": "coal",
+        "severity": "low",
+        "co2_mt_yr": 1.1,
+        "city": "Puertollano",
+        "note": "Ancienne centrale charbon, conversion hybride solaire-hydrogène",
+        "source_url": "https://www.iberdrola.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [4.88, 43.43] },
+      "properties": {
+        "id": "fos-sur-mer",
+        "name": "Fos-sur-Mer · zone industrielle",
+        "country": "FR",
+        "type": "petrochem",
+        "severity": "high",
+        "co2_mt_yr": 6.7,
+        "city": "Fos-sur-Mer",
+        "note": "12% émissions CO₂ industrielles France, études CNRS cancer pédiatrique 2019",
+        "source_url": "https://www.lemonde.fr/planete/fos-sur-mer/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [5.20, 43.47] },
+      "properties": {
+        "id": "berre-refinery",
+        "name": "Berre-l'Étang · raffinerie",
+        "country": "FR",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 2.1,
+        "city": "Berre-l'Étang",
+        "note": "Raffinerie LyondellBasell à l'arrêt, pétrochimie restante, étang pollué PCB",
+        "source_url": "https://www.lemonde.fr/planete/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [7.70, 48.56] },
+      "properties": {
+        "id": "lavera-petrochem",
+        "name": "Lavéra · Ineos & Naphtachimie",
+        "country": "FR",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 3.4,
+        "city": "Martigues",
+        "note": "Vapocraqueur historique 1953, épisodes SO₂ littoral Martigues",
+        "source_url": "https://www.lemonde.fr/planete/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [33.30, 34.72] },
+      "properties": {
+        "id": "vasilikos-power",
+        "name": "Centrale de Vasilikos",
+        "country": "CY",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 3.3,
+        "city": "Vasilikos",
+        "note": "868 MW mazout, cimenteries voisines, cible transition gaz 2026",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.60, 34.02] },
+      "properties": {
+        "id": "zouk-thermal",
+        "name": "Centrale de Zouk Mikaël",
+        "country": "LB",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 2.4,
+        "city": "Zouk Mikaël",
+        "note": "607 MW mazout lourd, proximité urbaine extrême, poursuites citoyennes 2022",
+        "source_url": "https://www.reuters.com/world/middle-east/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [36.70, 34.73] },
+      "properties": {
+        "id": "homs-refinery",
+        "name": "Raffinerie de Homs",
+        "country": "SY",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 1.7,
+        "city": "Homs",
+        "note": "107 000 bpj pré-guerre, dégâts 2015, réhabilitation partielle",
+        "source_url": "https://www.reuters.com/world/middle-east/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.80, 35.10] },
+      "properties": {
+        "id": "baniyas-refinery",
+        "name": "Raffinerie de Banias",
+        "country": "SY",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 1.4,
+        "city": "Banias",
+        "note": "Marée noire 2021, 2 millions m² mer polluée, Russie-Iran approvisionnement",
+        "source_url": "https://www.reuters.com/world/middle-east/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [36.12, 36.58] },
+      "properties": {
+        "id": "iskenderun-steel",
+        "name": "Iskenderun · aciéries",
+        "country": "TR",
+        "type": "steel",
+        "severity": "medium",
+        "co2_mt_yr": 4.6,
+        "city": "Iskenderun",
+        "note": "İsdemir, haut-fourneaux intégrés, séisme février 2023 partiellement contenu",
+        "source_url": "https://www.reuters.com/world/middle-east/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [30.05, 36.85] },
+      "properties": {
+        "id": "antalya-cement",
+        "name": "Cimenterie d'Antalya",
+        "country": "TR",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 1.0,
+        "city": "Antalya",
+        "note": "Göltaş Çimento, 2,4 Mt/an, co-incinération déchets industriels",
+        "source_url": "https://www.reuters.com/business/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [14.25, 40.80] },
+      "properties": {
+        "id": "napoli-cement",
+        "name": "Cimenterie Napoli-Nord",
+        "country": "IT",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 0.9,
+        "city": "Naples",
+        "note": "Proximité Vésuve, co-incinération CSR, opposition citoyenne 2024",
+        "source_url": "https://www.reuters.com/world/europe/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [12.59, 41.74] },
+      "properties": {
+        "id": "civitavecchia-coal",
+        "name": "Centrale de Civitavecchia",
+        "country": "IT",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 5.2,
+        "city": "Civitavecchia",
+        "note": "Torrevaldaliga Nord 1 980 MW charbon, décret fermeture 2025",
+        "source_url": "https://www.enel.it/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [9.15, 39.20] },
+      "properties": {
+        "id": "sarroch-saras",
+        "name": "Raffinerie Saras · Sarroch",
+        "country": "IT",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 4.0,
+        "city": "Sarroch",
+        "note": "300 000 bpj, premier raffineur Méditerranée, projet e-fuels 2027",
+        "source_url": "https://www.saras.it/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [9.85, 44.10] },
+      "properties": {
+        "id": "la-spezia-coal",
+        "name": "Centrale La Spezia",
+        "country": "IT",
+        "type": "coal",
+        "severity": "low",
+        "co2_mt_yr": 2.3,
+        "city": "La Spezia",
+        "note": "Eugenio Montale 600 MW, fermeture programmée 2025",
+        "source_url": "https://www.enel.it/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-0.37, 39.44] },
+      "properties": {
+        "id": "castellon-refinery",
+        "name": "Raffinerie de Castellón",
+        "country": "ES",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 1.6,
+        "city": "Castellón",
+        "note": "110 000 bpj BP, proche Natura 2000 marais Almenara",
+        "source_url": "https://www.bp.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-6.22, 36.53] },
+      "properties": {
+        "id": "algeciras-refinery",
+        "name": "Raffinerie d'Algésiras",
+        "country": "ES",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 3.7,
+        "city": "San Roque",
+        "note": "Cepsa 240 000 bpj, baie Algésiras trafic maritime dense",
+        "source_url": "https://www.cepsa.com/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [-6.00, 37.20] },
+      "properties": {
+        "id": "huelva-petrochem",
+        "name": "Huelva · pôle chimique",
+        "country": "ES",
+        "type": "petrochem",
+        "severity": "medium",
+        "co2_mt_yr": 2.9,
+        "city": "Huelva",
+        "note": "Phosphogypse Fertiberia, 120 Mt stock, litige UE 2024",
+        "source_url": "https://elpais.com/espana/huelva/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.30, 43.70] },
+      "properties": {
+        "id": "genova-refinery",
+        "name": "Raffinerie Iplom · Busalla",
+        "country": "IT",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 0.8,
+        "city": "Gênes",
+        "note": "40 000 bpj, rejet oléoduc incident 2016 Polcevera",
+        "source_url": "https://www.reuters.com/world/europe/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [27.14, 38.43] },
+      "properties": {
+        "id": "izmir-refinery",
+        "name": "Raffinerie Tüpraş · Izmir",
+        "country": "TR",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 4.4,
+        "city": "Izmir",
+        "note": "220 000 bpj, conversion hydrogène vert 2030 annoncée",
+        "source_url": "https://www.tupras.com.tr/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [28.90, 41.05] },
+      "properties": {
+        "id": "istanbul-thermal",
+        "name": "Ambarlı · centrale thermique",
+        "country": "TR",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 3.6,
+        "city": "Istanbul",
+        "note": "1 350 MW gaz, proximité Bosphore, remplacement charbon 2019",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [32.32, 30.58] },
+      "properties": {
+        "id": "suez-refinery",
+        "name": "Raffinerie de Suez",
+        "country": "EG",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 3.1,
+        "city": "Suez",
+        "note": "ANOPC 146 000 bpj, modernisation hydrocraqueur 2023",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [30.03, 30.02] },
+      "properties": {
+        "id": "mostorod-refinery",
+        "name": "Raffinerie de Mostorod",
+        "country": "EG",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 2.1,
+        "city": "Le Caire",
+        "note": "MIDOR sœur, 165 000 bpj, diesel bas-soufre 2024",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [5.94, 36.26] },
+      "properties": {
+        "id": "jijel-cement",
+        "name": "Cimenterie de Djenndjen",
+        "country": "DZ",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 1.0,
+        "city": "Jijel",
+        "note": "2 Mt/an clinker, exportation littoral oriental algérien",
+        "source_url": "https://www.gica.dz/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [9.67, 36.45] },
+      "properties": {
+        "id": "bizerte-cement",
+        "name": "Cimenterie de Bizerte",
+        "country": "TN",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 0.7,
+        "city": "Bizerte",
+        "note": "Ancien site Ciments Bizerte, poussières portuaires",
+        "source_url": "https://www.ftdes.net/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.18, 36.81] },
+      "properties": {
+        "id": "rades-thermal",
+        "name": "Centrale de Radès",
+        "country": "TN",
+        "type": "gas",
+        "severity": "medium",
+        "co2_mt_yr": 2.6,
+        "city": "Radès",
+        "note": "1 170 MW gaz-fuel STEG, banlieue sud Tunis",
+        "source_url": "https://www.steg.com.tn/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.05, 35.85] },
+      "properties": {
+        "id": "sousse-thermal",
+        "name": "Centrale de Sousse",
+        "country": "TN",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 1.5,
+        "city": "Sousse",
+        "note": "825 MW cycle combiné STEG, raccordée 2018",
+        "source_url": "https://www.steg.com.tn/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.06, 34.15] },
+      "properties": {
+        "id": "redeyef-mine",
+        "name": "Mine de Redeyef",
+        "country": "TN",
+        "type": "mine",
+        "severity": "medium",
+        "co2_mt_yr": 0.4,
+        "city": "Redeyef",
+        "note": "Bassin minier historique, soulèvement 2008, poussières phosphate chroniques",
+        "source_url": "https://www.ftdes.net/bassin-minier-gafsa/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [8.42, 34.40] },
+      "properties": {
+        "id": "moulares-mine",
+        "name": "Mine de Moulares",
+        "country": "TN",
+        "type": "mine",
+        "severity": "low",
+        "co2_mt_yr": 0.3,
+        "city": "Moulares",
+        "note": "CPG lavage à l'eau, pollution oued Melah",
+        "source_url": "https://www.ftdes.net/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [10.94, 33.50] },
+      "properties": {
+        "id": "zarzis-petro",
+        "name": "Terminal pétrolier de Zarzis",
+        "country": "TN",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 0.5,
+        "city": "Zarzis",
+        "note": "Dépôt ETAP, marées noires récurrentes 2018-2022",
+        "source_url": "https://www.ftdes.net/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [11.10, 33.78] },
+      "properties": {
+        "id": "elbibane-gas",
+        "name": "Champ gazier El Bibane",
+        "country": "TN",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 0.6,
+        "city": "Ben Gardane",
+        "note": "Production offshore reprise 2022, torchère visible depuis Djerba",
+        "source_url": "https://www.etap.com.tn/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [22.20, 37.05] },
+      "properties": {
+        "id": "megalopolis-coal",
+        "name": "Centrale Megalopolis",
+        "country": "GR",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 3.5,
+        "city": "Megalopolis",
+        "note": "850 MW lignite, fermeture prévue 2025, reconversion biomasse",
+        "source_url": "https://www.dei.gr/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [25.14, 40.85] },
+      "properties": {
+        "id": "alexandroupoli-gas",
+        "name": "Terminal GNL d'Alexandroupoli",
+        "country": "GR",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 1.1,
+        "city": "Alexandroupoli",
+        "note": "Terminal flottant 5,5 Gm³/an, opérationnel janvier 2024",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.65, 38.19] },
+      "properties": {
+        "id": "milazzo-refinery",
+        "name": "Raffinerie de Milazzo",
+        "country": "IT",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 3.8,
+        "city": "Milazzo",
+        "note": "Coentreprise Eni-Q8, 190 000 bpj, incident torchère mars 2023",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.08, 37.07] },
+      "properties": {
+        "id": "priolo-isab",
+        "name": "Raffinerie ISAB · Priolo",
+        "country": "IT",
+        "type": "refinery",
+        "severity": "high",
+        "co2_mt_yr": 7.2,
+        "city": "Priolo Gargallo",
+        "note": "320 000 bpj, 20% capacité italienne, rejet eaux pollution baie",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [14.26, 40.75] },
+      "properties": {
+        "id": "bagnoli-steel",
+        "name": "Ancienne aciérie Bagnoli",
+        "country": "IT",
+        "type": "steel",
+        "severity": "low",
+        "co2_mt_yr": 0.1,
+        "city": "Naples",
+        "note": "Site fermé 1992, sols amiante et lourds, remédiation inachevée",
+        "source_url": "https://www.lemonde.fr/planete/",
+        "active": false
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [5.27, 43.35] },
+      "properties": {
+        "id": "lafarge-la-malle",
+        "name": "Cimenterie Lafarge La Malle",
+        "country": "FR",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 0.9,
+        "city": "Bouc-Bel-Air",
+        "note": "1,2 Mt/an clinker, co-incinération pneus, procès qualité air 2024",
+        "source_url": "https://www.lemonde.fr/planete/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [3.00, 42.70] },
+      "properties": {
+        "id": "port-la-nouvelle",
+        "name": "Port-la-Nouvelle · dépôts",
+        "country": "FR",
+        "type": "refinery",
+        "severity": "low",
+        "co2_mt_yr": 0.4,
+        "city": "Port-la-Nouvelle",
+        "note": "Dépôts hydrocarbures, extension portuaire 2025 controversée",
+        "source_url": "https://www.lemonde.fr/planete/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [34.78, 32.08] },
+      "properties": {
+        "id": "reading-power",
+        "name": "Centrale Reading · Tel Aviv",
+        "country": "IL",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 1.3,
+        "city": "Tel Aviv",
+        "note": "428 MW gaz, proximité urbaine, calendrier démantèlement 2030",
+        "source_url": "https://www.reuters.com/world/middle-east/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [35.02, 32.82] },
+      "properties": {
+        "id": "haifa-refinery",
+        "name": "Raffinerie de Haïfa",
+        "country": "IL",
+        "type": "refinery",
+        "severity": "medium",
+        "co2_mt_yr": 3.4,
+        "city": "Haifa",
+        "note": "197 000 bpj Bazan, calendrier fermeture 2029 annoncé municipalité",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [33.02, 34.68] },
+      "properties": {
+        "id": "limassol-cement",
+        "name": "Cimenterie Vassiliko",
+        "country": "CY",
+        "type": "cement",
+        "severity": "low",
+        "co2_mt_yr": 0.6,
+        "city": "Limassol",
+        "note": "Seule cimenterie Chypre, 1,5 Mt/an",
+        "source_url": "https://www.reuters.com/business/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [14.50, 35.87] },
+      "properties": {
+        "id": "malta-delimara",
+        "name": "Centrale Delimara · Malte",
+        "country": "MT",
+        "type": "gas",
+        "severity": "low",
+        "co2_mt_yr": 1.2,
+        "city": "Marsaxlokk",
+        "note": "215 MW gaz, conversion post-scandale ElectroGas 2022",
+        "source_url": "https://www.reuters.com/business/energy/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [18.91, 42.43] },
+      "properties": {
+        "id": "pljevlja-coal",
+        "name": "Centrale de Pljevlja",
+        "country": "ME",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 1.8,
+        "city": "Pljevlja",
+        "note": "218 MW lignite, unique centrale charbon Monténégro, rénovation 2024",
+        "source_url": "https://www.reuters.com/world/europe/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [15.97, 43.73] },
+      "properties": {
+        "id": "plomin-coal",
+        "name": "Centrale de Plomin",
+        "country": "HR",
+        "type": "coal",
+        "severity": "low",
+        "co2_mt_yr": 1.1,
+        "city": "Plomin",
+        "note": "210 MW charbon, péninsule Istrie, débat fermeture 2026",
+        "source_url": "https://www.reuters.com/world/europe/",
+        "active": true
+      }
+    },
+    {
+      "type": "Feature",
+      "geometry": { "type": "Point", "coordinates": [18.10, 42.65] },
+      "properties": {
+        "id": "gacko-coal",
+        "name": "Centrale de Gacko",
+        "country": "BA",
+        "type": "coal",
+        "severity": "medium",
+        "co2_mt_yr": 2.4,
+        "city": "Gacko",
+        "note": "300 MW lignite, SO₂ 11× normes UE selon CEE Bankwatch",
+        "source_url": "https://bankwatch.org/",
+        "active": true
+      }
+    }
+  ]
+}

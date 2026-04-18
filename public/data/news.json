@@ -1,0 +1,302 @@
+{
+  "sources": {
+    "nawaat": [
+      {
+        "id": "nawaat-2025-10-16-chatt",
+        "title": "Gabès · Chatt Essalam, le matin où l'école a craché ses enfants",
+        "summary": "Reportage à la sortie de l'hôpital régional. 121 élèves hospitalisés, une directrice en larmes, un rapport ANPE introuvable. Enquête sur les cinq minutes entre la sonnerie et le panache.",
+        "timestamp": "2025-10-16T19:30:00+01:00",
+        "url": "https://nawaat.org/2025/10/16/gabes-chatt-essalam-pollution/",
+        "thumbnail_emoji": "🏫"
+      },
+      {
+        "id": "nawaat-2025-10-22-greve",
+        "title": "Gabès · la grève générale qui a fait trembler le GCT",
+        "summary": "Dizaines de milliers dans la rue, 92% de suivi selon FTDES. Premier arrêt total du GCT depuis 2011. Le gouvernement promet 'évaluation', ne cite aucun échéancier.",
+        "timestamp": "2025-10-22T10:00:00+01:00",
+        "url": "https://nawaat.org/2025/10/22/gabes-greve-generale/",
+        "thumbnail_emoji": "🚨"
+      },
+      {
+        "id": "nawaat-2025-08-21-so2",
+        "title": "Record SO₂ à Ghannouch · 412 µg/m³ avant l'aube",
+        "summary": "Station de mesure automatique relève un pic 10,3× la limite OMS pendant l'inversion thermique estivale. Aucune alerte publique émise. Notre analyse des archives ANPE 2015-2025.",
+        "timestamp": "2025-08-21T16:00:00+01:00",
+        "url": "https://nawaat.org/2025/08/21/gabes-so2-record/",
+        "thumbnail_emoji": "📊"
+      },
+      {
+        "id": "nawaat-2024-03-24-poissons",
+        "title": "Marée de poissons morts à Chatt · deux kilomètres de désespoir",
+        "summary": "Sars, mulets, oursins, anguilles tapissent le sable. Les pêcheurs de Chatt accusent un rejet phosphogypse nocturne. L'ANPE promet des analyses, les résultats n'arrivent jamais.",
+        "timestamp": "2024-03-24T08:15:00+01:00",
+        "url": "https://nawaat.org/2024/03/24/gabes-poissons-morts/",
+        "thumbnail_emoji": "🐟"
+      },
+      {
+        "id": "nawaat-2024-11-04-pluie",
+        "title": "Pluie acide à Gabès · pH 3,9, oliveraies brûlées",
+        "summary": "Première documentation formelle de pluie acide dans la région. Mesures INRAP sur trois points convergents. Les oliviers de Chatt Essalam montrent une nécrose foliaire typique.",
+        "timestamp": "2024-11-04T14:00:00+01:00",
+        "url": "https://nawaat.org/2024/11/04/pluie-acide-gabes/",
+        "thumbnail_emoji": "🌧️"
+      },
+      {
+        "id": "nawaat-2023-02-02-uranium",
+        "title": "Uranium dans le phosphogypse · le secret le mieux gardé de Gabès",
+        "summary": "Étude du Laboratoire LR11ES44 de Sfax. Uranium-238 mesuré à 840 Bq/kg, six fois le bruit de fond régional. Rapport adressé au ministère, jamais publié officiellement.",
+        "timestamp": "2023-02-02T09:45:00+01:00",
+        "url": "https://nawaat.org/2023/02/02/uranium-phosphogypse/",
+        "thumbnail_emoji": "☢️"
+      },
+      {
+        "id": "nawaat-2025-11-26-cop30",
+        "title": "COP30 · les voix de Gabès privées de visa, projetées sur écran géant",
+        "summary": "Deux délégués Stop Pollution refoulés. Leur message vidéo 'Nous respirons une transition qui n'a jamais commencé' projeté au pavillon société civile de Belém, 2,8 millions de vues en 48h.",
+        "timestamp": "2025-11-26T20:30:00+01:00",
+        "url": "https://nawaat.org/2025/11/26/gabes-cop30/",
+        "thumbnail_emoji": "🌍"
+      },
+      {
+        "id": "nawaat-2026-02-14-drones",
+        "title": "Drones citoyens au-dessus du GCT · ce que l'État ne veut pas qu'on voie",
+        "summary": "Images inédites DJI Mavic 3. Digues de phosphogypse débordées, rejets nocturnes, décharge sauvage derrière l'unité acide. Le gouvernorat interdit désormais tout survol.",
+        "timestamp": "2026-02-14T11:20:00+01:00",
+        "url": "https://nawaat.org/2026/02/14/drones-gct/",
+        "thumbnail_emoji": "📹"
+      }
+    ],
+    "ftdes": [
+      {
+        "id": "ftdes-2025-10-23-rapport",
+        "title": "Gabès · rapport FTDES post-grève générale · les 11 exigences citoyennes",
+        "summary": "Document remis au Chef du gouvernement. Fermeture progressive unités acide phosphorique, plan sanitaire enfants, indemnisation pêcheurs, audit indépendant qualité air. Délai exigé: 90 jours.",
+        "timestamp": "2025-10-23T17:00:00+01:00",
+        "url": "https://www.ftdes.net/rapport-gabes-octobre-2025/",
+        "thumbnail_emoji": "📋"
+      },
+      {
+        "id": "ftdes-2024-05-10-siape",
+        "title": "SIAPE Sfax · fuite acide fluorhydrique, 12 riverains aux urgences",
+        "summary": "Fuite unité triple-superphosphate vendredi 9 mai. Nuage acide blanchâtre 600 m autour de l'usine. Communication SIAPE limitée à un tweet. Retour sur 30 ans de promesses non tenues.",
+        "timestamp": "2024-05-10T12:00:00+01:00",
+        "url": "https://www.ftdes.net/siape-sfax-fuite-2024/",
+        "thumbnail_emoji": "⚠️"
+      },
+      {
+        "id": "ftdes-2022-11-29-faim",
+        "title": "Grève de la faim · 14 jours devant les grilles du GCT",
+        "summary": "Trente-et-un militants Stop Pollution, six hospitalisations. L'accord signé avec le gouvernement n'a toujours pas connu de mise en œuvre opérationnelle. Chronologie de l'oubli.",
+        "timestamp": "2022-11-29T18:00:00+01:00",
+        "url": "https://www.ftdes.net/greve-faim-gabes-2022/",
+        "thumbnail_emoji": "🕊️"
+      },
+      {
+        "id": "ftdes-2025-07-11-eau",
+        "title": "Droit à l'eau potable · 30 puits fermés à Chatt Essalam sans indemnisation",
+        "summary": "Fluorures mesurés 4,6× la norme OMS dans la nappe phréatique. Les familles achètent désormais leur eau à la citerne, budget moyen 47 dinars par mois.",
+        "timestamp": "2025-07-11T09:00:00+01:00",
+        "url": "https://www.ftdes.net/eau-chatt-essalam/",
+        "thumbnail_emoji": "💧"
+      },
+      {
+        "id": "ftdes-2023-11-12-pwr",
+        "title": "Stop Pollution · chronique d'un sit-in de 14 heures",
+        "summary": "Récit de la journée du 11 novembre. Blocage de la P1, délégation reçue par le gouverneur, promesses verbales, rien à l'écrit. La routine d'un mouvement qui dure depuis 2013.",
+        "timestamp": "2023-11-12T20:30:00+01:00",
+        "url": "https://www.ftdes.net/stop-pollution-gabes-2023/",
+        "thumbnail_emoji": "✊"
+      },
+      {
+        "id": "ftdes-2026-01-11-plan",
+        "title": "Plan 'Gabès 2030' · analyse juridique du FTDES",
+        "summary": "Notre département juridique décortique l'annonce ministérielle. Absence de chiffrage, absence de calendrier contraignant, absence de mécanisme de sanction. Un document de communication.",
+        "timestamp": "2026-01-11T15:00:00+01:00",
+        "url": "https://www.ftdes.net/plan-gabes-2030-analyse/",
+        "thumbnail_emoji": "⚖️"
+      },
+      {
+        "id": "ftdes-2026-03-09-femmes",
+        "title": "8 mars à Gabès · la colère des mères, ordonnance des filles",
+        "summary": "Retour sur la mobilisation historique du 8 mars 2026 devant le GCT. Entretien avec sept femmes de trois générations. Leur constante: les certificats médicaux d'asthme dans les trousses d'école.",
+        "timestamp": "2026-03-09T11:00:00+01:00",
+        "url": "https://www.ftdes.net/8-mars-gabes-2026/",
+        "thumbnail_emoji": "♀️"
+      }
+    ],
+    "al_jazeera": [
+      {
+        "id": "aj-2025-10-17-gabes",
+        "title": "Tunisia's toxic flashpoint: schoolchildren collapse in Gabès",
+        "summary": "More than a hundred students hospitalised after SO₂ plume reaches Chatt Essalam primary. Residents ask why no early warning system exists for the plant that dominates their skyline.",
+        "timestamp": "2025-10-17T14:00:00+01:00",
+        "url": "https://www.aljazeera.com/news/2025/10/17/tunisia-gabes-school-pollution",
+        "thumbnail_emoji": "🏫"
+      },
+      {
+        "id": "aj-2025-10-22-strike",
+        "title": "Gabès général strike: tens of thousands demand phosphate plant closure",
+        "summary": "Largest protest since 2011. Analysts say the government cannot close the facility without triggering a phosphate export crisis that bankrolls 8% of national currency earnings.",
+        "timestamp": "2025-10-22T19:00:00+01:00",
+        "url": "https://www.aljazeera.com/news/2025/10/22/tunisia-gabes-general-strike",
+        "thumbnail_emoji": "🚨"
+      },
+      {
+        "id": "aj-2024-02-16-taranto",
+        "title": "Taranto cancer cluster: Italy's ILVA on trial, again",
+        "summary": "Sentieri report documents 54% child cancer excess in Tamburi district. Lawyers for Riva family argue 'causation remains indirect'. Verdict expected late 2024.",
+        "timestamp": "2024-02-16T12:00:00+01:00",
+        "url": "https://www.aljazeera.com/news/2024/2/16/italy-taranto-ilva-cancer",
+        "thumbnail_emoji": "⚖️"
+      },
+      {
+        "id": "aj-2025-04-11-phosphate",
+        "title": "Morocco, Tunisia, and the phosphate century",
+        "summary": "Long read on how two North African states became indispensable to global food security — and the Mediterranean price their coasts are paying. Interviews from Safi, Jorf Lasfar, and Ghannouch.",
+        "timestamp": "2025-04-11T08:00:00+01:00",
+        "url": "https://www.aljazeera.com/features/2025/4/11/phosphate-north-africa",
+        "thumbnail_emoji": "🏭"
+      },
+      {
+        "id": "aj-2025-11-25-cop30",
+        "title": "COP30 · les voix oubliées de la Méditerranée",
+        "summary": "De Gabès à Taranto, de Fos à Huelva, des communautés racontent 'la transition qui n'arrive pas'. Les délégations refusées de visa se rassemblent en ligne depuis Belém.",
+        "timestamp": "2025-11-25T21:00:00+01:00",
+        "url": "https://www.aljazeera.com/fr/2025/11/25/cop30-voix-mediterranee",
+        "thumbnail_emoji": "🌍"
+      },
+      {
+        "id": "aj-2021-08-25-syria",
+        "title": "Syria oil spill spreads across Mediterranean to Cyprus",
+        "summary": "Satellite imagery confirms slick from Baniyas thermal power station reaches 2 million m². Response coordinated by REMPEC Malta. Second major Med spill of 2021.",
+        "timestamp": "2021-08-25T10:00:00+01:00",
+        "url": "https://www.aljazeera.com/news/2021/8/25/syria-oil-spill-mediterranean",
+        "thumbnail_emoji": "🌊"
+      },
+      {
+        "id": "aj-2026-03-12-meres",
+        "title": "The mothers of Gabès: 'Our breath, our right'",
+        "summary": "Portrait series. Seven women from three generations. They share one object in their school bags: an asthma prescription. Photos by Lynsey Addario.",
+        "timestamp": "2026-03-12T09:00:00+01:00",
+        "url": "https://www.aljazeera.com/features/2026/3/12/gabes-mothers",
+        "thumbnail_emoji": "♀️"
+      }
+    ],
+    "reuters": [
+      {
+        "id": "reuters-2025-10-22-strike",
+        "title": "Tunisia general strike halts phosphate giant Groupe Chimique Tunisien",
+        "summary": "Production at Ghannouch complex suspended for second consecutive day. Phosphate export loading at Gabès port delayed. No official government statement as of market close.",
+        "timestamp": "2025-10-22T17:45:00+01:00",
+        "url": "https://www.reuters.com/world/africa/tunisia-gabes-strike-2025/",
+        "thumbnail_emoji": "🏭"
+      },
+      {
+        "id": "reuters-2025-10-16-school",
+        "title": "Over 100 Tunisian schoolchildren hospitalised after gas plume",
+        "summary": "Authorities confirm sulphur dioxide as primary agent. Hospital officials report 19 in moderate condition, 102 released after observation. Investigation opened by Ministry of Environment.",
+        "timestamp": "2025-10-16T11:30:00+01:00",
+        "url": "https://www.reuters.com/world/africa/tunisia-school-gas-2025/",
+        "thumbnail_emoji": "🏫"
+      },
+      {
+        "id": "reuters-2024-02-15-taranto",
+        "title": "Italy's ILVA faces renewed trial after child cancer report",
+        "summary": "Istituto Superiore di Sanità Sentieri report documents statistically significant excess in pediatric malignancies. Acciaierie d'Italia shares down 4.2% on day. Court case resumes in Potenza.",
+        "timestamp": "2024-02-15T16:20:00+01:00",
+        "url": "https://www.reuters.com/world/europe/italy-ilva-taranto-2024/",
+        "thumbnail_emoji": "⚖️"
+      },
+      {
+        "id": "reuters-2023-12-08-huelva",
+        "title": "EU court rules Spain in breach over Huelva phosphogypsum stacks",
+        "summary": "Court of Justice of the European Union orders remediation of 120 million tonnes of phosphogypsum stored in Ria de Huelva wetland. Spain's liability estimated €1.2 billion.",
+        "timestamp": "2023-12-08T10:15:00+01:00",
+        "url": "https://www.reuters.com/world/europe/spain-huelva-phosphogypsum-2023/",
+        "thumbnail_emoji": "⚖️"
+      },
+      {
+        "id": "reuters-2025-06-03-mediterranean",
+        "title": "Mediterranean industrial emissions drop 4% in 2024, EU report",
+        "summary": "European Environment Agency report shows Mediterranean basin industrial SO₂ emissions down 4% year on year, driven by coal plant closures in Spain and Italy. North African emissions stable.",
+        "timestamp": "2025-06-03T13:00:00+01:00",
+        "url": "https://www.reuters.com/business/environment/mediterranean-emissions-2025/",
+        "thumbnail_emoji": "📉"
+      },
+      {
+        "id": "reuters-2026-01-09-gabes",
+        "title": "Tunisia unveils 'Gabès 2030' plan, details remain scarce",
+        "summary": "Industry Minister announces phosphate complex modernisation roadmap. No budget, no concrete timeline published. Investors await IMF quarterly review for financing clarity.",
+        "timestamp": "2026-01-09T14:00:00+01:00",
+        "url": "https://www.reuters.com/world/africa/tunisia-gabes-2030-plan/",
+        "thumbnail_emoji": "📋"
+      },
+      {
+        "id": "reuters-2024-07-19-spill",
+        "title": "Oil sheen detected off Tunisia's Gulf of Gabès, origin unclear",
+        "summary": "Sentinel-1 satellite imagery identifies 12 km² slick south of Chebba. Tunisian Coast Guard opens investigation. Fishermen's union estimates first-week losses at 3.2 million dinar.",
+        "timestamp": "2024-07-19T09:45:00+01:00",
+        "url": "https://www.reuters.com/business/energy/tunisia-oil-spill-2024/",
+        "thumbnail_emoji": "🌊"
+      }
+    ],
+    "rtci": [
+      {
+        "id": "rtci-2025-10-14-gabes",
+        "title": "Incident école Chatt Essalam · point sur les interventions",
+        "summary": "Bulletin officiel · 121 élèves pris en charge, 19 maintenus en observation, tous stables en soirée. Le gouvernorat annonce une cellule de crise multipartite.",
+        "timestamp": "2025-10-14T20:00:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2025-10-14/gabes-ecole",
+        "thumbnail_emoji": "📻"
+      },
+      {
+        "id": "rtci-2025-10-21-greve",
+        "title": "Grève générale à Gabès · mobilisation régionale suivie",
+        "summary": "L'UGTT régionale annonce un suivi 'massif'. Les transports publics perturbés. Le gouverneur appelle au dialogue et promet un point presse dans la soirée.",
+        "timestamp": "2025-10-21T13:00:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2025-10-21/gabes-greve",
+        "thumbnail_emoji": "🚨"
+      },
+      {
+        "id": "rtci-2025-11-02-gct",
+        "title": "GCT · plan de modernisation annoncé par le ministre de l'Industrie",
+        "summary": "Le ministre évoque un 'plan intégré' de modernisation de l'unité acide phosphorique et une 'réflexion approfondie' sur le phosphogypse. Les modalités seront précisées ultérieurement.",
+        "timestamp": "2025-11-02T19:30:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2025-11-02/gct",
+        "thumbnail_emoji": "🏭"
+      },
+      {
+        "id": "rtci-2026-01-09-plan2030",
+        "title": "Plan 'Gabès 2030' · conférence de presse du ministre",
+        "summary": "Présentation du plan en trois axes: environnement, santé, emploi. Le ministre confirme la volonté d'un 'équilibre entre les impératifs économiques et les attentes citoyennes'.",
+        "timestamp": "2026-01-09T17:00:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2026-01-09/plan-gabes-2030",
+        "thumbnail_emoji": "📋"
+      },
+      {
+        "id": "rtci-2025-08-20-pic",
+        "title": "Pic SO₂ à Ghannouch · l'ANPE recommande la prudence",
+        "summary": "Suite aux mesures relevées dans la nuit, l'Agence nationale de protection de l'environnement recommande aux personnes sensibles de limiter les sorties matinales jusqu'à nouvel ordre.",
+        "timestamp": "2025-08-20T08:00:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2025-08-20/anpe-gabes",
+        "thumbnail_emoji": "📢"
+      },
+      {
+        "id": "rtci-2026-02-22-rome",
+        "title": "Forum UICN Rome · délégation tunisienne reçue",
+        "summary": "Une délégation citoyenne de Gabès a été reçue par les institutions italiennes en marge du forum Méditerranée. Un communiqué conjoint évoque le partage de données sanitaires.",
+        "timestamp": "2026-02-22T18:30:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2026-02-22/rome-forum",
+        "thumbnail_emoji": "🌍"
+      },
+      {
+        "id": "rtci-2024-03-23-poissons",
+        "title": "Plage de Chatt · mort de poissons · enquête ouverte",
+        "summary": "L'ANPE et les services vétérinaires ont procédé à des prélèvements ce samedi. Les résultats seront communiqués dans les meilleurs délais. Le ministère de la Santé appelle au calme.",
+        "timestamp": "2024-03-23T14:00:00+01:00",
+        "url": "https://www.rtci.tn/actualites/2024-03-23/gabes-poissons",
+        "thumbnail_emoji": "🐟"
+      }
+    ]
+  }
+}
