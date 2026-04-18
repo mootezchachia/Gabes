@@ -37,6 +37,15 @@ interface MonitorState {
   audioMuted: boolean;
   aminaModalOpen: boolean;
 
+  /** 0.0–24.0 float, local Gabès time. Drives TimeStrip scrubber + plume tinting. */
+  hourOfDay: number;
+  timePlaying: boolean;
+  audience: "habitant" | "medecin" | "gct" | "architecte" | "municipalite";
+  /** Which on-demand glass drawer is open, if any */
+  drawer: "sensors" | "events" | "brief" | null;
+  /** Whether the cold-open intro has played this visit */
+  introPlayed: boolean;
+
   setScope: (s: Scope) => void;
   setTimeframe: (t: Timeframe) => void;
   toggleLayer: (k: keyof LayerFlags) => void;
@@ -46,6 +55,11 @@ interface MonitorState {
   flyTo: () => void;
   setAudioMuted: (m: boolean) => void;
   setAminaModalOpen: (o: boolean) => void;
+  setHourOfDay: (h: number) => void;
+  setTimePlaying: (p: boolean) => void;
+  setAudience: (a: MonitorState["audience"]) => void;
+  setDrawer: (d: MonitorState["drawer"]) => void;
+  setIntroPlayed: (p: boolean) => void;
 }
 
 export const useMonitor = create<MonitorState>((set) => ({
@@ -66,6 +80,12 @@ export const useMonitor = create<MonitorState>((set) => ({
   audioMuted: true,
   aminaModalOpen: false,
 
+  hourOfDay: 14.5,
+  timePlaying: false,
+  audience: "habitant",
+  drawer: null,
+  introPlayed: false,
+
   setScope: (s) => set({ scope: s }),
   setTimeframe: (t) => set({ timeframe: t }),
   toggleLayer: (k) =>
@@ -76,6 +96,11 @@ export const useMonitor = create<MonitorState>((set) => ({
   flyTo: () => set((s) => ({ flyToToken: s.flyToToken + 1 })),
   setAudioMuted: (m) => set({ audioMuted: m }),
   setAminaModalOpen: (o) => set({ aminaModalOpen: o }),
+  setHourOfDay: (h) => set({ hourOfDay: Math.max(0, Math.min(24, h)) }),
+  setTimePlaying: (p) => set({ timePlaying: p }),
+  setAudience: (a) => set({ audience: a }),
+  setDrawer: (d) => set({ drawer: d }),
+  setIntroPlayed: (p) => set({ introPlayed: p }),
 }));
 
 // Camera presets per scope
