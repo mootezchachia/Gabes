@@ -17,7 +17,14 @@ export function AppShell({ children }: { children: ReactNode }) {
         <TopBar />
         <div className="flex-1 min-h-0 flex">
           <LeftRail />
-          <main className="flex-1 min-w-0 min-h-0 relative">{children}</main>
+          {/*
+           * `h-full` ensures <main> has an explicit pixel height even before
+           * flex layout resolves (critical for Cesium — its viewer reads
+           * container dimensions synchronously at mount and a 0-height
+           * container on /app/carte produced a black globe with only
+           * entity pins visible).
+           */}
+          <main className="flex-1 min-w-0 min-h-0 h-full relative">{children}</main>
         </div>
         {/* Spacer for mobile bottom tab bar */}
         <div aria-hidden className="md:hidden h-14 shrink-0" />
