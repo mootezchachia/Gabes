@@ -137,22 +137,25 @@ export async function buildSensors(
     entities.push(entity);
 
     if (s.critical) {
-      const haloMaterial = Cesium.Color.fromCssColorString("#E24B4A").withAlpha(
-        0.18,
-      );
+      // Pulse alpha instead of resizing the ellipse — resizing ran a full
+      // geometry rebuild per frame per critical sensor (and with two
+      // independent CallbackProperty axes, twice). Pulsing color is a
+      // single evaluation feeding the material, no geometry churn.
+      const haloColor = new Cesium.CallbackProperty((time) => {
+        const ms = Cesium.JulianDate.toDate(
+          time ?? Cesium.JulianDate.now(),
+        ).getTime();
+        const phase = (ms % 1800) / 1800;
+        const alpha = 0.12 + 0.22 * (0.5 - 0.5 * Math.cos(phase * Math.PI * 2));
+        return Cesium.Color.fromCssColorString("#E24B4A").withAlpha(alpha);
+      }, false);
       const halo = viewer.entities.add({
         id: `sensor-${s.id}-halo`,
         position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 0),
         ellipse: {
-          semiMajorAxis: new Cesium.CallbackProperty(() => {
-            const t = ((Date.now() / 1000) % (2 * Math.PI)) * 1.2;
-            return 80 + Math.sin(t) * 30;
-          }, false),
-          semiMinorAxis: new Cesium.CallbackProperty(() => {
-            const t = ((Date.now() / 1000) % (2 * Math.PI)) * 1.2;
-            return 80 + Math.sin(t) * 30;
-          }, false),
-          material: new Cesium.ColorMaterialProperty(haloMaterial),
+          semiMajorAxis: 95,
+          semiMinorAxis: 95,
+          material: new Cesium.ColorMaterialProperty(haloColor),
           height: 0,
           heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           outline: false,

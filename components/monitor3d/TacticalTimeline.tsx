@@ -37,16 +37,24 @@ export function TacticalTimeline() {
   const setPlaying = useMonitor((s) => s.setTimePlaying);
 
   const rafRef = useRef<number>(0);
-  const lastRef = useRef<number>(0);
+  const lastPushRef = useRef<number>(0);
 
   useEffect(() => {
     if (!playing) return;
-    lastRef.current = performance.now();
+    // Push hourOfDay at ~10 Hz. Atmosphere / header components subscribe to
+    // it and each update triggers a full React re-render (with 36 tick
+    // marks + a compass), so capping the store churn here is worth ~6× the
+    // React work vs rAF-rate updates. 2× sim speed → hour advances 0.2 per
+    // tick, still perceptibly smooth.
+    const PUSH_INTERVAL_MS = 100;
+    lastPushRef.current = performance.now();
     const tick = (now: number) => {
-      const dt = (now - lastRef.current) / 1000;
-      lastRef.current = now;
-      const next = useMonitor.getState().hourOfDay + dt * 2;
-      setHour(next >= 24 ? 0 : next);
+      const elapsed = now - lastPushRef.current;
+      if (elapsed >= PUSH_INTERVAL_MS) {
+        lastPushRef.current = now;
+        const next = useMonitor.getState().hourOfDay + (elapsed / 1000) * 2;
+        setHour(next >= 24 ? next - 24 : next);
+      }
       rafRef.current = requestAnimationFrame(tick);
     };
     rafRef.current = requestAnimationFrame(tick);

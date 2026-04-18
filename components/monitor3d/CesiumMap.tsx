@@ -53,9 +53,11 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
       sceneModePicker: false,
       selectionIndicator: false,
       creditContainer: document.createElement("div"), // hide attribution bar
+      // Vertex normals enable lighting but cost bandwidth + vertex shader
+      // time — the tactical look survives fine without them at city scale.
       terrain: Cesium.Terrain.fromWorldTerrain({
         requestWaterMask: false,
-        requestVertexNormals: true,
+        requestVertexNormals: false,
       }),
       // Imagery is set below once Ion's Bing asset 3 resolves — the Cesium
       // Viewer starts with a default imagery layer which we then replace.
@@ -74,8 +76,9 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
 
     // ── NAFAS atmosphere tuning ──────────────────────────────────────
     const scene = viewer.scene;
-    scene.globe.enableLighting = true;
-    scene.globe.atmosphereLightIntensity = 7.0;
+    // Lighting off — without vertex normals (see terrain config) it adds
+    // no visible shading at this altitude band but still ticks the globe.
+    scene.globe.enableLighting = false;
     scene.globe.showGroundAtmosphere = true;
     scene.globe.atmosphereHueShift = -0.08;
     scene.globe.atmosphereSaturationShift = -0.25;
@@ -85,6 +88,10 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
     scene.skyAtmosphere.brightnessShift = -0.2;
     scene.fog.enabled = true;
     scene.fog.density = 0.00018;
+    // Less aggressive LOD → fewer tiles rendered per frame
+    scene.globe.maximumScreenSpaceError = 2.5;
+    // FXAA is a full-screen pass; the tactical aesthetic hides its absence
+    scene.postProcessStages.fxaa.enabled = false;
 
     // Starfield off — editorial dark prefers flat void sky
     scene.skyBox.show = false;

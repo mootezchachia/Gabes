@@ -174,6 +174,7 @@ export async function buildGct(
           id: `gct-building-${bp.label ?? entities.length}`,
           polygon: {
             hierarchy: new Cesium.PolygonHierarchy(positions),
+            height: 0,
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             extrudedHeight: bp.height,
             extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
@@ -251,6 +252,7 @@ export async function buildGct(
           id: "gct-gypsum",
           polygon: {
             hierarchy: new Cesium.PolygonHierarchy(positions),
+            height: 0,
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             extrudedHeight: gp.height,
             extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,

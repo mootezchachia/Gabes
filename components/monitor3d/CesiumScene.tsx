@@ -27,7 +27,6 @@ export function CesiumScene() {
   const sensorEntitiesRef = useRef<Cesium.Entity[]>([]);
   const incidentEntitiesRef = useRef<Cesium.Entity[]>([]);
   const infraEntitiesRef = useRef<Cesium.Entity[]>([]);
-  const tilesetRef = useRef<Cesium.Cesium3DTileset | null>(null);
 
   const activeLayers = useMonitor((s) => s.activeLayers);
   const setSelectedEvent = useMonitor((s) => s.setSelectedEvent);
@@ -40,17 +39,10 @@ export function CesiumScene() {
     if (!viewer) return;
     let disposed = false;
 
-    // ── 1. Try Google Photorealistic 3D Tiles over Gabès ────────────
-    (async () => {
-      try {
-        const tileset = await Cesium.createGooglePhotorealistic3DTileset();
-        if (disposed) return;
-        viewer.scene.primitives.add(tileset);
-        tilesetRef.current = tileset;
-      } catch (err) {
-        console.info("[CesiumScene] Google 3D Tiles unavailable:", err);
-      }
-    })();
+    // Google Photorealistic 3D Tiles were removed — Bing aerial already
+    // gives the tactical imagery look, and stacking the two caused z-fighting,
+    // the "Only the Google geocoder can be used with…" console warning, and
+    // doubled the per-frame GPU load for no visual gain at city scale.
 
     // ── 2. GCT industrial complex (realistic footprint + buildings + chimneys) ──
     // Delegated to buildGct which reads /data/gct.geojson and builds the real
@@ -92,13 +84,16 @@ export function CesiumScene() {
       endColor: Cesium.Color.fromCssColorString("rgba(122,40,48,0.0)"),
       startScale: 1.0,
       endScale: 6.5,
-      minimumParticleLife: 3.2,
-      maximumParticleLife: 6.2,
+      // Tighter envelope — fewer, shorter-lived particles. Still reads as
+      // a dense plume but halves the simulated population vs the old
+      // (55 rate × 16s lifetime ≈ 880 live particles) config.
+      minimumParticleLife: 2.8,
+      maximumParticleLife: 5.4,
       minimumSpeed: 8.0,
       maximumSpeed: 16.0,
       imageSize: new Cesium.Cartesian2(25, 25),
-      emissionRate: 55,
-      lifetime: 16.0,
+      emissionRate: 28,
+      lifetime: 10.0,
       loop: true,
       sizeInMeters: true,
       emitter: new Cesium.ConeEmitter(Cesium.Math.toRadians(28)),
@@ -303,10 +298,6 @@ export function CesiumScene() {
         handler.destroy();
         if (particlesRef.current) {
           viewer.scene.primitives.remove(particlesRef.current);
-        }
-        if (tilesetRef.current) {
-          viewer.scene.primitives.remove(tilesetRef.current);
-          tilesetRef.current = null;
         }
         gctDispose?.();
         sensorsDispose?.();

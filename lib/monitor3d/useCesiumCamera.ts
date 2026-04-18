@@ -28,24 +28,27 @@ function altitudeToZoom(altM: number): number {
   return Math.max(1, Math.min(22, 22 - Math.log2(altM / 50)));
 }
 
-/** Reads camera state each frame (preRender tick) from the shared viewer. */
+/** Reads camera state from the shared viewer, throttled to ~5fps so
+ * readouts stay live without triggering a React re-render every postRender
+ * tick (Cesium runs that at ≥60Hz). */
 export function useCesiumCamera(): CesiumCameraSnapshot | null {
   const [snap, setSnap] = useState<CesiumCameraSnapshot | null>(null);
 
   useEffect(() => {
-    let dispose: (() => void) | null = null;
+    const MIN_INTERVAL_MS = 200;
+    let lastPushed = 0;
     let removeListener: (() => void) | null = null;
 
     const unsubViewer = onViewer((viewer) => {
-      if (!viewer) {
-        dispose?.();
-        removeListener?.();
-        dispose = null;
-        removeListener = null;
-        return;
-      }
+      removeListener?.();
+      removeListener = null;
+      if (!viewer) return;
 
       const tick = () => {
+        const now = performance.now();
+        if (now - lastPushed < MIN_INTERVAL_MS) return;
+        lastPushed = now;
+
         const cam = viewer.camera;
         const carto = Cesium.Cartographic.fromCartesian(cam.positionWC);
         setSnap({
@@ -65,7 +68,6 @@ export function useCesiumCamera(): CesiumCameraSnapshot | null {
     return () => {
       unsubViewer();
       removeListener?.();
-      dispose?.();
     };
   }, []);
 
