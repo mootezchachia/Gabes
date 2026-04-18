@@ -16,17 +16,37 @@ export interface CesiumMapProps {
 /**
  * Cesium viewport bootstrap.
  *
- *  - Cesium World Terrain (real DEM, free, global)
- *  - Bing Maps Aerial imagery draped on the terrain (Google Earth-esque base)
+ *  - Cesium World Terrain (real DEM, global) — requires Ion auth
+ *  - Bing Maps Aerial imagery draped on the terrain (Google Earth-esque base) — requires Ion auth
  *  - NAFAS atmosphere config: dimmed fog, warm horizon, night sky off
  *  - Camera flies to Gabès on mount
  *  - Default widgets (animation, timeline, credit, selection) disabled
  *
- * NOTE on tokens: Cesium's default Ion token works for a bounded free tier
- * which is fine for a hackathon demo. For production, each user should set
- * NEXT_PUBLIC_CESIUM_ION_TOKEN in .env.local. Without a token, Cesium falls
- * back to Bing Maps imagery with its own auth (still renders).
+ * Cesium ≥1.104 removed the built-in default Ion token, so Ion-backed
+ * assets (World Terrain, Bing Aerial) 401 silently without explicit auth,
+ * leaving a blank brown globe. We therefore:
+ *
+ *   - Only use World Terrain + Ion Bing Aerial when NEXT_PUBLIC_CESIUM_ION_TOKEN
+ *     is present at build time.
+ *   - Otherwise (or if Ion calls fail at runtime), fall back to the no-auth
+ *     OpenStreetMap tile server + flat ellipsoid terrain. Lower fidelity but
+ *     the deployment never shows an empty globe.
  */
+function osmProvider() {
+  return new Cesium.OpenStreetMapImageryProvider({
+    url: "https://tile.openstreetmap.org/",
+  });
+}
+
+function installOsmFallback(viewer: Cesium.Viewer) {
+  try {
+    viewer.imageryLayers.removeAll();
+    viewer.imageryLayers.addImageryProvider(osmProvider());
+  } catch (err) {
+    console.warn("[CesiumMap] failed to install OSM fallback:", err);
+  }
+}
+
 export function CesiumMap({ onReady }: CesiumMapProps) {
   const ref = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Cesium.Viewer | null>(null);
@@ -34,10 +54,13 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
   useEffect(() => {
     if (!ref.current) return;
 
-    // Set Ion token if provided via env (falls back to Cesium's built-in default)
+    // Cesium's default Ion token was removed in 1.104 — if no NEXT_PUBLIC_
+    // variable was baked at build time, every Ion call 401s. We only run the
+    // Ion code path when we actually have a token.
     const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
-    if (token) {
-      Cesium.Ion.defaultAccessToken = token;
+    const hasIon = Boolean(token && token.length > 0);
+    if (hasIon) {
+      Cesium.Ion.defaultAccessToken = token!;
     }
 
     const viewer = new Cesium.Viewer(ref.current, {
@@ -55,24 +78,40 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
       creditContainer: document.createElement("div"), // hide attribution bar
       // Vertex normals enable lighting but cost bandwidth + vertex shader
       // time — the tactical look survives fine without them at city scale.
-      terrain: Cesium.Terrain.fromWorldTerrain({
-        requestWaterMask: false,
-        requestVertexNormals: false,
-      }),
-      // Imagery is set below once Ion's Bing asset 3 resolves — the Cesium
-      // Viewer starts with a default imagery layer which we then replace.
+      // World terrain requires Ion auth; without a token we fall back to
+      // the default flat ellipsoid rather than fire 401s.
+      terrain: hasIon
+        ? Cesium.Terrain.fromWorldTerrain({
+            requestWaterMask: false,
+            requestVertexNormals: false,
+          })
+        : undefined,
+      // When we have Ion, let the Viewer's default imagery initialize —
+      // we immediately swap it for Ion Bing Aerial below. Without Ion,
+      // install OSM synchronously via baseLayer so we never flash void.
+      baseLayer: hasIon
+        ? undefined
+        : new Cesium.ImageryLayer(osmProvider()),
     });
 
-    // Upgrade imagery to Ion Bing Aerial with Labels (async, best-effort).
-    (async () => {
-      try {
-        const bing = await Cesium.IonImageryProvider.fromAssetId(3);
-        viewer.imageryLayers.removeAll();
-        viewer.imageryLayers.addImageryProvider(bing);
-      } catch (err) {
-        console.info("[CesiumMap] Ion Bing imagery unavailable:", err);
-      }
-    })();
+    // With Ion, upgrade imagery to Bing Aerial with Labels (async). On any
+    // Ion failure (bad token, domain-restricted token, outage), fall back
+    // to OSM so the deployment never shows an empty globe.
+    if (hasIon) {
+      (async () => {
+        try {
+          const bing = await Cesium.IonImageryProvider.fromAssetId(3);
+          viewer.imageryLayers.removeAll();
+          viewer.imageryLayers.addImageryProvider(bing);
+        } catch (err) {
+          console.warn(
+            "[CesiumMap] Ion Bing imagery failed, falling back to OSM:",
+            err,
+          );
+          installOsmFallback(viewer);
+        }
+      })();
+    }
 
     // ── NAFAS atmosphere tuning ──────────────────────────────────────
     const scene = viewer.scene;
