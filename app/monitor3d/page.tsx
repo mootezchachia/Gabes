@@ -12,6 +12,16 @@ const CesiumScene = dynamic(
   { ssr: false },
 );
 
+// Cinematic intro chrome — overlays the Cesium canvas during the fly-in
+const CinematicBoot = dynamic(
+  () => import("@/components/monitor3d/CinematicBoot").then((m) => m.CinematicBoot),
+  { ssr: false },
+);
+const IntroGate = dynamic(
+  () => import("@/components/monitor3d/IntroGate").then((m) => m.IntroGate),
+  { ssr: false },
+);
+
 // Chrome islands — ok for SSR since they render placeholder chrome until
 // Zustand + Cesium hydrate.
 const TacticalStatus       = dynamic(() => import("@/components/monitor3d/TacticalStatus").then((m) => m.TacticalStatus),           { ssr: false });
@@ -41,31 +51,85 @@ function BootOverlay() {
   );
 }
 
+/**
+ * HUD reveal thresholds (0..1) — tied to the 10s cinematic drive.
+ *
+ *   ~0.35  altitude ~4 Mm · first atmospheric entry · surface data arrives
+ *   ~0.55  altitude ~600 km · city silhouette resolves · primary HUD shows
+ *   ~0.70  altitude ~50 km · tools & timeline online
+ *   ~0.85  altitude ~10 km · fine detail chrome (reticle, labels, inspect)
+ *   ~0.92  altitude ~4 km · last actionable widgets, audience rail
+ */
+const THRESHOLDS = {
+  status: 0.35,
+  header: 0.55,
+  legend: 0.6,
+  layers: 0.68,
+  atmosphere: 0.7,
+  timeline: 0.75,
+  tools: 0.8,
+  keybinds: 0.85,
+  labels: 0.88,
+  reticle: 0.9,
+  inspect: 0.9,
+  aiScan: 0.9,
+  audienceRail: 0.92,
+} as const;
+
 export default function Monitor3DPage() {
   return (
     <>
       {/* The 3D world */}
       <CesiumMap />
       <CesiumScene />
-      <TacticalLabels />
-      <TacticalAIScan />
+      <IntroGate threshold={THRESHOLDS.labels}>
+        <TacticalLabels />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.aiScan}>
+        <TacticalAIScan />
+      </IntroGate>
 
       {/* Viewport-wide cinematic overlays */}
       <div className="tac-vignette" aria-hidden />
       <div className="tac-scanlines" aria-hidden />
-      <TacticalReticle />
+      <IntroGate threshold={THRESHOLDS.reticle}>
+        <TacticalReticle />
+      </IntroGate>
 
-      {/* Tactical chrome — hugs the edges */}
-      <TacticalStatus />
-      <TacticalHeader />
-      <TacticalAudienceRail />
-      <TacticalLayers />
-      <TacticalAtmosphere />
-      <TacticalLegend />
-      <TacticalTimeline />
-      <TacticalTools />
-      <TacticalKeybinds />
-      <TacticalInspect />
+      {/* Tactical chrome — hugs the edges, reveals stage-by-stage */}
+      <IntroGate threshold={THRESHOLDS.status}>
+        <TacticalStatus />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.header}>
+        <TacticalHeader />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.audienceRail}>
+        <TacticalAudienceRail />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.layers}>
+        <TacticalLayers />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.atmosphere}>
+        <TacticalAtmosphere />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.legend}>
+        <TacticalLegend />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.timeline}>
+        <TacticalTimeline />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.tools}>
+        <TacticalTools />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.keybinds}>
+        <TacticalKeybinds />
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.inspect}>
+        <TacticalInspect />
+      </IntroGate>
+
+      {/* Cinematic boot overlay — tops everything during the intro */}
+      <CinematicBoot />
     </>
   );
 }

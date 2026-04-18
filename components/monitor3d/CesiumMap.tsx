@@ -8,6 +8,8 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import * as Cesium from "cesium";
 import { GABES } from "@/lib/tokens";
 import { setViewer } from "@/lib/cesium-bus";
+import { useIntro } from "@/lib/monitor3d/introStore";
+import { startCinematicDrive } from "@/lib/monitor3d/cinematicDrive";
 
 export interface CesiumMapProps {
   onReady?: (viewer: Cesium.Viewer) => void;
@@ -132,30 +134,53 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
     // FXAA is a full-screen pass; the tactical aesthetic hides its absence
     scene.postProcessStages.fxaa.enabled = false;
 
-    // Starfield off — editorial dark prefers flat void sky
-    scene.skyBox.show = false;
     scene.backgroundColor = Cesium.Color.fromCssColorString("#0A0F14");
 
-    // ── Camera: flyTo Gabès ──────────────────────────────────────────
-    viewer.camera.flyTo({
-      destination: Cesium.Cartesian3.fromDegrees(
-        GABES.center[0] - 0.015,
-        GABES.center[1] - 0.055,
-        3200,
-      ),
-      orientation: {
-        heading: Cesium.Math.toRadians(18),
-        pitch: Cesium.Math.toRadians(-38),
-        roll: 0,
-      },
-      duration: 0,
-    });
+    // ── Camera: cinematic intro or direct snap ───────────────────────
+    const introActive = useIntro.getState().active;
+    let cancelDrive: (() => void) | null = null;
+
+    if (introActive) {
+      // Starfield on for the "from space" beat (faded out in drive at ~0.7)
+      scene.skyBox.show = true;
+      // Park camera at the far-out start pose so nothing flashes the
+      // final Gabès frame before the RAF loop grabs the wheel.
+      viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(
+          GABES.center[0] - 4.5,
+          GABES.center[1] - 12,
+          20_000_000,
+        ),
+        orientation: {
+          heading: Cesium.Math.toRadians(0),
+          pitch: Cesium.Math.toRadians(-88),
+          roll: 0,
+        },
+      });
+      cancelDrive = startCinematicDrive(viewer);
+    } else {
+      scene.skyBox.show = false;
+      viewer.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(
+          GABES.center[0] - 0.015,
+          GABES.center[1] - 0.055,
+          3200,
+        ),
+        orientation: {
+          heading: Cesium.Math.toRadians(18),
+          pitch: Cesium.Math.toRadians(-38),
+          roll: 0,
+        },
+        duration: 0,
+      });
+    }
 
     viewerRef.current = viewer;
     setViewer(viewer);
     onReady?.(viewer);
 
     return () => {
+      cancelDrive?.();
       setViewer(null);
       try {
         viewer.destroy();
