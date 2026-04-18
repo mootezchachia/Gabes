@@ -22,7 +22,7 @@ import { FocusUrlHandler } from "./FocusUrlHandler";
 const CesiumMap = dynamic(
   () => import("@/components/monitor3d/CesiumMap").then((m) => m.CesiumMap),
   { ssr: false, loading: () => <BootOverlay /> },
-);
+) as React.ComponentType<{ skipIntro?: boolean }>;
 const CesiumScene = dynamic(
   () => import("@/components/monitor3d/CesiumScene").then((m) => m.CesiumScene),
   { ssr: false },
@@ -51,8 +51,8 @@ export function CarteScene() {
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[color:var(--nafas-bg)]">
-      {/* 3D world */}
-      <CesiumMap />
+      {/* 3D world — admin shell skips the 10s cinematic intro */}
+      <CesiumMap skipIntro />
       <CesiumScene />
 
       {/* Admin tool rail — visible for admins, disabled for supervisors */}
