@@ -14,7 +14,7 @@ Transform NAFAS from a static-data demo (landing + `/monitor3d` Cesium scene) in
 - Role-based auth (admin / supervisor / user) with Supabase Auth.
 - 10-table Postgres schema with PostGIS + RLS.
 - `/app` shell (Carte + Objets + Analytique + Paramètres) for admin + supervisor.
-- `/dawa` PWA for citizens (`user` role), with Web Push notifications.
+- `/dawa` PWA for citizens (`user` role), with ntfy.sh push notifications.
 - Simulated sensor readings via cron edge function using Pasquill-Gifford dispersion.
 - AI pipeline: rule-based placement scorer + OpenRouter free-tier LLM narration.
 - Mechanistic forecast simulation + optional LLM policy brief.
@@ -99,10 +99,11 @@ OPENROUTER_API_KEY=sk-or-...
 NEXT_PUBLIC_MAPBOX_TOKEN=pk.eyJ...
 NEXT_PUBLIC_CESIUM_ION_TOKEN=eyJ...
 
-# Web Push (VAPID)
-VAPID_PUBLIC_KEY=B...
-VAPID_PRIVATE_KEY=...
-NEXT_PUBLIC_VAPID_PUBLIC_KEY=${VAPID_PUBLIC_KEY}   # mirrored for client
+# ntfy.sh (V2) — public instance free; self-host later if privacy required
+NTFY_URL=https://ntfy.sh
+NTFY_AUTH_TOKEN=                                      # optional, only if using auth tier
+NEXT_PUBLIC_NTFY_URL=https://ntfy.sh                  # client-side for deep-links
+NEXT_PUBLIC_NTFY_TOPIC_PREFIX=nafas-gabes             # per-org topic prefix
 ```
 
 ---
@@ -292,15 +293,26 @@ CREATE TABLE news_events (
 );
 CREATE INDEX ON news_events (org_id, happened_at DESC);
 
--- Auxiliary: push subscriptions for /dawa
-CREATE TABLE push_subscriptions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+-- Auxiliary: ntfy topic subscriptions per user (what topics this user should follow)
+-- NOTE: the actual ntfy subscription happens in the ntfy app on the user's phone.
+-- This table just tracks which topics the app should suggest/auto-subscribe for this user
+-- based on their home_location and school_location.
+CREATE TABLE user_ntfy_topics (
   user_id UUID NOT NULL REFERENCES profiles(user_id) ON DELETE CASCADE,
-  endpoint TEXT NOT NULL UNIQUE,
-  p256dh TEXT NOT NULL,
-  auth TEXT NOT NULL,
-  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+  topic TEXT NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, topic)
 );
+
+-- Auxiliary: anti-spam log for threshold-crossing alerts
+CREATE TABLE ntfy_alert_log (
+  id BIGSERIAL PRIMARY KEY,
+  sensor_id UUID NOT NULL REFERENCES sensors(id) ON DELETE CASCADE,
+  threshold_key TEXT NOT NULL,    -- 'warning' | 'critical'
+  topic TEXT NOT NULL,
+  sent_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+CREATE INDEX ON ntfy_alert_log (sensor_id, threshold_key, sent_at DESC);
 
 -- Auxiliary: devices (for future hardware; empty in V2 but ready)
 CREATE TABLE devices (
@@ -418,10 +430,16 @@ CREATE POLICY readings_select ON sensor_readings FOR SELECT
 -- INSERTs happen via service role (edge function) or via HMAC ingestion endpoint. No user RLS insert policy.
 ```
 
-**`push_subscriptions`:**
+**`user_ntfy_topics`:**
 ```sql
-CREATE POLICY push_self ON push_subscriptions FOR ALL
+CREATE POLICY ntfy_topics_self ON user_ntfy_topics FOR ALL
   USING (user_id = auth.uid()) WITH CHECK (user_id = auth.uid());
+```
+
+**`ntfy_alert_log`:**
+```sql
+-- Service role writes; no user read access (operational telemetry).
+-- Admin can read via a SECURITY DEFINER function if needed.
 ```
 
 ---
@@ -576,7 +594,7 @@ Bottom sheet on mobile / dialog on desktop:
 - Home location picker (modal mini-map).
 - School location picker.
 - Language (FR/AR/EN).
-- Push notifications toggle (asks for permission the first time; stores subscription in `push_subscriptions`).
+- Notifications ntfy section (see §6.8): shows "Installer ntfy" deep-link (App Store / Play Store / web) + list of topics this user is auto-subscribed to (with copy-topic buttons). Once installed, user taps `Ouvrir dans ntfy` deep-links to subscribe with one tap.
 - `Voir la carte complète` — links to `/app/carte` (works for any authenticated role).
 - Logout.
 
@@ -616,16 +634,44 @@ On mount, `/dawa`:
 3. Subscribes to `sensor_readings` via Supabase Realtime, filtered by `sensor_id IN (...)` client-side.
 4. On new reading: recomputes severity, updates ring, prepends an alert card if threshold crossed.
 
-### 6.8 Web Push
+### 6.8 Notifications via ntfy.sh
 
-When user toggles notifications on:
-1. Client calls `navigator.serviceWorker.ready.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: VAPID_PUBLIC })`.
-2. Subscription object sent to `/api/dawa/subscribe` — inserted into `push_subscriptions`.
+**Why ntfy:** free, dead-simple HTTP POST to send, works on iOS + Android + web via the free ntfy app, no VAPID keys, no service worker Web Push boilerplate, no Apple developer account. The public instance `ntfy.sh` is good enough for V2; self-host later if privacy demands it.
 
-Server-side trigger (Supabase edge function `notify_threshold_cross`):
-1. `BEFORE INSERT` trigger on `sensor_readings` — checks if `value` crosses any threshold in `sensors.thresholds` AND no alert sent for that sensor+threshold in last 30 min (uses a `sensor_alert_log(sensor_id, threshold_key, sent_at)` table for anti-spam).
-2. If crossing: calls `notify_threshold_cross(sensor_id, severity, value)`.
-3. Function finds `push_subscriptions` where `user_id` is in a profile whose `home_location` is within 2km → sends Web Push via `web-push` npm lib.
+**Topic taxonomy.** Topics are namespaced by org prefix (`NEXT_PUBLIC_NTFY_TOPIC_PREFIX=nafas-gabes`). Three kinds:
+
+1. **Zone topics** — one per `zones` row where `kind IN ('school','hospital','residential','coastal')`. Format: `nafas-gabes-zone-<zone_slug>`. e.g. `nafas-gabes-zone-chattessalam`, `nafas-gabes-zone-ghannouch`.
+2. **General topic** — `nafas-gabes-general` — city-wide critical events (sent for severity=`critical` everywhere).
+3. **Personal topic** (optional, deferred V2.1) — `nafas-gabes-user-<short_hash>` — derived from user_id; for authenticated per-person alerts. Requires ntfy auth tier; skip for V2.
+
+**Topic assignment (when user saves home/school in /dawa settings):**
+1. Client computes distance from `home_location` and `school_location` to every `zones` WHERE `kind IN (...)`.
+2. Closest 2-3 zones → user's recommended subscription list, written to `user_ntfy_topics`.
+3. UI shows those topics with a big "Ouvrir dans ntfy" button that deep-links to `ntfy://subscribe/<topic>` (or `https://ntfy.sh/<topic>` as fallback if ntfy app not installed).
+4. Auto-subscribe to `nafas-gabes-general` always.
+
+**Server-side trigger (Supabase edge function `notify_threshold_cross`):**
+
+1. `AFTER INSERT` trigger on `sensor_readings` checks if `value` crosses a threshold in the sensor's `thresholds` jsonb.
+2. Anti-spam: queries `ntfy_alert_log` — if an alert for this `(sensor_id, threshold_key)` was sent in the last 30 min, skip.
+3. Finds all zones containing or within 2km of the sensor's `location`.
+4. For each zone: POSTs to `https://ntfy.sh/nafas-gabes-zone-<zone_slug>` with headers:
+   ```
+   Title: SO₂ élevé — Chatt Essalam
+   Priority: urgent        # or 'high'/'default' per severity
+   Tags: warning,sensor,air
+   Click: https://nafas.tn/dawa?focus=sensor:<id>
+   Actions: view, Voir sur la carte, https://nafas.tn/app/carte?focus=sensor:<id>
+   ```
+   Body: ``SO₂ {value} µg/m³ au capteur {sensor_label}. Seuil OMS: 40 µg/m³. Évitez les déplacements en extérieur.``
+5. If severity=`critical`, also POST to `nafas-gabes-general`.
+6. Insert an `ntfy_alert_log` row.
+
+**Auth (optional).** If we want only the backend to publish (to prevent pranks), set an ACL on ntfy.sh (requires paid tier) or self-host ntfy with `auth-default-access: deny-all`. For V2 public instance, topics are publicly publishable by anyone — acceptable because the topic names aren't easy to guess and the content is low-stakes.
+
+**Client library:** none needed. Server uses `fetch()` with a simple POST — ~15 lines of code in `supabase/functions/notify_threshold_cross/index.ts`.
+
+**iOS reality check.** iOS users install the free ntfy app from the App Store once, grant notification permission, paste/tap-subscribe to the topic. Quality of life: in `/dawa` settings we show the ntfy app store links + the list of suggested topics with tap-to-copy and tap-to-open-in-ntfy buttons. Works on all iOS versions via the native app — no PWA install prerequisite.
 
 ---
 
@@ -910,7 +956,7 @@ This runs both paths in parallel while building, letting us merge PRs without br
 1. Route group + layout.
 2. Status ring + alerts feed + trajet + settings.
 3. PWA manifest + `next-pwa` config + service worker.
-4. Web Push: VAPID keys, `push_subscriptions` table, `/api/dawa/subscribe`, `notify_threshold_cross` edge function, service worker `push` handler.
+4. ntfy notifications: `notify_threshold_cross` edge function (AFTER INSERT trigger on sensor_readings → POST to ntfy.sh topic), `user_ntfy_topics` + `ntfy_alert_log` tables, /dawa settings UI showing suggested topics + ntfy app deep-links.
 5. iOS install hint card.
 
 **Phase 7 — Paramètres + polish** (~2 days)
@@ -931,7 +977,8 @@ This runs both paths in parallel while building, letting us merge PRs without br
 | Supabase free-tier Realtime 200-connection limit | Monitor; upgrade to Pro ($25/mo) at ~50 active users. |
 | PostGIS raster (bathymetry) setup friction | Plan B: ship bathymetry as depth-band polygons in `zones` with `kind='bathymetry'`. Same scoring math. |
 | OpenRouter free-tier daily cap mid-demo | Top up $5 and switch to paid model string (same model, 10× limits). |
-| iOS Web Push requires install + iOS 16.4+ | In-app banner for alerts when app is open; clear install hint card for iOS users. |
+| ntfy public instance outage | Self-host ntfy (Docker, one container) — same HTTP API, swap `NTFY_URL`. |
+| Topic names guessable, anyone can publish | Low-stakes content; V2.1 moves to auth-tier or self-hosted ACL if abuse observed. |
 | Reaction-diffusion numeric blowup | Bounded clamps `[0, K]` on all state vars; unit tests verify stability for 120 steps. |
 | Cesium bundle size regression with admin tools | Lazy-load admin tool rail behind role check; non-admins don't download it. |
 | Migration of hand-curated JSON drift | Auto-generate `0002_seed.sql` from JSON via `scripts/json-to-seed.ts`; re-run on JSON edits during transition. |
@@ -949,7 +996,7 @@ This runs both paths in parallel while building, letting us merge PRs without br
 **Phase 3 done when:** sensor readings stream in every 2 min and Carte's sensor dots pulse live; 7 days of history renders a sensible chart.
 **Phase 4 done when:** admin clicks Placement IA, gets 5 zones with streaming FR rationales, approves one, panel is created; forecasts a panel and sees a brief.
 **Phase 5 done when:** admin exports a PDF brief of the ORACLE plan including two-scenario compare.
-**Phase 6 done when:** a tester installs `/dawa` on their phone, receives a live push notification within 30s of a simulated threshold crossing.
+**Phase 6 done when:** a tester installs the ntfy app + `/dawa` PWA on their phone, subscribes to their zone topic via the /dawa settings deep-link, and receives a live ntfy notification within 30s of a simulated threshold crossing.
 **Phase 7 done when:** admin invites a supervisor via email, supervisor logs in, can read everything but edits are disabled; FR copy is audited for tone; Lighthouse PWA score ≥ 90 on `/dawa`.
 
 **Overall V2 done when:** a non-technical person from the Municipalité can log in as admin, place a panel and a sensor on the map, run an ORACLE scan, approve one, forecast its impact, and explain to a colleague what they did — without a manual.
