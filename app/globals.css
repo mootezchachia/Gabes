@@ -400,38 +400,11 @@ html, body {
     linear-gradient(180deg, rgba(10,15,20,0.18) 0%, transparent 15%, transparent 85%, rgba(10,15,20,0.28) 100%);
 }
 
-/* Centre reticle — four tiny brackets around the viewport crosshair. */
-.tac-reticle {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 28;
-  display: grid;
-  place-items: center;
-  opacity: 0.55;
-}
-.tac-reticle-mark {
-  position: relative;
-  width: 54px;
-  height: 54px;
-}
-.tac-reticle-mark::before,
-.tac-reticle-mark::after {
-  content: "";
-  position: absolute;
-  width: 12px;
-  height: 12px;
-  border-color: rgba(62,201,208,0.75);
-  border-style: solid;
-}
-.tac-reticle-mark::before {
-  top: 0; left: 0;
-  border-width: 1px 0 0 1px;
-}
-.tac-reticle-mark::after {
-  bottom: 0; right: 0;
-  border-width: 0 1px 1px 0;
-}
+/*
+ * Centre reticle removed in favor of target-anchored <TacticalReticle />
+ * component which reprojects a world-space target to window coordinates
+ * each postRender tick. See components/monitor3d/TacticalReticle.tsx.
+ */
 
 /* Nuke any residual default Cesium UI that might sneak through */
 .cesium-widget-credits,

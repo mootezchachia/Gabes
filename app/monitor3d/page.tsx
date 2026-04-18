@@ -24,6 +24,7 @@ const TacticalTools        = dynamic(() => import("@/components/monitor3d/Tactic
 const TacticalLegend       = dynamic(() => import("@/components/monitor3d/TacticalLegend").then((m) => m.TacticalLegend),           { ssr: false });
 const TacticalKeybinds     = dynamic(() => import("@/components/monitor3d/TacticalKeybinds").then((m) => m.TacticalKeybinds),       { ssr: false });
 const TacticalInspect      = dynamic(() => import("@/components/monitor3d/TacticalInspect").then((m) => m.TacticalInspect),         { ssr: false });
+const TacticalReticle      = dynamic(() => import("@/components/monitor3d/TacticalReticle").then((m) => m.TacticalReticle),         { ssr: false });
 
 function BootOverlay() {
   return (
@@ -48,9 +49,7 @@ export default function Monitor3DPage() {
       {/* Viewport-wide cinematic overlays */}
       <div className="tac-vignette" aria-hidden />
       <div className="tac-scanlines" aria-hidden />
-      <div className="tac-reticle" aria-hidden>
-        <div className="tac-reticle-mark" />
-      </div>
+      <TacticalReticle />
 
       {/* Tactical chrome — hugs the edges */}
       <TacticalStatus />
