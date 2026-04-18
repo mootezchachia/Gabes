@@ -14,21 +14,33 @@ import {
   plumeLayer,
   sensorsGlowLayer,
   sensorsLayer,
-  windLayer,
   type Sensor,
-  type WindPoint,
 } from "@/lib/monitor/layers";
+import {
+  buildPlumeField,
+  criticalHaloLayer,
+  stepWindField,
+  volumetricPlumeLayer,
+  windHeadLayer,
+  windStreakLayer,
+  windVectorForHour,
+  type WindParticle,
+} from "@/lib/monitor/atmosphere";
+import { GABES } from "@/lib/tokens";
 import { useMonitor } from "@/lib/monitor/store";
 
 interface Props {
   map: MapboxMap | null;
 }
 
-/**
- * Med-scope deck.gl overlay. Reads the store's `activeLayers` flags and
- * renders only enabled data layers. Sensors + GCT polygon clutter the Med
- * view, so they are auto-gated on scope === 'gabes'.
- */
+// Tight bbox around Gabès city + coastline for particle flow.
+const WIND_BBOX = {
+  minLon: 9.95,
+  maxLon: 10.26,
+  minLat: 33.78,
+  maxLat: 33.99,
+};
+
 export function DeckOverlay({ map }: Props) {
   const [sensors, setSensors] = useState<Sensor[]>([]);
   const [gct, setGct] = useState<FeatureCollection | null>(null);
@@ -36,14 +48,16 @@ export function DeckOverlay({ map }: Props) {
   const [emitters, setEmitters] = useState<FeatureCollection | null>(null);
   const [incidents, setIncidents] = useState<FeatureCollection | null>(null);
   const [infra, setInfra] = useState<FeatureCollection | null>(null);
-  const [wind] = useState<WindPoint[]>([]);
 
   const overlayRef = useRef<MapboxOverlay | null>(null);
   const rafRef = useRef<number>(0);
   const tRef = useRef(0);
+  const lastTsRef = useRef<number>(0);
+  const particlesRef = useRef<WindParticle[]>([]);
 
   const layers = useMonitor((s) => s.activeLayers);
   const scope = useMonitor((s) => s.scope);
+  const hourOfDay = useMonitor((s) => s.hourOfDay);
   const setSelectedEvent = useMonitor((s) => s.setSelectedEvent);
   const flyTo = useMonitor((s) => s.flyTo);
 
@@ -111,20 +125,52 @@ export function DeckOverlay({ map }: Props) {
     map.addControl(overlay as unknown as IControl);
     overlayRef.current = overlay;
 
-    const tick = () => {
+    const tick = (now: number) => {
+      const prev = lastTsRef.current || now;
+      const dt = Math.min(0.05, (now - prev) / 1000); // cap at 50ms to avoid jumps
+      lastTsRef.current = now;
       tRef.current += 0.04;
       const t = tRef.current;
+
       const sensorsVisible = layers.sensors && scope === "gabes";
       const gctVisible = layers.emitters && scope === "gabes";
+      const plumeVisible = layers.plume && scope === "gabes";
+      const windVisible = layers.wind && scope === "gabes";
+
+      const wv = windVectorForHour(hourOfDay);
+
+      // Step wind particles only if visible (saves work otherwise)
+      if (windVisible) {
+        particlesRef.current = stepWindField(
+          particlesRef.current,
+          wv.u,
+          wv.v,
+          dt,
+          WIND_BBOX,
+        );
+      }
+
+      // Rebuild plume columns each frame (cheap — ~80 cells)
+      const plumeCells = plumeVisible
+        ? buildPlumeField({
+            source: [GABES.gct[0], GABES.gct[1]],
+            u: wv.u,
+            v: wv.v,
+            pulse: t,
+          })
+        : [];
 
       overlay.setProps({
         layers: [
           gctVisible && gct ? gctPolygonLayer(gct, true) : null,
-          layers.plume && scope === "gabes" ? plumeLayer(sensors, 1, true) : null,
+          plumeVisible ? plumeLayer(sensors, 1, true) : null,
+          plumeVisible ? volumetricPlumeLayer(plumeCells, true) : null,
           layers.emitters && emitters ? emittersLayer(emitters, t, true) : null,
           layers.incidents && incidents ? incidentsLayer(incidents, t, true) : null,
           layers.infra && infra ? infraLayer(infra, true) : null,
-          layers.wind ? windLayer(wind, true) : null,
+          windVisible ? windStreakLayer(particlesRef.current, wv.u, wv.v, true) : null,
+          windVisible ? windHeadLayer(particlesRef.current, true) : null,
+          sensorsVisible ? criticalHaloLayer(sensors, t, true) : null,
           sensorsVisible ? sensorsGlowLayer(sensors, t, true) : null,
           sensorsVisible ? sensorsLayer(sensors, t, true) : null,
           gctVisible && gct ? gctStacksLayer(gct, t, true) : null,
@@ -144,7 +190,7 @@ export function DeckOverlay({ map }: Props) {
       }
       overlayRef.current = null;
     };
-  }, [map, sensors, gct, landmarks, emitters, incidents, infra, wind, layers, scope, setSelectedEvent, flyTo]);
+  }, [map, sensors, gct, landmarks, emitters, incidents, infra, layers, scope, hourOfDay, setSelectedEvent, flyTo]);
 
   return null;
 }

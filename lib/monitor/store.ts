@@ -71,7 +71,7 @@ export const useMonitor = create<MonitorState>((set) => ({
     sensors: true,
     incidents: true,
     infra: false,
-    wind: false,
+    wind: true,
   },
   crisisMessage: "GCT Ghannouch · plume SO₂ actif · 340 µg/m³",
   hoveredCity: null,
