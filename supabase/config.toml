@@ -61,6 +61,24 @@ enabled = true
 policy = "per_worker"
 inspector_port = 8083
 
+# ──────────────────────────────────────────────────────────────────────
+# Per-function overrides
+#
+# verify_jwt = false on our two AI endpoints disables the Supabase edge
+# GATEWAY's JWT algorithm check. Rationale: the project is on asymmetric
+# signing (ES256) but the legacy gateway verifier in our region's runtime
+# doesn't recognise ES256 and rejects with "Unsupported JWT algorithm".
+# The functions themselves still enforce auth via `getCallerContext` →
+# `supabase.auth.getUser()` which hits GoTrue and does support ES256.
+# Result: gateway passes the request through, function validates the
+# caller, role is enforced.
+# ──────────────────────────────────────────────────────────────────────
+[functions.ai_placement]
+verify_jwt = false
+
+[functions.ai_forecast]
+verify_jwt = false
+
 [analytics]
 enabled = false
 
