@@ -6,6 +6,9 @@ export const metadata: Metadata = {
   title: "Carte",
 };
 
+// Authenticated map — Cesium + per-session Supabase entities. Never prerender.
+export const dynamic = "force-dynamic";
+
 /**
  * /app/carte — the authenticated, admin-tooled view of the 3D world.
  *
