@@ -1,0 +1,126 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Ghannouch",
+        "centroid": [10.1073, 33.9203],
+        "population": 19500,
+        "exposure": "high"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1073, 33.9203] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Chatt Essalam",
+        "centroid": [10.1060, 33.9125],
+        "population": 14200,
+        "exposure": "high"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1060, 33.9125] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Gabès-Centre",
+        "centroid": [10.0982, 33.8881],
+        "population": 48000,
+        "exposure": "medium"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0982, 33.8881] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Jara",
+        "centroid": [10.1034, 33.8931],
+        "population": 12800,
+        "exposure": "medium"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1034, 33.8931] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Bouchemma",
+        "centroid": [10.0870, 33.8624],
+        "population": 9400,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0870, 33.8624] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Oued Gabès",
+        "centroid": [10.0807, 33.8927],
+        "population": 7600,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0807, 33.8927] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Mezrayaa",
+        "centroid": [10.0960, 33.8722],
+        "population": 6800,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0960, 33.8722] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Chenini",
+        "centroid": [10.0847, 33.8812],
+        "population": 8200,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0847, 33.8812] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Teboulbou",
+        "centroid": [10.0615, 33.8485],
+        "population": 5400,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0615, 33.8485] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "Métouia",
+        "centroid": [10.1730, 33.9620],
+        "population": 11200,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1730, 33.9620] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "district",
+        "name": "El Hamma",
+        "centroid": [9.7970, 33.8860],
+        "population": 38000,
+        "exposure": "low"
+      },
+      "geometry": { "type": "Point", "coordinates": [9.7970, 33.8860] }
+    }
+  ]
+}

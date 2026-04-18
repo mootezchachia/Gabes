@@ -13,9 +13,11 @@ interface LayerRow {
 }
 
 const LAYERS: LayerRow[] = [
+  { key: "aiScan", code: "AI", label: "ORACLE · scan actif", count: "5 zones", tone: "amber" },
   { key: "plume", code: "SO₂-V", label: "Plume volumétrique", count: "340 µg", tone: "danger" },
   { key: "emitters", code: "EMT", label: "Sources industrielles", count: "1", tone: "amber" },
   { key: "sensors", code: "CAP", label: "Réseau 42 capteurs", count: "42/42", tone: "cyan" },
+  { key: "labels", code: "TXT", label: "Légendes & lieux", count: "30+", tone: "accent" },
   { key: "wind", code: "VNT", label: "Vent + dérive plume", count: "14 km/h", tone: "accent" },
   { key: "incidents", code: "EVT", label: "Incidents historiques", count: "38", tone: "danger" },
   { key: "infra", code: "INF", label: "Écoles · Hôpitaux", count: "147", tone: "cyan" },

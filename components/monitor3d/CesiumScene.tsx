@@ -5,9 +5,10 @@ import "@/lib/cesium-env";
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
 import { GABES } from "@/lib/tokens";
-import type { Sensor } from "@/lib/monitor/layers";
 import { onViewer } from "@/lib/cesium-bus";
 import { useMonitor } from "@/lib/monitor/store";
+import { buildGct } from "@/lib/monitor3d/buildGct";
+import { buildSensors } from "@/lib/monitor3d/buildSensors";
 
 /**
  * Cesium scene populates the viewer with:
@@ -51,56 +52,21 @@ export function CesiumScene() {
       }
     })();
 
-    // ── 2. GCT industrial footprint (extruded polygon, clamped to terrain) ──
-    // heightReference CLAMP_TO_GROUND + extrudedHeightReference RELATIVE_TO_GROUND
-    // prevents the footprint from sinking/floating when the Google 3D Tileset
-    // loads elevated buildings on top of World Terrain.
-    const gctEntity = viewer.entities.add({
-      id: "gct-footprint",
-      name: "GCT Ghannouch",
-      polygon: {
-        hierarchy: Cesium.Cartesian3.fromDegreesArray([
-          GABES.gct[0] - 0.008, GABES.gct[1] - 0.006,
-          GABES.gct[0] + 0.008, GABES.gct[1] - 0.006,
-          GABES.gct[0] + 0.008, GABES.gct[1] + 0.006,
-          GABES.gct[0] - 0.008, GABES.gct[1] + 0.006,
-        ]),
-        height: 0,
-        heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-        extrudedHeight: 45,
-        extrudedHeightReference: Cesium.HeightReference.RELATIVE_TO_GROUND,
-        material: Cesium.Color.fromCssColorString("#2A2520").withAlpha(0.9),
-        outline: true,
-        outlineColor: Cesium.Color.fromCssColorString("#8A7C5A"),
-      },
-    });
-
-    const stackOffsets: [number, number][] = [
-      [-0.003, -0.002],
-      [-0.001,  0.001],
-      [ 0.0015, -0.0015],
-      [ 0.0035,  0.0025],
-    ];
-    const stackEntities = stackOffsets.map((off, i) =>
-      viewer.entities.add({
-        id: `gct-stack-${i}`,
-        name: `GCT stack ${i + 1}`,
-        position: Cesium.Cartesian3.fromDegrees(
-          GABES.gct[0] + off[0],
-          GABES.gct[1] + off[1],
-          0,
-        ),
-        cylinder: {
-          length: 110,
-          topRadius: 6,
-          bottomRadius: 9,
-          material: Cesium.Color.fromCssColorString("#4A4438"),
-          outline: true,
-          outlineColor: Cesium.Color.fromCssColorString("#7A7260"),
-        },
-      }),
-    );
-    gctEntitiesRef.current = [gctEntity, ...stackEntities];
+    // ── 2. GCT industrial complex (realistic footprint + buildings + chimneys) ──
+    // Delegated to buildGct which reads /data/gct.geojson and builds the real
+    // polygon + 10 extruded buildings + tanks + phosphogypsum stack + 4 stacks
+    // with pulsing active markers, plus a "GCT · GHANNOUCH" site-level label.
+    let gctDispose: (() => void) | null = null;
+    buildGct(viewer)
+      .then((gct) => {
+        if (disposed) {
+          gct.dispose();
+          return;
+        }
+        gctEntitiesRef.current = gct.entities;
+        gctDispose = gct.dispose;
+      })
+      .catch((err) => console.warn("[CesiumScene] buildGct failed:", err));
 
     // ── 3. Volumetric plume — real Cesium ParticleSystem ────────────
     const emitterModelMatrix = Cesium.Transforms.eastNorthUpToFixedFrame(
@@ -149,42 +115,21 @@ export function CesiumScene() {
     viewer.scene.primitives.add(particleSystem);
     particlesRef.current = particleSystem;
 
-    // ── 4. Sensor entities ──────────────────────────────────────────
-    fetch("/data/sensors.json")
-      .then((r) => r.json())
-      .then((data: Sensor[]) => {
-        if (disposed) return;
-        for (const s of data) {
-          const tint =
-            s.so2 > 200
-              ? Cesium.Color.fromCssColorString("#E24B4A")
-              : s.so2 > 100
-                ? Cesium.Color.fromCssColorString("#EF9F27")
-                : Cesium.Color.fromCssColorString("#3EC9D0");
-          sensorEntitiesRef.current.push(
-            viewer.entities.add({
-              id: `sensor-${s.id}`,
-              position: Cesium.Cartesian3.fromDegrees(s.lon, s.lat, 30),
-              point: {
-                pixelSize: 10 + s.so2 / 30,
-                color: tint.withAlpha(0.35),
-                outlineColor: tint,
-                outlineWidth: 2,
-                heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
-                disableDepthTestDistance: Number.POSITIVE_INFINITY,
-              },
-              description: `SO₂ ${s.so2} µg/m³ · ring ${s.ring}`,
-              properties: {
-                kind: "sensor",
-                sensorId: s.id,
-                so2: s.so2,
-                ring: s.ring,
-              },
-            }),
-          );
+    // ── 4. Sensor entities (semantic POI-anchored 42-sensor network) ────
+    // Delegated to buildSensors which reads the new sensors.json with real
+    // addresses, districts, categories, and installs a point + label + pulsing
+    // halo per critical sensor. Labels fade in/out by distance.
+    let sensorsDispose: (() => void) | null = null;
+    buildSensors(viewer)
+      .then((s) => {
+        if (disposed) {
+          s.dispose();
+          return;
         }
+        sensorEntitiesRef.current = s.entities;
+        sensorsDispose = s.dispose;
       })
-      .catch((err) => console.warn("[CesiumScene] sensors load failed:", err));
+      .catch((err) => console.warn("[CesiumScene] buildSensors failed:", err));
 
     // ── 4b. Incidents (historical events) ────────────────────────────
     interface IncidentProps {
@@ -295,16 +240,24 @@ export function CesiumScene() {
 
       const now = Cesium.JulianDate.now();
       if (kind === "sensor") {
-        const so2 = entity.properties?.so2?.getValue(now);
-        const ring = entity.properties?.ring?.getValue(now);
+        const so2 = entity.properties?.so2?.getValue(now) ?? 0;
+        const no2 = entity.properties?.no2?.getValue(now) ?? 0;
+        const pm25 = entity.properties?.pm25?.getValue(now);
+        const code = entity.properties?.code?.getValue(now);
+        const sensorName = entity.properties?.name?.getValue(now);
+        const address = entity.properties?.address?.getValue(now);
+        const district = entity.properties?.district?.getValue(now);
+        const category = entity.properties?.category?.getValue(now);
+        const uptime = entity.properties?.uptime_pct?.getValue(now);
+        const critical = entity.properties?.critical?.getValue(now);
         setSelectedEvent({
           id: entity.id,
           lon,
           lat,
-          title: `Capteur NAFAS · ring ${ring}`,
-          body: `SO₂ ${so2} µg/m³. Télémétrie active, ingestion 10s.`,
+          title: `${sensorName ?? code ?? "Capteur NAFAS"}${critical ? " · CRITIQUE" : ""}`,
+          body: `${address ?? ""}${district ? ` · ${district}` : ""}${category ? ` · ${category}` : ""}\nSO₂ ${so2} µg/m³ · NO₂ ${no2} µg/m³${pm25 ? ` · PM2.5 ${pm25} µg/m³` : ""}${uptime ? ` · uptime ${uptime}%` : ""}`,
           date: new Date().toISOString(),
-          severity: so2 > 200 ? "high" : so2 > 100 ? "medium" : "low",
+          severity: critical || so2 > 250 ? "high" : so2 > 100 ? "medium" : "low",
         });
       } else if (kind === "incident") {
         const title = entity.properties?.title?.getValue(now) ?? "Incident";
@@ -355,8 +308,8 @@ export function CesiumScene() {
           viewer.scene.primitives.remove(tilesetRef.current);
           tilesetRef.current = null;
         }
-        for (const e of gctEntitiesRef.current) viewer.entities.remove(e);
-        for (const e of sensorEntitiesRef.current) viewer.entities.remove(e);
+        gctDispose?.();
+        sensorsDispose?.();
         for (const e of incidentEntitiesRef.current) viewer.entities.remove(e);
         for (const e of infraEntitiesRef.current) viewer.entities.remove(e);
         gctEntitiesRef.current = [];

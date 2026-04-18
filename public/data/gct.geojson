@@ -4,41 +4,24 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Groupe Chimique Tunisien",
-        "kind": "industrial"
+        "kind": "footprint",
+        "name": "GCT Ghannouch",
+        "label": "GCT · COMPLEXE PHOSPHATIER"
       },
       "geometry": {
         "type": "Polygon",
         "coordinates": [
           [
-            [
-              10.108,
-              33.938
-            ],
-            [
-              10.128,
-              33.938
-            ],
-            [
-              10.132,
-              33.928
-            ],
-            [
-              10.126,
-              33.922
-            ],
-            [
-              10.11,
-              33.922
-            ],
-            [
-              10.105,
-              33.93
-            ],
-            [
-              10.108,
-              33.938
-            ]
+            [10.1082, 33.9372],
+            [10.1195, 33.9381],
+            [10.1282, 33.9354],
+            [10.1318, 33.9298],
+            [10.1292, 33.9238],
+            [10.1198, 33.9221],
+            [10.1102, 33.9234],
+            [10.1058, 33.9282],
+            [10.1068, 33.9338],
+            [10.1082, 33.9372]
           ]
         ]
       }
@@ -46,57 +29,320 @@
     {
       "type": "Feature",
       "properties": {
-        "name": "Chimney 1",
-        "kind": "stack"
+        "kind": "building",
+        "height": 38,
+        "label": "Unité sulfurique 1"
       },
       "geometry": {
-        "type": "Point",
+        "type": "Polygon",
         "coordinates": [
-          10.1165,
-          33.9325
+          [
+            [10.1108, 33.9338],
+            [10.1142, 33.9338],
+            [10.1142, 33.9320],
+            [10.1108, 33.9320],
+            [10.1108, 33.9338]
+          ]
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "name": "Chimney 2",
-        "kind": "stack"
+        "kind": "building",
+        "height": 36,
+        "label": "Unité sulfurique 2"
       },
       "geometry": {
-        "type": "Point",
+        "type": "Polygon",
         "coordinates": [
-          10.119,
-          33.9305
+          [
+            [10.1108, 33.9316],
+            [10.1140, 33.9316],
+            [10.1140, 33.9298],
+            [10.1108, 33.9298],
+            [10.1108, 33.9316]
+          ]
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "name": "Chimney 3",
-        "kind": "stack"
+        "kind": "building",
+        "height": 42,
+        "label": "Unité phosphorique"
       },
       "geometry": {
-        "type": "Point",
+        "type": "Polygon",
         "coordinates": [
-          10.121,
-          33.9285
+          [
+            [10.1148, 33.9332],
+            [10.1186, 33.9332],
+            [10.1186, 33.9308],
+            [10.1148, 33.9308],
+            [10.1148, 33.9332]
+          ]
         ]
       }
     },
     {
       "type": "Feature",
       "properties": {
-        "name": "Chimney 4",
-        "kind": "stack"
+        "kind": "building",
+        "height": 28,
+        "label": "Engrais composés"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1205, 33.9338],
+            [10.1248, 33.9338],
+            [10.1248, 33.9312],
+            [10.1205, 33.9312],
+            [10.1205, 33.9338]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 24,
+        "label": "DAP · Granulation"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1208, 33.9306],
+            [10.1245, 33.9306],
+            [10.1245, 33.9284],
+            [10.1208, 33.9284],
+            [10.1208, 33.9306]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 20,
+        "label": "Ensachage"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1210, 33.9278],
+            [10.1252, 33.9278],
+            [10.1252, 33.9260],
+            [10.1210, 33.9260],
+            [10.1210, 33.9278]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 32,
+        "label": "Stockage ammoniac"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1150, 33.9292],
+            [10.1184, 33.9292],
+            [10.1184, 33.9272],
+            [10.1150, 33.9272],
+            [10.1150, 33.9292]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 18,
+        "label": "Atelier maintenance"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1110, 33.9290],
+            [10.1146, 33.9290],
+            [10.1146, 33.9270],
+            [10.1110, 33.9270],
+            [10.1110, 33.9290]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 14,
+        "label": "Administration"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1158, 33.9258],
+            [10.1190, 33.9258],
+            [10.1190, 33.9242],
+            [10.1158, 33.9242],
+            [10.1158, 33.9258]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "building",
+        "height": 12,
+        "label": "Portail sud"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1196, 33.9252],
+            [10.1220, 33.9252],
+            [10.1220, 33.9240],
+            [10.1196, 33.9240],
+            [10.1196, 33.9252]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "tank",
+        "height": 24,
+        "radius": 12,
+        "label": "Acide sulfurique"
       },
       "geometry": {
         "type": "Point",
+        "coordinates": [10.1128, 33.9354]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "tank",
+        "height": 22,
+        "radius": 11,
+        "label": "Acide phosphorique"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1165, 33.9348]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "tank",
+        "height": 26,
+        "radius": 13,
+        "label": "Ammoniac"
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1172, 33.9282]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "gypsum_stack",
+        "height": 12,
+        "label": "Phosphogypse · stock"
+      },
+      "geometry": {
+        "type": "Polygon",
         "coordinates": [
-          10.1145,
-          33.9295
+          [
+            [10.1268, 33.9332],
+            [10.1310, 33.9326],
+            [10.1308, 33.9258],
+            [10.1262, 33.9264],
+            [10.1268, 33.9332]
+          ]
         ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "stack",
+        "height": 128,
+        "radius_top": 5,
+        "radius_bottom": 9,
+        "label": "Cheminée Nord",
+        "active": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1165, 33.9325]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "stack",
+        "height": 140,
+        "radius_top": 6,
+        "radius_bottom": 10,
+        "label": "Cheminée Centre",
+        "active": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1190, 33.9305]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "stack",
+        "height": 118,
+        "radius_top": 5,
+        "radius_bottom": 8,
+        "label": "Cheminée Sud",
+        "active": true
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1210, 33.9285]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "stack",
+        "height": 105,
+        "radius_top": 4,
+        "radius_bottom": 7,
+        "label": "Cheminée Extension",
+        "active": false
+      },
+      "geometry": {
+        "type": "Point",
+        "coordinates": [10.1145, 33.9295]
       }
     }
   ]

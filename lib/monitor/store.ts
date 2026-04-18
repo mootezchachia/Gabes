@@ -11,6 +11,8 @@ export interface LayerFlags {
   incidents: boolean;   // Historical events
   infra: boolean;       // Schools + hospitals
   wind: boolean;        // Wind field
+  labels: boolean;      // Districts, streets, POIs text
+  aiScan: boolean;      // ORACLE radar sweep + candidate intervention zones
 }
 
 export interface SelectedEvent {
@@ -72,6 +74,8 @@ export const useMonitor = create<MonitorState>((set) => ({
     incidents: true,
     infra: false,
     wind: true,
+    labels: true,
+    aiScan: true,
   },
   crisisMessage: "GCT Ghannouch · plume SO₂ actif · 340 µg/m³",
   hoveredCity: null,

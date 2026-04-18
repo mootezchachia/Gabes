@@ -1,0 +1,87 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "École Chatt Essalam",
+        "type": "school"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1054, 33.9121] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Foyer Amina",
+        "type": "home",
+        "anchor": "amina"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1098, 33.9189] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Hôpital Habib Bourguiba Gabès",
+        "type": "hospital"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0983, 33.8838] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Port de Gabès",
+        "type": "port"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0952, 33.8846] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Gare SNCFT Gabès",
+        "type": "station"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0989, 33.8814] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Université de Gabès",
+        "type": "university"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1183, 33.8776] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Grande Mosquée Jara",
+        "type": "mosque"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1034, 33.8931] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Oasis de Chenini",
+        "type": "oasis"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.0750, 33.8820] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "kind": "poi",
+        "name": "Plage de Gabès",
+        "type": "beach"
+      },
+      "geometry": { "type": "Point", "coordinates": [10.1147, 33.8872] }
+    }
+  ]
+}

@@ -1,0 +1,151 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z1",
+        "type": "Phycoremédiation (Ulva sp.)",
+        "score": 0.87,
+        "rationale": "Baie semi-fermée · dépôt de métaux lourds · biomasse Ulva installable",
+        "area_ha": 145,
+        "eta_months": 9,
+        "priority": 2,
+        "centroid": [10.155, 33.862]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1408, 33.8682],
+            [10.1512, 33.8715],
+            [10.1632, 33.8695],
+            [10.1702, 33.8638],
+            [10.1668, 33.8558],
+            [10.1540, 33.8528],
+            [10.1432, 33.8580],
+            [10.1408, 33.8682]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z2",
+        "type": "Restauration littorale",
+        "score": 0.71,
+        "rationale": "Protection berges · piégeage particules fines · stabilisation",
+        "area_ha": 38,
+        "eta_months": 14,
+        "priority": 4,
+        "centroid": [10.110, 33.894]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.0958, 33.8972],
+            [10.1032, 33.8968],
+            [10.1108, 33.8955],
+            [10.1182, 33.8938],
+            [10.1242, 33.8918],
+            [10.1235, 33.8902],
+            [10.1172, 33.8918],
+            [10.1098, 33.8932],
+            [10.1022, 33.8942],
+            [10.0948, 33.8950],
+            [10.0958, 33.8972]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z3",
+        "type": "Confinement étanche + végétalisation",
+        "score": 0.94,
+        "rationale": "Stack historique · ruissellement Cd/Zn · couverture biomembrane",
+        "area_ha": 82,
+        "eta_months": 18,
+        "priority": 1,
+        "centroid": [10.135, 33.930]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.1272, 33.9348],
+            [10.1408, 33.9352],
+            [10.1452, 33.9318],
+            [10.1448, 33.9262],
+            [10.1382, 33.9238],
+            [10.1278, 33.9252],
+            [10.1252, 33.9302],
+            [10.1272, 33.9348]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z4",
+        "type": "Barrière végétale urbaine",
+        "score": 0.68,
+        "rationale": "Axe plume prévalent · couloir d'exposition École Chatt Essalam",
+        "area_ha": 12,
+        "eta_months": 6,
+        "priority": 5,
+        "centroid": [10.110, 33.920]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.0948, 33.9212],
+            [10.1042, 33.9208],
+            [10.1148, 33.9202],
+            [10.1252, 33.9198],
+            [10.1258, 33.9188],
+            [10.1148, 33.9192],
+            [10.1042, 33.9198],
+            [10.0948, 33.9202],
+            [10.0948, 33.9212]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "id": "Z5",
+        "type": "Filtration passive + capteurs enfants",
+        "score": 0.79,
+        "rationale": "Proximité école · population pédiatrique exposée · priorité sanitaire",
+        "area_ha": 22,
+        "eta_months": 4,
+        "priority": 3,
+        "centroid": [10.103, 33.914]
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [10.0968, 33.9162],
+            [10.1018, 33.9178],
+            [10.1068, 33.9172],
+            [10.1102, 33.9148],
+            [10.1098, 33.9118],
+            [10.1062, 33.9098],
+            [10.1012, 33.9102],
+            [10.0972, 33.9122],
+            [10.0958, 33.9148],
+            [10.0968, 33.9162]
+          ]
+        ]
+      }
+    }
+  ]
+}

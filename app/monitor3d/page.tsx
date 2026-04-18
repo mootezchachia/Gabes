@@ -25,6 +25,8 @@ const TacticalLegend       = dynamic(() => import("@/components/monitor3d/Tactic
 const TacticalKeybinds     = dynamic(() => import("@/components/monitor3d/TacticalKeybinds").then((m) => m.TacticalKeybinds),       { ssr: false });
 const TacticalInspect      = dynamic(() => import("@/components/monitor3d/TacticalInspect").then((m) => m.TacticalInspect),         { ssr: false });
 const TacticalReticle      = dynamic(() => import("@/components/monitor3d/TacticalReticle").then((m) => m.TacticalReticle),         { ssr: false });
+const TacticalLabels       = dynamic(() => import("@/components/monitor3d/TacticalLabels").then((m) => m.TacticalLabels),           { ssr: false });
+const TacticalAIScan       = dynamic(() => import("@/components/monitor3d/TacticalAIScan").then((m) => m.TacticalAIScan),           { ssr: false });
 
 function BootOverlay() {
   return (
@@ -45,6 +47,8 @@ export default function Monitor3DPage() {
       {/* The 3D world */}
       <CesiumMap />
       <CesiumScene />
+      <TacticalLabels />
+      <TacticalAIScan />
 
       {/* Viewport-wide cinematic overlays */}
       <div className="tac-vignette" aria-hidden />

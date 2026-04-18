@@ -12,6 +12,28 @@ export interface Sensor {
   aqi: number;
   status: string;
   highlight?: string;
+  // New tactical metadata
+  code?: string;
+  name?: string;
+  address?: string;
+  district?: string;
+  category?:
+    | "school"
+    | "hospital"
+    | "mosque"
+    | "municipal"
+    | "rooftop"
+    | "industrial_perim"
+    | "port"
+    | "coastal_station"
+    | "traffic"
+    | "oasis"
+    | "marine"
+    | "regional";
+  pm25?: number;
+  installed?: string;
+  uptime_pct?: number;
+  critical?: boolean;
 }
 
 const RED: [number, number, number] = [226, 75, 74];
