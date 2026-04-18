@@ -280,7 +280,7 @@ export async function buildLabels(
           outlineWidth: 2,
           heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
           verticalOrigin: Cesium.VerticalOrigin.CENTER,
-          translucencyByDistance: new Cesium.NearFarScalar(4000, 0.0, 1500, 1.0),
+          translucencyByDistance: new Cesium.NearFarScalar(1500, 1.0, 4000, 0.0),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
       }),
