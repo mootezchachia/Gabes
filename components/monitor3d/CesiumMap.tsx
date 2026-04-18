@@ -66,10 +66,18 @@ export function CesiumMap({ onReady, skipIntro = false }: CesiumMapProps) {
     // Cesium's default Ion token was removed in 1.104 — if no NEXT_PUBLIC_
     // variable was baked at build time, every Ion call 401s. We only run the
     // Ion code path when we actually have a token.
-    const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
-    const hasIon = Boolean(token && token.length > 0);
+    //
+    // `.trim()` is critical: PowerShell pipes (`$v | vercel env add`) and
+    // manual paste into Vercel's dashboard frequently leave a trailing \r\n
+    // on the stored value. Cesium appends the raw token to the Ion endpoint
+    // URL, so the newline becomes `%0D%0A`, which the Ion API rejects with
+    // 401 INVALID_TOKEN. Trim here = self-heal regardless of how the var
+    // was set.
+    const rawToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
+    const token = rawToken ? rawToken.trim() : "";
+    const hasIon = token.length > 0;
     if (hasIon) {
-      Cesium.Ion.defaultAccessToken = token!;
+      Cesium.Ion.defaultAccessToken = token;
     }
 
     const viewer = new Cesium.Viewer(ref.current, {

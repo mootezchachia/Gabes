@@ -2,11 +2,16 @@
 # Reads .env.local and pushes runtime vars into Vercel (prod + preview).
 # Requires `npx vercel whoami` to already succeed (authenticated).
 # Usage: powershell.exe -File scripts/push-vercel-env.ps1
+#
+# IMPORTANT: we deliberately avoid `$value | vercel env add` because
+# PowerShell's pipe operator appends a newline to stdin, which Vercel stores
+# verbatim in the value — Cesium Ion / Mapbox then append that newline to
+# request URLs (as %0D%0A) and the provider returns 401. Instead we write the
+# value to a tempfile with no trailing newline and redirect it into the CLI
+# via `cmd /c ... < tempfile`.
 
 $ErrorActionPreference = "Continue"
 
-# Vars we want on Vercel at runtime. Skip CLI-only secrets like
-# SUPABASE_DB_PASSWORD / SUPABASE_PROJECT_REF and empty slots.
 $runtimeKeys = @(
   "NEXT_PUBLIC_MAPBOX_TOKEN",
   "NEXT_PUBLIC_CESIUM_ION_TOKEN",
@@ -46,14 +51,24 @@ foreach ($key in $runtimeKeys) {
   $value = $map[$key]
   foreach ($env in $envs) {
     Write-Host "==> $key @ $env" -ForegroundColor Cyan
+
     # Remove any existing value (silent if missing).
     & npx vercel env rm $key $env --yes 2>&1 | Out-Null
-    # Add fresh value.
-    $value | & npx vercel env add $key $env 2>&1 | Out-Null
-    if ($LASTEXITCODE -eq 0) {
-      Write-Host "    ok" -ForegroundColor Green
-    } else {
-      Write-Host "    FAILED (exit $LASTEXITCODE)" -ForegroundColor Red
+
+    # Write value to a tempfile WITHOUT a trailing newline, then feed it
+    # into `vercel env add` via redirected stdin.
+    $tmp = [System.IO.Path]::GetTempFileName()
+    try {
+      # WriteAllText is explicit: no BOM, no trailing newline.
+      [System.IO.File]::WriteAllText($tmp, $value, [System.Text.UTF8Encoding]::new($false))
+      & cmd /c "npx vercel env add $key $env < `"$tmp`"" 2>&1 | Out-Null
+      if ($LASTEXITCODE -eq 0) {
+        Write-Host "    ok" -ForegroundColor Green
+      } else {
+        Write-Host "    FAILED (exit $LASTEXITCODE)" -ForegroundColor Red
+      }
+    } finally {
+      Remove-Item $tmp -Force -ErrorAction SilentlyContinue
     }
   }
 }
