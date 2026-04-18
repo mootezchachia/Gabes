@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 import { distanceMeters } from "@/lib/dawa/geo";
 import {
@@ -144,38 +144,46 @@ export function useLatestReadings(sensors: Sensor[]) {
     queryFn: async () => {
       const sb = await getDawaClient();
       if (!sb) return mockReadings();
-      // latest-per-sensor — for V2 we just fetch last 1 per sensor via a loop;
-      // can be replaced with a PG function once backend agent lands.
+      // Single IN query + client-side "latest per sensor" reduction.
+      // Fetches last ~6 hours of readings for all target sensors in ONE
+      // round-trip instead of N sequential queries (fixes review HIGH#8).
+      const since = new Date(Date.now() - 6 * 3600_000).toISOString();
+      const { data } = await sb
+        .from("sensor_readings")
+        .select("sensor_id, value, taken_at")
+        .in("sensor_id", sensorIds)
+        .gte("taken_at", since)
+        .order("taken_at", { ascending: false });
+      const seen = new Set<string>();
       const out: Reading[] = [];
-      for (const s of sensors) {
-        const { data } = await sb
-          .from("sensor_readings")
-          .select("sensor_id, value, taken_at")
-          .eq("sensor_id", s.id)
-          .order("taken_at", { ascending: false })
-          .limit(1);
-        const r = data?.[0];
-        if (r) {
-          out.push({
-            sensorId: String(r.sensor_id),
-            type: s.type,
-            unit: s.unit,
-            value: Number(r.value),
-            takenAt: String(r.taken_at),
-            thresholds: s.thresholds,
-            sensorLabel: s.label,
-          });
-        }
+      for (const r of data ?? []) {
+        const sid = String(r.sensor_id);
+        if (seen.has(sid)) continue;
+        seen.add(sid);
+        const s = sensors.find((x) => x.id === sid);
+        if (!s) continue;
+        out.push({
+          sensorId: sid,
+          type: s.type,
+          unit: s.unit,
+          value: Number(r.value),
+          takenAt: String(r.taken_at),
+          thresholds: s.thresholds,
+          sensorLabel: s.label,
+        });
       }
       return out;
     },
   });
 
   // Realtime subscription to sensor_readings for the subscribed IDs.
+  // The channel ref survives the async IIFE and the cleanup can always reach
+  // it, so we never leak a Realtime slot when sensorIds changes mid-setup
+  // (fixes review HIGH#4 in /dawa review).
+  const channelRef = useRef<{ unsubscribe: () => void } | null>(null);
   useEffect(() => {
     if (sensorIds.length === 0) return;
     let cancelled = false;
-    let channel: { unsubscribe: () => void } | null = null;
     (async () => {
       const sb = await getDawaClient();
       if (!sb || cancelled) return;
@@ -228,11 +236,16 @@ export function useLatestReadings(sensors: Sensor[]) {
           },
         )
         .subscribe();
-      channel = { unsubscribe: () => ch.unsubscribe() };
+      if (cancelled) {
+        ch.unsubscribe();
+        return;
+      }
+      channelRef.current = { unsubscribe: () => ch.unsubscribe() };
     })();
     return () => {
       cancelled = true;
-      channel?.unsubscribe();
+      channelRef.current?.unsubscribe();
+      channelRef.current = null;
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sensorIds.join(",")]);

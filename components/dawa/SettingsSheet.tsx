@@ -70,8 +70,11 @@ export function SettingsSheet({
           .update({ [column]: wkt })
           .eq("user_id", profile.userId);
       }
-      // Also re-sync user_ntfy_topics.
+      // Re-sync user_ntfy_topics using upsert-then-targeted-delete, so a
+      // failed insert doesn't leave the user with zero subscriptions
+      // (fixes review CRITICAL#3).
       if (sb && profile?.userId) {
+        const uid = profile.userId;
         const next = assignTopics(
           kind === "home" ? value : home,
           kind === "school" ? value : school,
@@ -79,14 +82,35 @@ export function SettingsSheet({
           { prefix: getTopicPrefix() },
         );
         try {
-          await sb.from("user_ntfy_topics").delete().eq("user_id", profile.userId);
-          if (next.length > 0) {
-            await sb.from("user_ntfy_topics").insert(
-              next.map((t) => ({ user_id: profile.userId, topic: t })),
+          // Read current state first.
+          const { data: existing } = await sb
+            .from("user_ntfy_topics")
+            .select("topic")
+            .eq("user_id", uid);
+          const current = new Set((existing ?? []).map((r) => r.topic as string));
+          const nextSet = new Set(next);
+          const toAdd = next.filter((t) => !current.has(t));
+          const toRemove = [...current].filter((t) => !nextSet.has(t));
+
+          // Upsert new topics first — if this fails, the user keeps the
+          // old subscriptions and we surface the failure below.
+          if (toAdd.length > 0) {
+            const { error } = await sb.from("user_ntfy_topics").upsert(
+              toAdd.map((t) => ({ user_id: uid, topic: t })),
+              { onConflict: "user_id,topic" },
             );
+            if (error) throw error;
           }
-        } catch {
-          /* non-fatal */
+          if (toRemove.length > 0) {
+            await sb
+              .from("user_ntfy_topics")
+              .delete()
+              .eq("user_id", uid)
+              .in("topic", toRemove);
+          }
+        } catch (err) {
+          console.warn("[dawa] ntfy topic sync failed", err);
+          // TODO: surface a toast once a toast primitive lands in /dawa.
         }
       }
       qc.invalidateQueries({ queryKey: ["dawa", "profile"] });

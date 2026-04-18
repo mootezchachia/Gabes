@@ -42,29 +42,37 @@ async function loadSensorsAndReadings(): Promise<{
       }),
     );
 
-    // Fetch latest reading per sensor individually — simple in V2.
+    // Single IN query + client-side latest-per-sensor reduction.
+    // Fixes review HIGH#8 in /dawa review: one round-trip instead of N.
+    const since = new Date(Date.now() - 6 * 3600_000).toISOString();
+    const sensorIds = sensors.map((s) => s.id);
+    const { data: rows } = await sb
+      .from("sensor_readings")
+      .select("sensor_id, value, taken_at")
+      .in("sensor_id", sensorIds)
+      .gte("taken_at", since)
+      .order("taken_at", { ascending: false });
+    const seen = new Set<string>();
     const readings: Reading[] = [];
-    for (const s of sensors) {
-      const { data } = await sb
-        .from("sensor_readings")
-        .select("sensor_id, value, taken_at")
-        .eq("sensor_id", s.id)
-        .order("taken_at", { ascending: false })
-        .limit(1);
-      const r = data?.[0] as
-        | { sensor_id: string; value: number; taken_at: string }
-        | undefined;
-      if (r) {
-        readings.push({
-          sensorId: String(r.sensor_id),
-          type: s.type,
-          unit: s.unit,
-          value: Number(r.value),
-          takenAt: String(r.taken_at),
-          thresholds: s.thresholds,
-          sensorLabel: s.label,
-        });
-      }
+    for (const r of (rows ?? []) as Array<{
+      sensor_id: string;
+      value: number;
+      taken_at: string;
+    }>) {
+      const sid = String(r.sensor_id);
+      if (seen.has(sid)) continue;
+      seen.add(sid);
+      const s = sensors.find((x) => x.id === sid);
+      if (!s) continue;
+      readings.push({
+        sensorId: sid,
+        type: s.type,
+        unit: s.unit,
+        value: Number(r.value),
+        takenAt: String(r.taken_at),
+        thresholds: s.thresholds,
+        sensorLabel: s.label,
+      });
     }
     return { sensors, readings };
   } catch {

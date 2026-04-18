@@ -136,9 +136,11 @@ Deno.serve(async (req: Request) => {
   const area = Number((target as Record<string, number>)[areaCol] ?? 500);
   if (!loc) return json({ error: "target has no location" }, { status: 400 });
 
+  // Cache key includes with_brief so a cached no-brief forecast isn't
+  // returned when the caller re-requests with brief=true (fixes review HIGH#3).
   const inputKey = JSON.stringify({
     t: targetKind, id: targetId, h: horizon,
-    cal: CALIBRATION_VERSION, area,
+    cal: CALIBRATION_VERSION, area, brief: withBrief,
   });
   const inputHash = await sha256Hex(inputKey);
 

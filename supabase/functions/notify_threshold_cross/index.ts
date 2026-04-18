@@ -152,15 +152,24 @@ Deno.serve(async (req: Request) => {
 
   const sentTopics: string[] = [];
   for (const topic of targetTopics) {
-    // Dedup check
-    const { data: recent } = await supa
+    // Dedup check.
+    // Rule: if a CRITICAL alert was sent in the window, suppress any further
+    //       alert (warning OR critical). If only a WARNING was sent, a
+    //       subsequent CRITICAL escalation is still allowed through.
+    // Fixes review HIGH#4: oscillating warning↔critical no longer spams.
+    let query = supa
       .from("ntfy_alert_log")
-      .select("sent_at")
+      .select("sent_at, threshold_key")
       .eq("sensor_id", sensorId)
-      .eq("threshold_key", key)
       .eq("topic", topic)
-      .gte("sent_at", new Date(Date.now() - DEDUP_MS).toISOString())
-      .limit(1);
+      .gte("sent_at", new Date(Date.now() - DEDUP_MS).toISOString());
+    if (key === "warning") {
+      // Warning suppressed by any prior alert in window.
+    } else {
+      // Critical only suppressed by prior critical — lets us escalate.
+      query = query.eq("threshold_key", "critical");
+    }
+    const { data: recent } = await query.limit(1);
     if (recent && recent.length > 0) continue;
 
     try {

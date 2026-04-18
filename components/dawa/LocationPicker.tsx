@@ -186,6 +186,7 @@ function FallbackPicker({
 }) {
   const [lon, setLon] = useState(String(picked?.[0] ?? GABES.center[0]));
   const [lat, setLat] = useState(String(picked?.[1] ?? GABES.center[1]));
+  const [boundsError, setBoundsError] = useState<string | null>(null);
   return (
     <div className="p-4 space-y-3">
       <div
@@ -223,12 +224,31 @@ function FallbackPicker({
         onClick={() => {
           const n1 = Number(lon);
           const n2 = Number(lat);
-          if (Number.isFinite(n1) && Number.isFinite(n2)) setPicked([n1, n2]);
+          // Tunisia bbox: lon [7.5, 11.6], lat [30.2, 37.5]. Reject typos
+          // so profile.home_location never gets a coord that breaks
+          // nearby-sensor lookup (fixes review HIGH#7 in /dawa review).
+          const inBounds =
+            Number.isFinite(n1) && Number.isFinite(n2) &&
+            n1 >= 7.5 && n1 <= 11.6 && n2 >= 30.2 && n2 <= 37.5;
+          if (inBounds) {
+            setPicked([n1, n2]);
+            setBoundsError(null);
+          } else {
+            setBoundsError("Coordonnées hors Tunisie · longitude 7.5–11.6, latitude 30.2–37.5.");
+          }
         }}
         className="h-9 px-3 rounded-md border border-white/[0.08] text-[12.5px] text-[color:var(--nafas-surface)] hover:bg-white/[0.04]"
       >
         Valider les coordonnées
       </button>
+      {boundsError ? (
+        <div
+          className="text-[11px] text-[color:var(--nafas-danger)]"
+          style={{ fontFamily: "var(--font-jetbrains), monospace" }}
+        >
+          {boundsError}
+        </div>
+      ) : null}
     </div>
   );
 }
