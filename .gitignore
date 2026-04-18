@@ -41,6 +41,9 @@ prod.log
 # cesium static assets — regenerated via `npm run postinstall`
 /public/cesium
 
+# claude code local state
+.claude/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
