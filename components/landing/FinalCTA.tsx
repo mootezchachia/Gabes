@@ -54,10 +54,10 @@ export function FinalCTA() {
         {/* action row */}
         <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Link
-            href="/monitor"
+            href="/monitor3d"
             className="group inline-flex items-center gap-2.5 bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black font-medium text-[14px] px-6 py-3.5 rounded-md transition-colors"
           >
-            Ouvrir le moniteur
+            Ouvrir le moniteur 3D
             <span className="transition-transform group-hover:translate-x-0.5">→</span>
           </Link>
           <a
