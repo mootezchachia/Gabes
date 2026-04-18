@@ -57,10 +57,8 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
         requestWaterMask: false,
         requestVertexNormals: true,
       }),
-      // Bing Maps Aerial with Labels (Ion asset 3). Crisp global satellite
-      // base — the plain Google Earth feel even when photoreal tiles aren't
-      // available for this cell.
-      imageryProvider: undefined, // set below after await (Ion is async)
+      // Imagery is set below once Ion's Bing asset 3 resolves — the Cesium
+      // Viewer starts with a default imagery layer which we then replace.
     });
 
     // Upgrade imagery to Ion Bing Aerial with Labels (async, best-effort).

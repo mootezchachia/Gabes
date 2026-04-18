@@ -177,6 +177,273 @@ html, body {
   color: color-mix(in srgb, var(--nafas-ink3) 80%, transparent);
 }
 
+/* ══════════════════════════════════════════════════════════════════════
+ * TACTICAL / MILITARY-GRADE HUD  — used ONLY on /monitor3d (Cesium)
+ * Sharp corners, bracket ticks, mono readouts, phosphor accent glow.
+ * Aesthetic reference: DCS / ArmA mission planning + NASA mission control.
+ * ══════════════════════════════════════════════════════════════════════ */
+
+.tac-panel {
+  position: relative;
+  background: color-mix(in srgb, #06090D 78%, transparent);
+  background-image:
+    linear-gradient(180deg, rgba(16,22,30,0.65) 0%, rgba(6,9,13,0.82) 100%);
+  backdrop-filter: blur(18px) saturate(1.15);
+  -webkit-backdrop-filter: blur(18px) saturate(1.15);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 2px;
+  box-shadow:
+    0 22px 48px -22px rgba(0,0,0,0.95),
+    inset 0 1px 0 0 rgba(255,255,255,0.05),
+    inset 0 -1px 0 0 rgba(0,0,0,0.2);
+  color: var(--nafas-surface);
+}
+
+/* Bracket corners — four pseudo corner-ticks on each panel. */
+.tac-panel::before,
+.tac-panel::after {
+  content: "";
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  pointer-events: none;
+  opacity: 0.45;
+}
+.tac-panel::before {
+  top: -1px;
+  left: -1px;
+  border-top: 1px solid var(--nafas-cyan);
+  border-left: 1px solid var(--nafas-cyan);
+}
+.tac-panel::after {
+  bottom: -1px;
+  right: -1px;
+  border-bottom: 1px solid var(--nafas-cyan);
+  border-right: 1px solid var(--nafas-cyan);
+}
+.tac-panel[data-tone="amber"]::before,
+.tac-panel[data-tone="amber"]::after {
+  border-color: var(--nafas-amber);
+}
+.tac-panel[data-tone="danger"]::before,
+.tac-panel[data-tone="danger"]::after {
+  border-color: var(--nafas-danger);
+}
+
+.tac-panel[data-edge="accent"] {
+  border-top: 1px solid color-mix(in srgb, var(--nafas-cyan) 65%, transparent);
+  box-shadow:
+    0 -1px 0 0 color-mix(in srgb, var(--nafas-cyan) 20%, transparent),
+    0 22px 48px -22px rgba(0,0,0,0.95),
+    inset 0 1px 0 0 rgba(255,255,255,0.05);
+}
+
+.tac-label {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, var(--nafas-ink3) 90%, transparent);
+  line-height: 1;
+}
+
+/* Bracketed label — renders like `┤ LABEL ├` using pseudo elements. */
+.tac-bracket {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  color: var(--nafas-cyan);
+  line-height: 1;
+}
+.tac-bracket::before,
+.tac-bracket::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  min-width: 10px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--nafas-cyan) 60%, transparent));
+}
+.tac-bracket::after {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--nafas-cyan) 60%, transparent), transparent);
+}
+
+.tac-readout {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  color: var(--nafas-surface);
+}
+
+.tac-readout-big {
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-variant-numeric: tabular-nums;
+  font-size: 22px;
+  letter-spacing: -0.01em;
+  line-height: 1;
+  color: var(--nafas-surface);
+  font-weight: 500;
+}
+
+.tac-divider-h {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+
+.tac-divider-v {
+  width: 1px;
+  align-self: stretch;
+  background: linear-gradient(180deg, transparent, rgba(255,255,255,0.14), transparent);
+}
+
+.tac-tick {
+  height: 6px;
+  width: 1px;
+  background: rgba(255,255,255,0.26);
+}
+.tac-tick--major {
+  height: 10px;
+  background: rgba(255,255,255,0.42);
+}
+
+.tac-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 10px;
+  font-family: var(--font-jetbrains), ui-monospace, monospace;
+  font-size: 9.5px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--nafas-ink3);
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.09);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 140ms cubic-bezier(0.22,1,0.36,1);
+}
+.tac-btn:hover {
+  color: var(--nafas-surface);
+  border-color: rgba(62,201,208,0.45);
+  background: rgba(62,201,208,0.06);
+}
+.tac-btn:active {
+  transform: translateY(1px);
+}
+.tac-btn[data-active="true"] {
+  color: var(--nafas-cyan);
+  border-color: rgba(62,201,208,0.6);
+  background: rgba(62,201,208,0.08);
+  box-shadow: inset 0 0 0 1px rgba(62,201,208,0.2);
+}
+
+.tac-dot {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  box-shadow: 0 0 8px 0 currentColor;
+}
+.tac-dot--danger  { background: var(--nafas-danger); color: var(--nafas-danger); }
+.tac-dot--amber   { background: var(--nafas-amber);  color: var(--nafas-amber); }
+.tac-dot--cyan    { background: var(--nafas-cyan);   color: var(--nafas-cyan); }
+.tac-dot--accent  { background: var(--nafas-accent); color: var(--nafas-accent); }
+
+@keyframes tac-blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.28; }
+}
+.tac-blink { animation: tac-blink 1.6s ease-in-out infinite; }
+
+@keyframes tac-pulse {
+  0%, 100% { transform: scale(1); opacity: 0.6; }
+  50% { transform: scale(1.6); opacity: 0; }
+}
+.tac-pulse-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 1px solid currentColor;
+  animation: tac-pulse 2s ease-out infinite;
+  pointer-events: none;
+}
+
+/* Subtle viewport-wide scanline + vignette overlay for the 3D monitor. */
+.tac-scanlines {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 30;
+  mix-blend-mode: overlay;
+  opacity: 0.22;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      rgba(255,255,255,0.00) 0px,
+      rgba(255,255,255,0.00) 2px,
+      rgba(255,255,255,0.04) 3px,
+      rgba(255,255,255,0.00) 4px
+    );
+}
+.tac-vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 29;
+  background:
+    radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.55) 100%),
+    linear-gradient(180deg, rgba(10,15,20,0.18) 0%, transparent 15%, transparent 85%, rgba(10,15,20,0.28) 100%);
+}
+
+/* Centre reticle — four tiny brackets around the viewport crosshair. */
+.tac-reticle {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 28;
+  display: grid;
+  place-items: center;
+  opacity: 0.55;
+}
+.tac-reticle-mark {
+  position: relative;
+  width: 54px;
+  height: 54px;
+}
+.tac-reticle-mark::before,
+.tac-reticle-mark::after {
+  content: "";
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-color: rgba(62,201,208,0.75);
+  border-style: solid;
+}
+.tac-reticle-mark::before {
+  top: 0; left: 0;
+  border-width: 1px 0 0 1px;
+}
+.tac-reticle-mark::after {
+  bottom: 0; right: 0;
+  border-width: 0 1px 1px 0;
+}
+
+/* Nuke any residual default Cesium UI that might sneak through */
+.cesium-widget-credits,
+.cesium-viewer-toolbar,
+.cesium-viewer-bottom,
+.cesium-viewer-geocoderContainer,
+.cesium-viewer-navigationContainer,
+.cesium-viewer-navigationHelpButton,
+.cesium-navigationHelpButton-wrapper {
+  display: none !important;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

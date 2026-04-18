@@ -1,27 +1,37 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import Link from "next/link";
-import { X } from "lucide-react";
 
 // Cesium must render client-only — no SSR, no prerender
 const CesiumMap = dynamic(
   () => import("@/components/monitor3d/CesiumMap").then((m) => m.CesiumMap),
   { ssr: false, loading: () => <BootOverlay /> },
 );
-
 const CesiumScene = dynamic(
   () => import("@/components/monitor3d/CesiumScene").then((m) => m.CesiumScene),
   { ssr: false },
 );
 
+// Chrome islands — ok for SSR since they render placeholder chrome until
+// Zustand + Cesium hydrate.
+const TacticalStatus       = dynamic(() => import("@/components/monitor3d/TacticalStatus").then((m) => m.TacticalStatus),           { ssr: false });
+const TacticalHeader       = dynamic(() => import("@/components/monitor3d/TacticalHeader").then((m) => m.TacticalHeader),           { ssr: false });
+const TacticalLayers       = dynamic(() => import("@/components/monitor3d/TacticalLayers").then((m) => m.TacticalLayers),           { ssr: false });
+const TacticalAtmosphere   = dynamic(() => import("@/components/monitor3d/TacticalAtmosphere").then((m) => m.TacticalAtmosphere),   { ssr: false });
+const TacticalTimeline     = dynamic(() => import("@/components/monitor3d/TacticalTimeline").then((m) => m.TacticalTimeline),       { ssr: false });
+const TacticalAudienceRail = dynamic(() => import("@/components/monitor3d/TacticalAudienceRail").then((m) => m.TacticalAudienceRail), { ssr: false });
+const TacticalTools        = dynamic(() => import("@/components/monitor3d/TacticalTools").then((m) => m.TacticalTools),             { ssr: false });
+const TacticalLegend       = dynamic(() => import("@/components/monitor3d/TacticalLegend").then((m) => m.TacticalLegend),           { ssr: false });
+const TacticalKeybinds     = dynamic(() => import("@/components/monitor3d/TacticalKeybinds").then((m) => m.TacticalKeybinds),       { ssr: false });
+const TacticalInspect      = dynamic(() => import("@/components/monitor3d/TacticalInspect").then((m) => m.TacticalInspect),         { ssr: false });
+
 function BootOverlay() {
   return (
     <div className="absolute inset-0 grid place-items-center text-[color:var(--nafas-ink3)]">
       <div className="flex flex-col items-center gap-3">
-        <div className="size-8 rounded-full border-2 border-[color:var(--nafas-accent)]/20 border-t-[color:var(--nafas-accent)] animate-spin" />
-        <div className="text-[11px] font-[family-name:var(--font-jetbrains)] tracking-[0.24em] uppercase text-[color:var(--nafas-ink3)]/70">
-          Chargement du globe
+        <div className="size-8 rounded-full border-2 border-[color:var(--nafas-cyan)]/20 border-t-[color:var(--nafas-cyan)] animate-spin" />
+        <div className="tac-label text-[9.5px] tracking-[0.32em] text-[color:var(--nafas-ink3)]/80">
+          · Initialisation du globe ·
         </div>
       </div>
     </div>
@@ -31,27 +41,28 @@ function BootOverlay() {
 export default function Monitor3DPage() {
   return (
     <>
+      {/* The 3D world */}
       <CesiumMap />
       <CesiumScene />
 
-      {/* close → back to home */}
-      <Link
-        href="/"
-        aria-label="Retour à l'accueil"
-        className="absolute top-4 right-4 z-40 hud-chip p-2 hover:bg-white/5 transition-colors"
-      >
-        <X className="size-4 text-[color:var(--nafas-ink3)]" strokeWidth={1.8} />
-      </Link>
-
-      {/* build-in-progress banner */}
-      <div className="absolute top-4 left-4 z-40 hud-chip px-3 py-1.5">
-        <div className="flex items-center gap-2">
-          <span className="size-1.5 rounded-full bg-[color:var(--nafas-amber)] animate-pulse" />
-          <span className="text-[10.5px] font-[family-name:var(--font-jetbrains)] tracking-[0.22em] uppercase text-[color:var(--nafas-amber)]">
-            NAFAS 3D · prototype
-          </span>
-        </div>
+      {/* Viewport-wide cinematic overlays */}
+      <div className="tac-vignette" aria-hidden />
+      <div className="tac-scanlines" aria-hidden />
+      <div className="tac-reticle" aria-hidden>
+        <div className="tac-reticle-mark" />
       </div>
+
+      {/* Tactical chrome — hugs the edges */}
+      <TacticalStatus />
+      <TacticalHeader />
+      <TacticalAudienceRail />
+      <TacticalLayers />
+      <TacticalAtmosphere />
+      <TacticalLegend />
+      <TacticalTimeline />
+      <TacticalTools />
+      <TacticalKeybinds />
+      <TacticalInspect />
     </>
   );
 }
