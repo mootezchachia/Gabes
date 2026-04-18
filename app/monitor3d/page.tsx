@@ -22,6 +22,16 @@ const IntroGate = dynamic(
   { ssr: false },
 );
 
+// Layout system — movable/resizable HUD panels
+const MovablePanel = dynamic(
+  () => import("@/components/monitor3d/MovablePanel").then((m) => m.MovablePanel),
+  { ssr: false },
+);
+const LayoutControls = dynamic(
+  () => import("@/components/monitor3d/LayoutControls").then((m) => m.LayoutControls),
+  { ssr: false },
+);
+
 // Chrome islands — ok for SSR since they render placeholder chrome until
 // Zustand + Cesium hydrate.
 const TacticalStatus       = dynamic(() => import("@/components/monitor3d/TacticalStatus").then((m) => m.TacticalStatus),           { ssr: false });
@@ -51,15 +61,12 @@ function BootOverlay() {
   );
 }
 
-/**
- * HUD reveal thresholds (0..1) — tied to the 10s cinematic drive.
- *
- *   ~0.35  altitude ~4 Mm · first atmospheric entry · surface data arrives
- *   ~0.55  altitude ~600 km · city silhouette resolves · primary HUD shows
- *   ~0.70  altitude ~50 km · tools & timeline online
- *   ~0.85  altitude ~10 km · fine detail chrome (reticle, labels, inspect)
- *   ~0.92  altitude ~4 km · last actionable widgets, audience rail
- */
+// HUD reveal thresholds (0..1) — tied to the 10s cinematic drive.
+//   ~0.35  altitude ~4 Mm · first atmospheric entry
+//   ~0.55  altitude ~600 km · primary HUD shows
+//   ~0.70  altitude ~50 km · tools & timeline online
+//   ~0.85  altitude ~10 km · fine detail chrome
+//   ~0.92  altitude ~4 km · last actionable widgets
 const THRESHOLDS = {
   status: 0.35,
   header: 0.55,
@@ -85,9 +92,6 @@ export default function Monitor3DPage() {
       <IntroGate threshold={THRESHOLDS.labels}>
         <TacticalLabels />
       </IntroGate>
-      <IntroGate threshold={THRESHOLDS.aiScan}>
-        <TacticalAIScan />
-      </IntroGate>
 
       {/* Viewport-wide cinematic overlays */}
       <div className="tac-vignette" aria-hidden />
@@ -96,37 +100,61 @@ export default function Monitor3DPage() {
         <TacticalReticle />
       </IntroGate>
 
-      {/* Tactical chrome — hugs the edges, reveals stage-by-stage */}
+      {/* Edge-anchored chrome — NOT movable (they frame the viewport) */}
       <IntroGate threshold={THRESHOLDS.status}>
         <TacticalStatus />
       </IntroGate>
       <IntroGate threshold={THRESHOLDS.header}>
         <TacticalHeader />
       </IntroGate>
-      <IntroGate threshold={THRESHOLDS.audienceRail}>
-        <TacticalAudienceRail />
-      </IntroGate>
-      <IntroGate threshold={THRESHOLDS.layers}>
-        <TacticalLayers />
-      </IntroGate>
-      <IntroGate threshold={THRESHOLDS.atmosphere}>
-        <TacticalAtmosphere />
-      </IntroGate>
-      <IntroGate threshold={THRESHOLDS.legend}>
-        <TacticalLegend />
-      </IntroGate>
-      <IntroGate threshold={THRESHOLDS.timeline}>
-        <TacticalTimeline />
-      </IntroGate>
-      <IntroGate threshold={THRESHOLDS.tools}>
-        <TacticalTools />
-      </IntroGate>
       <IntroGate threshold={THRESHOLDS.keybinds}>
         <TacticalKeybinds />
       </IntroGate>
-      <IntroGate threshold={THRESHOLDS.inspect}>
-        <TacticalInspect />
+
+      {/* Movable HUD panels — drag/resize when unlocked (press L) */}
+      <IntroGate threshold={THRESHOLDS.aiScan}>
+        <MovablePanel id="aiScan" zIndex={40}>
+          <TacticalAIScan />
+        </MovablePanel>
       </IntroGate>
+      <IntroGate threshold={THRESHOLDS.audienceRail}>
+        <MovablePanel id="audienceRail" zIndex={40}>
+          <TacticalAudienceRail />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.layers}>
+        <MovablePanel id="layers" zIndex={40}>
+          <TacticalLayers />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.atmosphere}>
+        <MovablePanel id="atmosphere" zIndex={40}>
+          <TacticalAtmosphere />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.legend}>
+        <MovablePanel id="legend" zIndex={40}>
+          <TacticalLegend />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.timeline}>
+        <MovablePanel id="timeline" zIndex={40}>
+          <TacticalTimeline />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.tools}>
+        <MovablePanel id="tools" zIndex={40}>
+          <TacticalTools />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.inspect}>
+        <MovablePanel id="inspect" zIndex={50}>
+          <TacticalInspect />
+        </MovablePanel>
+      </IntroGate>
+
+      {/* Global layout controls — keybinds, lock toggle, panel chooser */}
+      <LayoutControls />
 
       {/* Cinematic boot overlay — tops everything during the intro */}
       <CinematicBoot />

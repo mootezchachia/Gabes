@@ -39,7 +39,7 @@ export function TacticalLayers() {
   const toggle = useMonitor((s) => s.toggleLayer);
 
   return (
-    <div className="tac-panel absolute bottom-4 left-4 z-40 w-[300px]">
+    <div className="tac-panel w-full h-full flex flex-col overflow-hidden">
       <div className="flex items-center justify-between px-3 pt-2.5 pb-2 border-b border-white/[0.07]">
         <span className="tac-bracket">Couches</span>
         <span className="tac-label text-[8.5px] text-[color:var(--nafas-ink3)]/70">

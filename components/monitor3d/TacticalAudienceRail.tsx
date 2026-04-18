@@ -50,7 +50,7 @@ export function TacticalAudienceRail() {
     <div
       role="tablist"
       aria-label="Sélection d'audience"
-      className="tac-panel absolute top-[280px] left-4 z-40 w-[178px] py-2"
+      className="tac-panel w-full h-full py-2 overflow-auto flex flex-col"
     >
       <div className="px-3 pb-2 border-b border-white/[0.07]">
         <span className="tac-bracket">Pour qui</span>

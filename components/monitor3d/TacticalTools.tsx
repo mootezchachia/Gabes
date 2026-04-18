@@ -69,7 +69,7 @@ export function TacticalTools() {
   }, []);
 
   return (
-    <div className="tac-panel absolute bottom-4 right-4 z-40 flex">
+    <div className="tac-panel w-full h-full flex items-center overflow-auto">
       <ToolBtn onClick={flyToGabes} label="Vue Gabès" hotkey="R">
         <Compass className="size-[12px]" strokeWidth={1.7} />
       </ToolBtn>

@@ -52,7 +52,7 @@ export function TacticalAIScan() {
 
   return (
     <div
-      className={`tac-panel absolute top-20 right-4 z-40 w-[240px] transition-opacity ${
+      className={`tac-panel w-full h-full overflow-hidden transition-opacity ${
         on ? "opacity-100" : "opacity-40"
       }`}
     >

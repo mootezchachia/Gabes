@@ -21,7 +21,7 @@ export function TacticalAtmosphere() {
   const mixingM = Math.round(420 + w.speed * 800);
 
   return (
-    <div className="tac-panel absolute top-[92px] right-4 z-40 w-[248px] p-3">
+    <div className="tac-panel w-full h-full p-3 overflow-auto">
       <div className="flex items-center justify-between mb-2">
         <span className="tac-bracket">Atmosphère</span>
         <span className="tac-dot tac-dot--cyan tac-blink" />

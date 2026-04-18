@@ -67,7 +67,7 @@ export function TacticalTimeline() {
     <div
       role="group"
       aria-label="Horloge simulée 24h"
-      className="tac-panel absolute bottom-4 left-1/2 -translate-x-1/2 z-40 w-[min(780px,calc(100vw-640px))] min-w-[560px] px-4 py-3"
+      className="tac-panel w-full h-full px-4 py-3 overflow-hidden flex flex-col"
       data-edge="accent"
     >
       {/* header row — play + readout + phase + now */}

@@ -23,7 +23,7 @@ const DOT: Record<Row["tone"], string> = {
 
 export function TacticalLegend() {
   return (
-    <div className="tac-panel absolute top-[372px] right-4 z-40 w-[208px] p-3">
+    <div className="tac-panel w-full h-full p-3 overflow-auto">
       <div className="flex items-center justify-between pb-2 mb-2 border-b border-white/[0.07]">
         <span className="tac-bracket">Sévérité</span>
         <span className="tac-label text-[8px] text-[color:var(--nafas-ink3)]/60">

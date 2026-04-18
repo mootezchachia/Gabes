@@ -14,13 +14,26 @@ const SEV: Record<string, { code: string; label: string; color: string }> = {
 export function TacticalInspect() {
   const event = useMonitor((s) => s.selectedEvent);
   const clear = useMonitor((s) => s.setSelectedEvent);
-  if (!event) return null;
+  if (!event) {
+    return (
+      <div className="tac-panel w-full h-full p-3 overflow-auto flex flex-col items-center justify-center gap-2 text-center">
+        <div className="font-[family-name:var(--font-jetbrains)] text-[10px] tracking-[0.28em] uppercase text-[color:var(--nafas-ink3)]/70">
+          Inspection
+        </div>
+        <div className="font-[family-name:var(--font-fraunces)] italic text-[14px] text-[color:var(--nafas-ink3)]">
+          Aucun événement sélectionné.
+        </div>
+        <div className="font-[family-name:var(--font-jetbrains)] text-[9.5px] tracking-[0.22em] uppercase text-[color:var(--nafas-ink3)]/60">
+          Clic sur un capteur ou une source
+        </div>
+      </div>
+    );
+  }
   const sev = SEV[event.severity] ?? SEV.medium;
 
   return (
     <div
-      className="tac-panel absolute right-4 z-50 w-[268px] p-3"
-      style={{ bottom: "232px" }}
+      className="tac-panel w-full h-full p-3 overflow-auto"
       data-tone={event.severity === "high" ? "danger" : event.severity === "medium" ? "amber" : undefined}
     >
       <div className="flex items-start justify-between pb-2 border-b border-white/[0.07]">
