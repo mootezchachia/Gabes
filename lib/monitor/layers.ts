@@ -25,20 +25,26 @@ function sensorColor(so2: number, alpha = 220): [number, number, number, number]
 }
 
 export function sensorsLayer(data: Sensor[], pulse: number, visible = true) {
+  // Ring-first aesthetic: colored stroke carries severity, fill is a low-alpha
+  // core so the dot reads as a halo not a blob. Stroke width scales with SO₂.
   return new ScatterplotLayer<Sensor>({
     id: "sensors",
     data,
     visible,
     getPosition: (d) => [d.lon, d.lat],
     getRadius: (d) =>
-      80 + d.so2 / 2 + Math.sin(pulse * 2 + d.id * 0.6) * (24 + (d.ring === 1 ? 16 : 0)),
+      70 + d.so2 / 2.2 + Math.sin(pulse * 2 + d.id * 0.6) * (18 + (d.ring === 1 ? 14 : 0)),
     radiusUnits: "meters",
-    radiusMinPixels: 3,
-    radiusMaxPixels: 30,
+    radiusMinPixels: 4,
+    radiusMaxPixels: 26,
     stroked: true,
+    filled: true,
+    lineWidthUnits: "pixels",
     lineWidthMinPixels: 1,
-    getLineColor: [255, 255, 255, 90],
-    getFillColor: (d) => sensorColor(d.so2),
+    lineWidthMaxPixels: 2.8,
+    getLineWidth: (d) => (d.so2 > 200 ? 2.4 : d.so2 > 100 ? 1.8 : 1.2),
+    getLineColor: (d) => sensorColor(d.so2, 230),
+    getFillColor: (d) => sensorColor(d.so2, 50),
     pickable: true,
     updateTriggers: { getRadius: pulse },
   });
@@ -70,17 +76,18 @@ export function plumeLayer(data: Sensor[], intensity = 1, visible = true) {
     visible,
     getPosition: (d) => [d.lon, d.lat],
     getWeight: (d) => d.so2 * intensity,
-    radiusPixels: 120,
-    intensity: 1.1,
-    threshold: 0.04,
+    radiusPixels: 140,
+    intensity: 0.9,
+    threshold: 0.05,
     aggregation: "MEAN",
+    // softer amber-wash ramp, capped alpha so it doesn't crush the ground
     colorRange: [
       [239, 159, 39, 0],
-      [239, 159, 39, 60],
-      [226, 75, 74, 120],
-      [226, 75, 74, 180],
-      [122, 31, 31, 220],
-      [90, 20, 20, 240],
+      [239, 159, 39, 22],
+      [232, 120, 50, 55],
+      [210, 90, 58, 95],
+      [170, 60, 55, 140],
+      [122, 40, 48, 180],
     ],
     updateTriggers: { getWeight: intensity },
   });

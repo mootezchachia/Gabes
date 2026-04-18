@@ -1,4 +1,5 @@
 import { ColumnLayer, LineLayer, ScatterplotLayer } from "@deck.gl/layers";
+import { HeatmapLayer } from "@deck.gl/aggregation-layers";
 import type { Sensor } from "./layers";
 
 /* -------------------------------------------------------------------------- */
@@ -123,7 +124,7 @@ export function windStreakLayer(
     getColor: (p) => {
       // Fade in and out across lifespan; tint shifts from warm to cool
       const a = Math.sin(p.age * Math.PI);
-      const alpha = Math.round(a * 180);
+      const alpha = Math.round(a * 150);
       return [210, 220, 235, alpha];
     },
     getWidth: (p) => 0.5 + (1 - p.age) * 1.2,
@@ -144,18 +145,31 @@ export function windHeadLayer(particles: WindParticle[], visible = true) {
     getRadius: (p) => 30 + (1 - p.age) * 80,
     radiusUnits: "meters",
     radiusMinPixels: 0.6,
-    radiusMaxPixels: 2.5,
+    radiusMaxPixels: 2.2,
     stroked: false,
     getFillColor: (p) => {
       const a = Math.sin(p.age * Math.PI);
-      return [220, 232, 245, Math.round(a * 160)];
+      return [220, 232, 245, Math.round(a * 140)];
     },
     updateTriggers: { getFillColor: particles },
   });
 }
 
 /* -------------------------------------------------------------------------- */
-/*  Volumetric plume (column stack downwind of GCT)                           */
+/*  Volumetric plume — a 3-layer stack for smoke-like softness                */
+/*                                                                            */
+/*  The plume is NOT one ColumnLayer. Readability and "haze" come from        */
+/*  compositing three layers that each render a different slice of the gas:  */
+/*                                                                            */
+/*   1. Ground haze   — HeatmapLayer, soft amber puddle under the column     */
+/*                       stack. Sells diffusion and connects columns to      */
+/*                       the landscape. 0 elevation.                          */
+/*   2. Mid glow       — ScatterplotLayer, a warm-amber disc at each cell    */
+/*                       base. Fills the gaps between columns, blurring      */
+/*                       the column grid into a continuous wash.              */
+/*   3. Column stack  — ColumnLayer, extruded polygonal columns with          */
+/*                       high diskResolution so the faceting reads as        */
+/*                       rounded. Smaller radius + lower alpha than before.  */
 /* -------------------------------------------------------------------------- */
 
 export interface PlumeCell {
@@ -163,6 +177,7 @@ export interface PlumeCell {
   lat: number;
   intensity: number;
   height: number;
+  jitter: number;
 }
 
 interface VolumetricPlumeOpts {
@@ -174,9 +189,10 @@ interface VolumetricPlumeOpts {
 }
 
 /**
- * Build a radial grid of plume cells extending DOWNWIND from GCT. Each cell's
- * intensity decays with along-wind distance and a Gaussian cross-wind falloff,
- * modulated by a slow breathing pulse. Suitable for a ColumnLayer.
+ * Build a denser radial grid of plume cells extending DOWNWIND from GCT.
+ * Denser grid (17 × 13) + tighter spacing lets us use a smaller column
+ * radius while still covering the cone without visible gaps. Per-frame
+ * jitter on position breaks the grid pattern.
  */
 export function buildPlumeField({
   source,
@@ -193,9 +209,9 @@ export function buildPlumeField({
   const cy = ux;
 
   const cells: PlumeCell[] = [];
-  const ANGLES = 11; // cross-wind half-width slots
-  const DISTANCES = 9; // along-wind steps
-  const DIST_STEP = 0.0055; // ~500m per step
+  const ANGLES = 17;       // cross-wind half-width slots (was 11)
+  const DISTANCES = 13;    // along-wind steps (was 9)
+  const DIST_STEP = 0.0038; // ~340m per step (was 0.0055)
 
   for (let di = 1; di <= DISTANCES; di++) {
     const d = di * DIST_STEP;
@@ -205,44 +221,115 @@ export function buildPlumeField({
     for (let ai = -Math.floor(ANGLES / 2); ai <= Math.floor(ANGLES / 2); ai++) {
       const crossFrac = ai / Math.floor(ANGLES / 2);
       const cross = crossFrac * sigma * 3;
-      const lon = source[0] + ux * along + cx * cross;
-      const lat = source[1] + vy * along + cy * cross;
+
+      // per-cell seeded jitter, animated by pulse — softens grid regularity
+      const jSeed = di * 31 + ai * 7;
+      const jLon = (hash2(jSeed, 3) - 0.5) * 0.0012;
+      const jLat = (hash2(jSeed, 11) - 0.5) * 0.0012;
+      const jitterPulse = Math.sin(pulse * 0.6 + jSeed * 0.21) * 0.0004;
+
+      const lon = source[0] + ux * along + cx * cross + jLon + jitterPulse;
+      const lat = source[1] + vy * along + cy * cross + jLat + jitterPulse * 0.7;
 
       // decay along-wind (exponential) × crosswind Gaussian
-      const alongDecay = Math.exp(-d * 5.6);
+      const alongDecay = Math.exp(-d * 5.2);
       const crossDecay = Math.exp(-(cross * cross) / (2 * sigma * sigma));
-      // slight breathing modulation
-      const breathe = 0.85 + 0.15 * Math.sin(pulse * 0.8 + di * 0.4);
+      // breathing modulation, per-cell phase
+      const breathe = 0.82 + 0.18 * Math.sin(pulse * 0.8 + di * 0.4 + ai * 0.12);
       const intensity = alongDecay * crossDecay * breathe * intensityScale;
-      const height = 80 + intensity * 420; // meters
+      const height = 60 + intensity * 340; // meters (was 80+420)
 
-      if (intensity > 0.04) {
-        cells.push({ lon, lat, intensity, height });
+      if (intensity > 0.03) {
+        cells.push({ lon, lat, intensity, height, jitter: hash2(jSeed, 17) });
       }
     }
   }
   return cells;
 }
 
+/**
+ * Ground haze — HeatmapLayer driven by the same plume cells.
+ * Sits at elevation 0. Gives a diffuse amber puddle on the ground that
+ * connects all the columns into a continuous plume body.
+ */
+export function plumeGroundHazeLayer(cells: PlumeCell[], visible = true) {
+  return new HeatmapLayer<PlumeCell>({
+    id: "plume-ground-haze",
+    data: cells,
+    visible,
+    getPosition: (c) => [c.lon, c.lat],
+    getWeight: (c) => c.intensity,
+    radiusPixels: 90,
+    intensity: 1.3,
+    threshold: 0.05,
+    // Warm amber ramp, all low-alpha so it reads as haze not heatmap
+    colorRange: [
+      [239, 159, 39, 0],
+      [239, 159, 39, 28],
+      [232, 120, 48, 55],
+      [210, 90, 56, 80],
+      [170, 60, 55, 100],
+      [122, 40, 48, 120],
+    ],
+    updateTriggers: { getWeight: cells },
+  });
+}
+
+/**
+ * Mid-glow — a soft filled disc at each cell base. Fills inter-column gaps
+ * with warm haze so the column grid dissolves visually into a continuous
+ * cloud. Large radius, very low alpha.
+ */
+export function plumeMidGlowLayer(cells: PlumeCell[], visible = true) {
+  return new ScatterplotLayer<PlumeCell>({
+    id: "plume-mid-glow",
+    data: cells,
+    visible,
+    getPosition: (c) => [c.lon, c.lat],
+    getRadius: (c) => 220 + c.intensity * 180,
+    radiusUnits: "meters",
+    radiusMinPixels: 6,
+    stroked: false,
+    filled: true,
+    getFillColor: (c) => {
+      const t = Math.min(1, c.intensity * 1.3);
+      // amber → warm-red, very low alpha so layers can overlap without crushing blacks
+      const r = Math.round(239 + (200 - 239) * t);
+      const g = Math.round(159 + (80 - 159) * t);
+      const b = Math.round(50 + (50 - 50) * t);
+      const a = Math.round(20 + t * 40);
+      return [r, g, b, a];
+    },
+    updateTriggers: { getFillColor: cells, getRadius: cells },
+  });
+}
+
+/**
+ * Column stack — rounded, softer than before.
+ *   - radius: 260 → 170 (more cells, smaller columns = denser haze)
+ *   - diskResolution: 16 → 40 (hexagonal faces read as round)
+ *   - alpha ceiling: 200 → 110 (columns merge; no hard silhouettes)
+ *   - height range: 80–500 → 60–400 (shorter, less monolithic)
+ */
 export function volumetricPlumeLayer(cells: PlumeCell[], visible = true) {
   return new ColumnLayer<PlumeCell>({
     id: "plume-volumetric",
     data: cells,
     visible,
     getPosition: (c) => [c.lon, c.lat],
-    radius: 260,
+    radius: 170,
     radiusUnits: "meters",
-    diskResolution: 16,
+    diskResolution: 40,
     extruded: true,
     getElevation: (c) => c.height,
     getFillColor: (c) => {
-      // Hot at low intensity fringe → deep red at core
-      const t = Math.min(1, c.intensity * 1.2);
-      // interp between amber and deep-red
-      const r = Math.round(239 + (122 - 239) * t);
-      const g = Math.round(159 + (31 - 159) * t);
-      const b = Math.round(39 + (31 - 39) * t);
-      const a = Math.round(60 + t * 140);
+      // Warm amber fringe → deep-red-orange core. Alpha stays low so columns
+      // blend with each other and with the mid-glow underneath.
+      const t = Math.min(1, c.intensity * 1.1);
+      const r = Math.round(239 + (180 - 239) * t);
+      const g = Math.round(159 + (52 - 159) * t);
+      const b = Math.round(48 + (46 - 48) * t);
+      const a = Math.round(38 + t * 72); // 38..110
       return [r, g, b, a];
     },
     material: false,
@@ -251,6 +338,33 @@ export function volumetricPlumeLayer(cells: PlumeCell[], visible = true) {
       getElevation: cells,
       getFillColor: cells,
     },
+  });
+}
+
+/* -------------------------------------------------------------------------- */
+/*  Source glow — soft amber wash right over the GCT centroid                 */
+/*                                                                            */
+/*  Sits underneath everything else. Anchors the plume visually to its        */
+/*  source so the cone doesn't feel orphaned when the wind blows it off.     */
+/* -------------------------------------------------------------------------- */
+
+export function sourceGlowLayer(
+  source: [number, number],
+  pulse: number,
+  visible = true,
+) {
+  const breathe = 0.9 + 0.1 * Math.sin(pulse * 0.35);
+  return new ScatterplotLayer<{ lon: number; lat: number }>({
+    id: "plume-source-glow",
+    data: [{ lon: source[0], lat: source[1] }],
+    visible,
+    getPosition: (d) => [d.lon, d.lat],
+    getRadius: 1150 * breathe,
+    radiusUnits: "meters",
+    stroked: false,
+    filled: true,
+    getFillColor: [239, 159, 39, 48],
+    updateTriggers: { getRadius: pulse },
   });
 }
 

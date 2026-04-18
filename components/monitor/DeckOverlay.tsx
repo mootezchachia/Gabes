@@ -19,6 +19,9 @@ import {
 import {
   buildPlumeField,
   criticalHaloLayer,
+  plumeGroundHazeLayer,
+  plumeMidGlowLayer,
+  sourceGlowLayer,
   stepWindField,
   volumetricPlumeLayer,
   windHeadLayer,
@@ -162,17 +165,31 @@ export function DeckOverlay({ map }: Props) {
 
       overlay.setProps({
         layers: [
+          // ground plane first
           gctVisible && gct ? gctPolygonLayer(gct, true) : null,
+
+          // plume: 4-layer stack — source glow, heatmap haze, mid-glow, columns
+          plumeVisible ? sourceGlowLayer([GABES.gct[0], GABES.gct[1]], t, true) : null,
+          plumeVisible ? plumeGroundHazeLayer(plumeCells, true) : null,
           plumeVisible ? plumeLayer(sensors, 1, true) : null,
+          plumeVisible ? plumeMidGlowLayer(plumeCells, true) : null,
           plumeVisible ? volumetricPlumeLayer(plumeCells, true) : null,
+
+          // ambient events / incidents / infra
           layers.emitters && emitters ? emittersLayer(emitters, t, true) : null,
           layers.incidents && incidents ? incidentsLayer(incidents, t, true) : null,
           layers.infra && infra ? infraLayer(infra, true) : null,
+
+          // wind atop the plume
           windVisible ? windStreakLayer(particlesRef.current, wv.u, wv.v, true) : null,
           windVisible ? windHeadLayer(particlesRef.current, true) : null,
+
+          // sensors — halo → glow → marker (layered)
           sensorsVisible ? criticalHaloLayer(sensors, t, true) : null,
           sensorsVisible ? sensorsGlowLayer(sensors, t, true) : null,
           sensorsVisible ? sensorsLayer(sensors, t, true) : null,
+
+          // stacks + landmarks last so they punch through haze
           gctVisible && gct ? gctStacksLayer(gct, t, true) : null,
           layers.infra && scope === "gabes" && landmarks ? landmarksLayer(landmarks, true) : null,
         ].filter(Boolean),

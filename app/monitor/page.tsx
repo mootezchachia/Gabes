@@ -13,6 +13,7 @@ import { ColdOpen } from "@/components/monitor/ColdOpen";
 import { InspectCard } from "@/components/monitor/InspectCard";
 import { AudienceSwitcher } from "@/components/monitor/AudienceSwitcher";
 import { AudienceFraming } from "@/components/monitor/AudienceFraming";
+import { Atmosphere } from "@/components/monitor/Atmosphere";
 import { useMonitor } from "@/lib/monitor/store";
 
 const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
@@ -32,15 +33,8 @@ export default function MonitorPage() {
             <DeckOverlay map={map} />
           </div>
 
-          {/* Edge vignette for depth — keeps attention on the center */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute inset-0 z-10"
-            style={{
-              background:
-                "radial-gradient(ellipse 85% 70% at 50% 55%, transparent 45%, rgba(10,15,20,0.35) 80%, rgba(10,15,20,0.75) 100%)",
-            }}
-          />
+          {/* Atmosphere: vignette + warm horizon + film grain */}
+          <Atmosphere />
 
           {/* Cold-open choreography (first visit only) */}
           <ColdOpen map={map} />
