@@ -3,9 +3,10 @@ import { LiveBadge } from "./LiveBadge";
 
 const LINKS = [
   { href: "#crise", label: "La crise" },
-  { href: "#plateforme", label: "Plateforme" },
-  { href: "#equipe", label: "Équipe" },
-  { href: "#dossier", label: "Dossier" },
+  { href: "#comment", label: "Méthode" },
+  { href: "#plateforme", label: "Six axes" },
+  { href: "#audiences", label: "Pour qui" },
+  { href: "#agir", label: "Agir" },
 ];
 
 export function Header() {
