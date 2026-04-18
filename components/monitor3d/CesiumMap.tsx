@@ -57,7 +57,22 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
         requestWaterMask: false,
         requestVertexNormals: true,
       }),
+      // Bing Maps Aerial with Labels (Ion asset 3). Crisp global satellite
+      // base — the plain Google Earth feel even when photoreal tiles aren't
+      // available for this cell.
+      imageryProvider: undefined, // set below after await (Ion is async)
     });
+
+    // Upgrade imagery to Ion Bing Aerial with Labels (async, best-effort).
+    (async () => {
+      try {
+        const bing = await Cesium.IonImageryProvider.fromAssetId(3);
+        viewer.imageryLayers.removeAll();
+        viewer.imageryLayers.addImageryProvider(bing);
+      } catch (err) {
+        console.info("[CesiumMap] Ion Bing imagery unavailable:", err);
+      }
+    })();
 
     // ── NAFAS atmosphere tuning ──────────────────────────────────────
     const scene = viewer.scene;
