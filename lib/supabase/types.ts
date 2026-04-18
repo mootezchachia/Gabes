@@ -96,6 +96,7 @@ export interface Sensor {
   active: boolean;
   source: string;
   device_id: string | null;
+  label: string | null;
   metadata: Record<string, unknown> | null;
   installed_at: string | null;
   created_at: string;

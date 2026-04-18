@@ -16,7 +16,7 @@ import {
 import { Button, Eyebrow, SelectField } from "@/components/app/ui/Primitives";
 import type { Sensor, SensorReading } from "@/lib/supabase/types";
 
-type SensorPick = Pick<Sensor, "id" | "type" | "unit" | "thresholds" | "device_id">;
+type SensorPick = Pick<Sensor, "id" | "type" | "unit" | "thresholds" | "device_id" | "label">;
 
 const COLORS = ["#3EC99A", "#378ADD", "#EF9F27", "#3EC9D0", "#E24B4A"] as const;
 
@@ -31,7 +31,7 @@ export function SensorTrendsChart() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("sensors")
-        .select("id, type, unit, thresholds, device_id")
+        .select("id, type, unit, thresholds, device_id, label")
         .eq("active", true)
         .limit(100);
       if (error) throw new Error(error.message);
@@ -146,7 +146,7 @@ export function SensorTrendsChart() {
             >
               <span className="size-2 rounded-full" style={{ backgroundColor: color }} />
               <span className="font-[family-name:var(--font-jetbrains)]">
-                {s.device_id ?? s.id.slice(0, 6)}
+                {s.label ?? s.device_id ?? s.id.slice(0, 6)}
               </span>
               <span className="text-[10px] opacity-70">
                 {s.type}
