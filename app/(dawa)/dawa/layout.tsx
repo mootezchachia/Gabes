@@ -26,7 +26,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#0A0F14",
+  themeColor: "#1D9E75",
 };
 
 export default function DawaLayout({ children }: { children: React.ReactNode }) {

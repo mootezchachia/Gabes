@@ -53,7 +53,7 @@ export function DawaClient() {
 
   const { data: sensors = [] } = useNearbySensors(anchors, 2000);
   const { data: readings = [] } = useLatestReadings(sensors);
-  const { severity, driver } = useDawaSeverity(readings);
+  const { severity, driver } = useDawaSeverity(readings, sensors.length);
   const alerts = useDawaAlerts(readings, news);
 
   return (

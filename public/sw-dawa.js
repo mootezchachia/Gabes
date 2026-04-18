@@ -14,7 +14,9 @@
 
 /* eslint-disable no-restricted-globals */
 
-const VERSION = "dawa-v1";
+// BUMP VERSION on every deploy that changes precached files or routing.
+// A convenient pattern: suffix with a short git short-sha or a date tag.
+const VERSION = "dawa-v2";
 const SHELL_CACHE = `${VERSION}-shell`;
 const STATIC_CACHE = `${VERSION}-static`;
 const RUNTIME_CACHE = `${VERSION}-runtime`;
@@ -22,7 +24,6 @@ const RUNTIME_CACHE = `${VERSION}-runtime`;
 const PRECACHE_URLS = [
   "/dawa",
   "/dawa/offline",
-  "/offline",
   "/manifest.webmanifest",
   "/icons/dawa-192.png",
   "/icons/dawa-512.png",
@@ -33,18 +34,22 @@ const SUPABASE_URL = (self.registration && self.registration.scope) || "";
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(SHELL_CACHE).then((cache) =>
-      // Ignore failures — e.g. offline page doesn't exist yet on first install.
-      Promise.all(
-        PRECACHE_URLS.map((u) =>
-          cache
-            .add(new Request(u, { credentials: "same-origin" }))
-            .catch(() => undefined),
+    caches
+      .open(SHELL_CACHE)
+      .then((cache) =>
+        // Ignore per-URL failures — e.g. a page not yet deployed on first install.
+        Promise.all(
+          PRECACHE_URLS.map((u) =>
+            cache
+              .add(new Request(u, { credentials: "same-origin" }))
+              .catch(() => undefined),
+          ),
         ),
-      ),
-    ),
+      )
+      // Chain skipWaiting inside waitUntil so the SW doesn't start intercepting
+      // before the shell cache is populated (Safari-safe).
+      .then(() => self.skipWaiting()),
   );
-  self.skipWaiting();
 });
 
 self.addEventListener("activate", (event) => {
@@ -126,7 +131,6 @@ self.addEventListener("fetch", (event) => {
           const cache = await caches.open(SHELL_CACHE);
           const offline =
             (await cache.match("/dawa/offline")) ||
-            (await cache.match("/offline")) ||
             (await cache.match("/dawa"));
           if (offline) return offline;
           return new Response("Offline", { status: 503 });

@@ -6,7 +6,7 @@
  * agent is producing in parallel.
  */
 
-export type Severity = "ok" | "warning" | "critical";
+export type Severity = "ok" | "warning" | "critical" | "unknown";
 
 export type SensorKind =
   | "so2"

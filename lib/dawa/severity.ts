@@ -3,7 +3,7 @@ import type { Reading, Severity, Threshold } from "./types";
 /**
  * Rank severity ordinally so we can take a "max" across many readings.
  */
-const RANK: Record<Severity, number> = { ok: 0, warning: 1, critical: 2 };
+const RANK: Record<Severity, number> = { unknown: -1, ok: 0, warning: 1, critical: 2 };
 
 export function severityForReading(value: number, t: Threshold): Severity {
   if (typeof t.critical === "number" && value >= t.critical) return "critical";
@@ -21,9 +21,27 @@ export function severityForReading(value: number, t: Threshold): Severity {
 export function computeSeverity(
   readings: Reading[],
   thresholdsByType: Record<string, Threshold> = {},
+  opts: { expectedSensors?: number; maxReadingAgeMs?: number } = {},
 ): Severity {
+  const expected = opts.expectedSensors ?? readings.length;
+  const maxAge = opts.maxReadingAgeMs ?? 30 * 60 * 1000; // 30 min stale cutoff
+  const now = Date.now();
+
+  // Filter to readings fresh enough to trust.
+  const fresh = readings.filter((r) => {
+    const t = new Date(r.takenAt).getTime();
+    return Number.isFinite(t) && now - t <= maxAge;
+  });
+
+  // If we expected sensors but none have fresh readings, state is unknown —
+  // do NOT default to "ok" (which would show a green ring over a dead network).
+  if (expected > 0 && fresh.length === 0) return "unknown";
+
+  // If we weren't expecting any sensors (no home location set), still "ok".
+  if (expected === 0 && fresh.length === 0) return "ok";
+
   let worst: Severity = "ok";
-  for (const r of readings) {
+  for (const r of fresh) {
     const t = mergeThresholds(r.thresholds, thresholdsByType[r.type]);
     const sev = severityForReading(r.value, t);
     if (RANK[sev] > RANK[worst]) worst = sev;
@@ -58,6 +76,7 @@ export const DEFAULT_THRESHOLDS: Record<string, Threshold> = {
 export function severityLabel(s: Severity): string {
   if (s === "critical") return "Évite";
   if (s === "warning") return "Attention";
+  if (s === "unknown") return "Inconnu";
   return "Respire";
 }
 
@@ -65,6 +84,7 @@ export function severityLabel(s: Severity): string {
 export function severitySubtitle(s: Severity): string {
   if (s === "critical") return "Reste à l’intérieur";
   if (s === "warning") return "Limite les sorties";
+  if (s === "unknown") return "Capteurs sans signal récent";
   return "L’air est sûr";
 }
 
@@ -72,5 +92,6 @@ export function severitySubtitle(s: Severity): string {
 export function severityColor(s: Severity): string {
   if (s === "critical") return "var(--nafas-danger)";
   if (s === "warning") return "var(--nafas-amber)";
+  if (s === "unknown") return "var(--nafas-ink3)";
   return "var(--nafas-accent2)";
 }

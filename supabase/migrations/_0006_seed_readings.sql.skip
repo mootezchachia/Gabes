@@ -18,7 +18,7 @@ CREATE OR REPLACE FUNCTION sim_pasquill_air(
   p_wind_speed NUMERIC, p_wind_dir NUMERIC,  -- deg meteorological (from)
   p_t TIMESTAMPTZ,
   p_baseline NUMERIC
-) RETURNS NUMERIC LANGUAGE plpgsql IMMUTABLE AS $$
+) RETURNS NUMERIC LANGUAGE plpgsql VOLATILE AS $$
 DECLARE
   v_gct_lon CONSTANT NUMERIC := 10.1178;
   v_gct_lat CONSTANT NUMERIC := 33.9312;
@@ -62,10 +62,20 @@ BEGIN
   v_sy := 0.08 * v_x / sqrt(1.0 + 0.0001 * v_x);
   v_sz := 0.06 * v_x / sqrt(1.0 + 0.0015 * v_x);
 
-  -- Ground-level concentration with double reflection at ground (z=0, H=stack)
+  -- Guard against degenerate sigmas (very close to source or numeric edge)
+  IF v_sy < 0.1 OR v_sz < 0.1 THEN
+    RETURN GREATEST(p_baseline, 1.0);
+  END IF;
+
+  -- Ground-level concentration with double reflection at ground (z=0, H=stack).
+  -- Clamp exponents AND clamp the final v_c to 0 if below double-precision range,
+  -- so the downstream sensor_readings.value (numeric) never carries a sub-double tail.
   v_c := (v_q / (PI() * v_u * v_sy * v_sz))
-       * exp(- (v_y * v_y) / (2.0 * v_sy * v_sy))
-       * exp(- (v_stack_h * v_stack_h) / (2.0 * v_sz * v_sz));
+       * exp(GREATEST(- (v_y * v_y) / (2.0 * v_sy * v_sy), -700.0))
+       * exp(GREATEST(- (v_stack_h * v_stack_h) / (2.0 * v_sz * v_sz), -700.0));
+
+  -- Clamp anything below 1e-30 to 0 — far below any real detection limit.
+  IF v_c < 1e-30 THEN v_c := 0; END IF;
 
   -- g/m³ → µg/m³
   v_c := v_c * 1e6;
@@ -92,7 +102,7 @@ CREATE OR REPLACE FUNCTION sim_water(
   p_type sensor_type,
   p_baseline NUMERIC,
   p_t TIMESTAMPTZ
-) RETURNS NUMERIC LANGUAGE plpgsql IMMUTABLE AS $$
+) RETURNS NUMERIC LANGUAGE plpgsql VOLATILE AS $$
 DECLARE
   v_doy NUMERIC;
   v_season NUMERIC;

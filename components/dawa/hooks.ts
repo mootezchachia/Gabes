@@ -291,11 +291,14 @@ export function useWeather() {
 
 /* ─────────────────────────── Derived ─────────────────────────── */
 
-export function useDawaSeverity(readings: Reading[]): {
+export function useDawaSeverity(
+  readings: Reading[],
+  expectedSensors: number,
+): {
   severity: Severity;
   driver: Reading | null;
 } {
-  const severity = computeSeverity(readings);
+  const severity = computeSeverity(readings, undefined, { expectedSensors });
   // Pick the reading with highest normalised value as the "driver".
   let driver: Reading | null = null;
   let maxNorm = -1;
