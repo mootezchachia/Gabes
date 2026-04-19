@@ -51,7 +51,7 @@ const PORTALS = [
     label: "01 · Surveillance",
     title: "Moniteur NAFAS",
     body: "42 capteurs SO₂/PM, satellite TROPOMI et modélisation de panache en temps réel.",
-    href: "/monitor3d",
+    href: "/app/carte",
     cta: "Ouvrir le moniteur",
     accent: "#3EC99A",
   },

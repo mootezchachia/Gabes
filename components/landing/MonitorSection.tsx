@@ -18,7 +18,7 @@ const CARDS = [
     title: "Vue tactique globe",
     sub: "Cesium · Vue depuis l'espace",
     body: "Intro cinématique depuis l'orbite jusqu'à Gabès. Panneaux HUD déplaçables, scan ORACLE, couches industrielles et capteurs en relief.",
-    href: "/monitor3d",
+    href: "/app/carte",
     label: "Ouvrir le globe",
     accent: "var(--nafas-cyan)",
   },

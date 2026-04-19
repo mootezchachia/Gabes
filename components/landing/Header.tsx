@@ -37,7 +37,7 @@ export function Header() {
         <div className="flex items-center gap-3 ml-auto">
           <LiveBadge />
           <Link
-            href="/monitor3d"
+            href="/app/carte"
             className="text-[13px] font-medium bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black px-4 py-2 rounded-md transition-colors"
           >
             Ouvrir le moniteur 3D →

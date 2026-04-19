@@ -101,7 +101,7 @@ export function Hero() {
         {/* cta */}
         <div className="mt-10 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Link
-            href="/monitor3d"
+            href="/app/carte"
             className="group inline-flex items-center gap-2 bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black font-medium text-[13.5px] px-5 py-3 rounded-md transition-colors"
           >
             Ouvrir le moniteur 3D
