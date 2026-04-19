@@ -30,10 +30,16 @@ export interface CinematicState {
   loading: boolean;
   error: string | null;
   brief_md: string | null;
+  brief_error: string | null;
   projections: CinematicProjection[];
   model_name: string | null;
   show: (p: CinematicOpenPayload) => void;
-  setResult: (r: { brief_md: string | null; projections: CinematicProjection[]; model_name: string | null }) => void;
+  setResult: (r: {
+    brief_md: string | null;
+    projections: CinematicProjection[];
+    model_name: string | null;
+    brief_error?: string | null;
+  }) => void;
   setError: (msg: string) => void;
   close: () => void;
 }
@@ -43,6 +49,7 @@ export const useCinematicStore = create<CinematicState>((set) => ({
   loading: false,
   error: null,
   brief_md: null,
+  brief_error: null,
   projections: [],
   model_name: null,
   show: (p) =>
@@ -51,6 +58,7 @@ export const useCinematicStore = create<CinematicState>((set) => ({
       loading: true,
       error: null,
       brief_md: null,
+      brief_error: null,
       projections: [],
       model_name: null,
     }),
@@ -58,6 +66,7 @@ export const useCinematicStore = create<CinematicState>((set) => ({
     set({
       loading: false,
       brief_md: r.brief_md,
+      brief_error: r.brief_error ?? null,
       projections: r.projections,
       model_name: r.model_name,
       error: null,
@@ -69,6 +78,7 @@ export const useCinematicStore = create<CinematicState>((set) => ({
       loading: false,
       error: null,
       brief_md: null,
+      brief_error: null,
       projections: [],
       model_name: null,
     }),

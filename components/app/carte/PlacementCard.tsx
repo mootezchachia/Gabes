@@ -47,6 +47,7 @@ interface ForecastResult {
   projections: ForecastYear[];
   mode?: string;
   model_name?: string | null;
+  brief_error?: string | null;
 }
 
 const STRATEGY_THEME: Record<
@@ -158,6 +159,7 @@ export function PlacementCard(props: PlacementCardProps) {
           brief_md: data.brief_md,
           projections: (data.projections ?? []) as CinematicProjection[],
           model_name: data.model_name ?? null,
+          brief_error: data.brief_error ?? null,
         });
       }
     } catch (e) {
