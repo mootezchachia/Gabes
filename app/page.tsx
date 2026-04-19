@@ -1,23 +1,21 @@
-import { Header } from "@/components/landing/Header";
-import { Hero } from "@/components/landing/Hero";
-import { Crisis } from "@/components/landing/Crisis";
-import { HowItWorks } from "@/components/landing/HowItWorks";
-import { Platform } from "@/components/landing/Platform";
-import { Audiences } from "@/components/landing/Audiences";
-import { FinalCTA } from "@/components/landing/FinalCTA";
+import { NavBar } from "@/components/landing/NavBar";
+import { HeroSection } from "@/components/landing/HeroSection";
+import { JourneySection } from "@/components/landing/JourneySection";
+import { MonitorSection } from "@/components/landing/MonitorSection";
+import { ArchitectureSection } from "@/components/landing/ArchitectureSection";
+import { HealthSection } from "@/components/landing/HealthSection";
 import { Footer } from "@/components/landing/Footer";
 
 export default function Home() {
   return (
     <>
-      <Header />
+      <NavBar />
       <main>
-        <Hero />
-        <Crisis />
-        <HowItWorks />
-        <Platform />
-        <Audiences />
-        <FinalCTA />
+        <HeroSection />
+        <JourneySection />
+        <MonitorSection />
+        <ArchitectureSection />
+        <HealthSection />
       </main>
       <Footer />
     </>

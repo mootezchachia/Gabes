@@ -47,6 +47,7 @@ const TacticalInspect      = dynamic(() => import("@/components/monitor3d/Tactic
 const TacticalReticle      = dynamic(() => import("@/components/monitor3d/TacticalReticle").then((m) => m.TacticalReticle),         { ssr: false });
 const TacticalLabels       = dynamic(() => import("@/components/monitor3d/TacticalLabels").then((m) => m.TacticalLabels),           { ssr: false });
 const TacticalAIScan       = dynamic(() => import("@/components/monitor3d/TacticalAIScan").then((m) => m.TacticalAIScan),           { ssr: false });
+const WaterQualityPanel    = dynamic(() => import("@/components/monitor3d/WaterQualityPanel").then((m) => m.WaterQualityPanel),     { ssr: false });
 
 function BootOverlay() {
   return (
@@ -80,6 +81,7 @@ const THRESHOLDS = {
   reticle: 0.9,
   inspect: 0.9,
   aiScan: 0.9,
+  waterQuality: 0.9,
   audienceRail: 0.92,
 } as const;
 
@@ -150,6 +152,11 @@ export default function Monitor3DPage() {
       <IntroGate threshold={THRESHOLDS.inspect}>
         <MovablePanel id="inspect" zIndex={50}>
           <TacticalInspect />
+        </MovablePanel>
+      </IntroGate>
+      <IntroGate threshold={THRESHOLDS.waterQuality}>
+        <MovablePanel id="waterQuality" zIndex={40}>
+          <WaterQualityPanel />
         </MovablePanel>
       </IntroGate>
 
