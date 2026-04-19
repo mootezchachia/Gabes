@@ -54,7 +54,7 @@ export function FinalCTA() {
         {/* action row */}
         <div className="mt-12 flex flex-col sm:flex-row items-start sm:items-center gap-3">
           <Link
-            href="/monitor3d"
+            href="/app/carte"
             className="group inline-flex items-center gap-2.5 bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black font-medium text-[14px] px-6 py-3.5 rounded-md transition-colors"
           >
             Ouvrir le moniteur 3D

@@ -65,7 +65,7 @@ export function NavBar() {
             Carte 2D
           </Link>
           <Link
-            href="/monitor3d"
+            href="/app/carte"
             className="inline-flex items-center gap-1.5 text-[12.5px] font-medium bg-[color:var(--nafas-accent)] hover:bg-[color:var(--nafas-accent2)] text-black px-4 py-2 rounded-md transition-colors"
           >
             Globe 3D <span className="opacity-70">→</span>
