@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sparkles, MapPin, Info, AlertTriangle, Building2 } from "lucide-react";
+import { Sparkles, MapPin, Info, AlertTriangle, Building2, TrendingUp, Loader2, Film } from "lucide-react";
 import {
   deriveImpact,
   COMPONENT_LABEL,
   type Components,
   type Strategy,
 } from "@/lib/sim/impact";
+import { useCinematicStore, type CinematicProjection } from "./cinematicStore";
 
 export interface PlacementCardProps {
+  placementId: string;
   index: number; // 1-based
   location: { lon: number; lat: number };
   score: number;
@@ -27,6 +29,24 @@ export interface PlacementCardProps {
     surface_m2: number;
     occupants: number;
   };
+}
+
+interface ForecastYear {
+  year: number;
+  co2_kg: number;
+  nox_g: number;
+  occupants_k: number;
+  thermal_c: number;
+  cumulative_co2_kg: number;
+  cumulative_occupants_k_years: number;
+  cumulative_nox_g: number;
+}
+
+interface ForecastResult {
+  brief_md: string | null;
+  projections: ForecastYear[];
+  mode?: string;
+  model_name?: string | null;
 }
 
 const STRATEGY_THEME: Record<
@@ -80,18 +100,72 @@ const TYPE_LABEL: Record<string, string> = {
  * ORACLE placement — hero card (vegetal panel on a building).
  */
 export function PlacementCard(props: PlacementCardProps) {
-  const { index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect, building } = props;
+  const { placementId, index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect, building } = props;
   const theme = STRATEGY_THEME[strategy] ?? STRATEGY_THEME.air_quality;
   const impact = useMemo(
     () => deriveImpact(components, strategy, building?.surface_m2),
     [components, strategy, building?.surface_m2],
   );
   const [revealed, setRevealed] = useState(false);
+  const [forecastState, setForecastState] = useState<
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ready"; data: ForecastResult }
+    | { status: "error"; message: string }
+  >({ status: "idle" });
 
   useEffect(() => {
     const t = requestAnimationFrame(() => setRevealed(true));
     return () => cancelAnimationFrame(t);
   }, []);
+
+  const showCinema = useCinematicStore((s) => s.show);
+  const setCinemaResult = useCinematicStore((s) => s.setResult);
+  const setCinemaError = useCinematicStore((s) => s.setError);
+
+  async function runForecast(alsoCinema = false) {
+    setForecastState({ status: "loading" });
+    if (alsoCinema) {
+      showCinema({
+        placementId,
+        building: building ?? null,
+        strategy,
+        accent: theme.accent,
+        components: components as Record<string, number>,
+        location,
+        index,
+      });
+    }
+    try {
+      const res = await fetch("/api/ai/forecast", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          target_kind: "placement",
+          target_id: placementId,
+          horizon_years: 10,
+          with_brief: true,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({} as Record<string, unknown>));
+        throw new Error((j.error as string) || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as ForecastResult;
+      setForecastState({ status: "ready", data });
+      if (alsoCinema) {
+        setCinemaResult({
+          brief_md: data.brief_md,
+          projections: (data.projections ?? []) as CinematicProjection[],
+          model_name: data.model_name ?? null,
+        });
+      }
+    } catch (e) {
+      const msg = (e as Error).message;
+      setForecastState({ status: "error", message: msg });
+      if (alsoCinema) setCinemaError(msg);
+    }
+  }
 
   const scorePct = Math.round(score * 100);
   const scoreTone =
@@ -317,8 +391,49 @@ export function PlacementCard(props: PlacementCardProps) {
           ) : null}
         </div>
 
-        {/* action row */}
-        <div className="flex items-center gap-2 pt-1">
+        {/* HERO CTA — this is the jury-demo button. Click → drawer slides
+             out, camera flies to the rooftop, globe lights up a halo/beam
+             on the target, a full-viewport cinematic ORACLE dossier fades
+             in with 10-year counters, cumulative-CO₂ timeline, and LLM
+             orientation brief. One button, everything happens. */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect?.(); // camera fly + drawer close
+            if (forecastState.status !== "loading") runForecast(true);
+          }}
+          disabled={forecastState.status === "loading"}
+          className="group/cta relative w-full flex items-center gap-3 px-4 py-3 rounded-lg text-black font-[family-name:var(--font-jetbrains)] transition-transform hover:scale-[1.01] disabled:opacity-80 overflow-hidden"
+          style={{ background: theme.accent }}
+          title="Lance la projection 10 ans en mode cinéma (overlay + caméra + halo sur le bâtiment)"
+        >
+          <span
+            aria-hidden
+            className="absolute inset-y-0 w-24 -skew-x-12 opacity-40"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              animation: "cta-sweep 2.4s linear infinite",
+            }}
+          />
+          {forecastState.status === "loading" ? (
+            <Loader2 className="size-4 animate-spin relative" />
+          ) : (
+            <Film className="size-4 relative" />
+          )}
+          <span className="flex-1 text-left relative">
+            <span className="block text-[13px] tracking-[0.1em] uppercase">
+              {forecastState.status === "loading" ? "ORACLE projette…" : "Lancer le dossier ORACLE · 10 ans"}
+            </span>
+            <span className="block text-[10.5px] opacity-80 font-normal normal-case tracking-normal mt-0.5">
+              Caméra + halo + projection cinématique pour la Municipalité
+            </span>
+          </span>
+          <span className="text-[20px] leading-none relative">→</span>
+        </button>
+
+        {/* action row — minor status + secondary focus link */}
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-[10px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] tabular-nums">
             {active ? (
               <>
@@ -326,36 +441,227 @@ export function PlacementCard(props: PlacementCardProps) {
                   className="inline-block size-1.5 rounded-full"
                   style={{ background: theme.accent }}
                 />
-                Caméra · focus
+                Caméra · focus actif
               </>
             ) : (
               <>
                 <span className="inline-block size-1.5 rounded-full bg-[color:var(--nafas-ink3)]/40 group-hover:bg-[color:var(--nafas-ink3)]/80 transition-colors" />
-                {onSelect ? "Cliquer pour voir" : "Bâtiment candidat"}
+                {onSelect ? "Zone candidate · cliquer pour voir" : "Bâtiment candidat"}
               </>
             )}
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                // Deploy-to-server is not wired yet; until it is, the button
-                // at least focuses the building on the globe (closes the
-                // drawer, flies the camera, lights the halo/beam) so the
-                // operator sees exactly where this plan lands.
-                onSelect?.();
-              }}
-              className="text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] text-black px-3 py-1.5 rounded-md transition-opacity hover:opacity-90"
-              style={{ background: theme.accent }}
-              title="Ferme le tiroir, caméra sur le bâtiment, halo + faisceau verticaux"
-            >
-              Déployer sur le terrain →
-            </button>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect?.();
+            }}
+            className="ml-auto text-[10.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] hover:text-[color:var(--nafas-surface)] underline underline-offset-2 decoration-dotted"
+          >
+            Juste focaliser la caméra
+          </button>
+        </div>
+
+        {/* Inline 10-year projection panel for when the user clicked through
+             without opening the cinematic overlay (e.g. pressed "juste
+             focaliser la caméra" then wants data without leaving the drawer). */}
+        <ForecastPanel
+          state={forecastState}
+          onRun={() => runForecast(false)}
+          accent={theme.accent}
+          tint={theme.tint}
+          strategy={strategy}
+        />
+      </div>
+
+      <style jsx>{`
+        @keyframes cta-sweep {
+          from { left: -6rem; }
+          to { left: 120%; }
+        }
+      `}</style>
+    </article>
+  );
+}
+
+/* --------------------------- ForecastPanel ---------------------------- */
+
+function ForecastPanel({
+  state,
+  onRun,
+  accent,
+  tint,
+  strategy,
+}: {
+  state:
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ready"; data: ForecastResult }
+    | { status: "error"; message: string };
+  onRun: () => void;
+  accent: string;
+  tint: string;
+  strategy: Strategy;
+}) {
+  if (state.status === "idle") return null;
+
+  if (state.status === "loading") {
+    return (
+      <div
+        className="rounded-md border border-white/5 px-4 py-3 flex items-center gap-2 text-[12px] text-[color:var(--nafas-ink3)] font-[family-name:var(--font-jetbrains)]"
+        style={{ background: tint }}
+      >
+        <Loader2 className="size-3 animate-spin" style={{ color: accent }} />
+        ORACLE projette 10 ans d&apos;exploitation…
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="rounded-md border border-[color:var(--nafas-danger)]/30 bg-[color:var(--nafas-danger)]/5 px-3 py-2 flex items-center justify-between gap-2">
+        <span className="text-[12px] text-[color:var(--nafas-danger)]">
+          Prévision indisponible · {state.message}
+        </span>
+        <button
+          type="button"
+          onClick={onRun}
+          className="text-[10.5px] tracking-[0.12em] uppercase text-[color:var(--nafas-ink3)] hover:text-[color:var(--nafas-surface)] underline"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  const { data } = state;
+  const last = data.projections[data.projections.length - 1];
+  const maxCumCo2 = data.projections.reduce((m, p) => Math.max(m, p.cumulative_co2_kg), 0) || 1;
+
+  const strategyKey: Record<Strategy, string> = {
+    air_quality: "co2",
+    vulnerable_pop: "occupants",
+    heat_resilience: "thermal",
+  };
+  const keyMetric = strategyKey[strategy];
+
+  return (
+    <div
+      className="relative rounded-lg border overflow-hidden"
+      style={{
+        borderColor: `${accent}33`,
+        background: `linear-gradient(180deg, ${tint}, rgba(0,0,0,0.15))`,
+      }}
+    >
+      <div className="px-4 py-3 space-y-3">
+        {/* eyebrow */}
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-3" style={{ color: accent }} />
+          <span
+            className="text-[10px] tracking-[0.22em] uppercase font-[family-name:var(--font-jetbrains)]"
+            style={{ color: accent }}
+          >
+            Prévision ORACLE · 10 ans
+          </span>
+          {data.model_name ? (
+            <span className="ml-auto text-[9.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
+              {data.model_name.split("/").pop()?.replace(":free", "")}
+            </span>
+          ) : null}
+        </div>
+
+        {/* headline numbers */}
+        <div className="grid grid-cols-3 gap-px bg-white/5 rounded-md overflow-hidden border border-white/5">
+          <ForecastTile
+            value={
+              last && last.cumulative_co2_kg >= 1000
+                ? (last.cumulative_co2_kg / 1000).toFixed(1)
+                : String(last?.cumulative_co2_kg ?? 0)
+            }
+            unit={last && last.cumulative_co2_kg >= 1000 ? "t" : "kg"}
+            label="CO₂ cumulé"
+            accent={accent}
+            emphasize={keyMetric === "co2"}
+          />
+          <ForecastTile
+            value={String(last?.cumulative_occupants_k_years ?? 0)}
+            unit="k·an"
+            label="Occupants-an"
+            accent={accent}
+            emphasize={keyMetric === "occupants"}
+          />
+          <ForecastTile
+            value={`−${(last?.thermal_c ?? 0).toFixed(1)}`}
+            unit="°C"
+            label="Écart thermique stabilisé"
+            accent={accent}
+            emphasize={keyMetric === "thermal"}
+          />
+        </div>
+
+        {/* mini bar chart — cumulative CO2 per year */}
+        <div>
+          <div className="flex items-center justify-between text-[9.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] mb-1.5">
+            <span>CO₂ cumulé · année 1 → 10</span>
+            <span className="tabular-nums">max {Math.round(maxCumCo2)} kg</span>
+          </div>
+          <div className="grid grid-cols-10 gap-1 h-10 items-end">
+            {data.projections.map((y) => {
+              const h = Math.round((y.cumulative_co2_kg / maxCumCo2) * 100);
+              return (
+                <div key={y.year} className="relative h-full group/bar">
+                  <div
+                    className="absolute inset-x-0 bottom-0 rounded-t-sm transition-all"
+                    style={{
+                      height: `${h}%`,
+                      background: `linear-gradient(180deg, ${accent}, ${accent}55)`,
+                    }}
+                    title={`An ${y.year} · ${y.cumulative_co2_kg} kg CO₂`}
+                  />
+                </div>
+              );
+            })}
           </div>
         </div>
+
+        {/* narrative */}
+        {data.brief_md ? (
+          <div className="pt-1 text-[13px] leading-[1.55] font-[family-name:var(--font-fraunces)] italic text-[color:var(--nafas-surface)] whitespace-pre-wrap">
+            {data.brief_md}
+          </div>
+        ) : (
+          <div className="pt-1 text-[12px] leading-[1.5] text-[color:var(--nafas-ink3)] font-[family-name:var(--font-jetbrains)]">
+            Chiffres dérivés déterministes · note LLM indisponible.
+          </div>
+        )}
       </div>
-    </article>
+    </div>
+  );
+}
+
+function ForecastTile({
+  value, unit, label, accent, emphasize,
+}: {
+  value: string; unit: string; label: string; accent: string; emphasize: boolean;
+}) {
+  return (
+    <div
+      className="relative p-2.5 bg-[color:var(--nafas-bg2)]"
+      style={emphasize ? { background: `linear-gradient(180deg, ${accent}18, transparent 80%)` } : undefined}
+    >
+      <div
+        className="text-[18px] leading-none font-[family-name:var(--font-fraunces)] tracking-tight tabular-nums"
+        style={{ color: emphasize ? accent : "var(--nafas-surface)" }}
+      >
+        {value}
+        <span className="text-[10px] font-[family-name:var(--font-jetbrains)] tracking-normal opacity-70 ml-1">
+          {unit}
+        </span>
+      </div>
+      <div className="text-[9px] tracking-[0.12em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] leading-tight mt-1">
+        {label}
+      </div>
+    </div>
   );
 }
 

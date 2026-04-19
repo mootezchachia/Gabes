@@ -485,6 +485,7 @@ export function PlacementAIDialog() {
                 {placements.map((p, i) => (
                   <PlacementCard
                     key={p.id}
+                    placementId={p.id}
                     index={i + 1}
                     location={p.location}
                     score={p.score}
