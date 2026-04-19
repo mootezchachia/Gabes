@@ -6,6 +6,25 @@ const nextConfig = {
   // assets from /public/cesium (copied by scripts/copy-cesium-assets.mjs).
   serverExternalPackages: ["cesium"],
 
+  // `/marketplace` lives on a sibling Vercel deployment — redirect at the
+  // edge so the user never sees the gabes origin flicker. 307 (temporary)
+  // so we keep freedom to pull it in-house later without sticky browser
+  // caching of a 308.
+  async redirects() {
+    return [
+      {
+        source: "/marketplace",
+        destination: "https://nafas-gabes-bk3b.vercel.app/marketplace",
+        permanent: false,
+      },
+      {
+        source: "/marketplace/:path*",
+        destination: "https://nafas-gabes-bk3b.vercel.app/marketplace/:path*",
+        permanent: false,
+      },
+    ];
+  },
+
   webpack: (config, { webpack }) => {
     // Cesium's KmlDataSource imports a subpath of @zip.js/zip.js that is
     // blocked by the package's exports field. NormalModuleReplacementPlugin
