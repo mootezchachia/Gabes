@@ -70,15 +70,34 @@ export function AlertCinematic() {
 
     const entities: Cesium.Entity[] = [];
 
-    // Pulsing expanding halo
+    // Pulsing expanding halo.
+    //
+    // Cesium validates `semiMajorAxis >= semiMinorAxis` and calls the two
+    // axis properties SEPARATELY. If both axes point to the same
+    // time-varying CallbackProperty that reads `performance.now()`, the
+    // second call returns a fractionally larger value than the first →
+    // Cesium throws `DeveloperError: semiMajorAxis must be greater than or
+    // equal to the semiMinorAxis`. Fix: quantize time to a single frame
+    // bucket so both evaluations within the same Cesium update tick return
+    // identical values.
+    const frame = { bucket: -1, radius: 60, alpha: 0.5 };
+    const updateFrame = () => {
+      const now = performance.now();
+      const bucket = Math.floor(now / 16); // ~60 fps frame
+      if (bucket === frame.bucket) return;
+      const t = ((now - t0) % 1600) / 1600;
+      frame.bucket = bucket;
+      frame.radius = 60 + t * 340;
+      frame.alpha = 0.5 * (1 - t);
+    };
     const haloRadius = new Cesium.CallbackProperty(() => {
-      const t = ((performance.now() - t0) % 1600) / 1600;
-      return 60 + t * 340;
+      updateFrame();
+      return frame.radius;
     }, false);
     const haloMaterial = new Cesium.ColorMaterialProperty(
       new Cesium.CallbackProperty(() => {
-        const t = ((performance.now() - t0) % 1600) / 1600;
-        return Cesium.Color.fromCssColorString("#E24B4A").withAlpha(0.5 * (1 - t));
+        updateFrame();
+        return Cesium.Color.fromCssColorString("#E24B4A").withAlpha(frame.alpha);
       }, false),
     );
     entities.push(viewer.entities.add({

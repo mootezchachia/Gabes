@@ -519,6 +519,11 @@ function ProjectionTimeline({
   accent: string;
   horizon: number;
 }) {
+  // Kept for backward-compat with any CallbackProperty still wired into the
+  // component below. The timeline doesn't use Cesium ellipses but the
+  // placement focus marker in the same file needs the same race-safe
+  // pattern as AlertCinematic. If future refactors add more pulse halos
+  // here, reuse the `bucket` trick below.
   const max = useMemo(
     () => projections.reduce((m, p) => Math.max(m, p.cumulative_co2_kg), 0) || 1,
     [projections],
