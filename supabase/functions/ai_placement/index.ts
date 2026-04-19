@@ -111,22 +111,29 @@ function scoreCandidate(
   // Phosphate plume overlap — proxy: 1 at GCT, 0 at 3km
   const phosphatePlume = clamp01(1 - dGct / 3000);
 
+  // Short keys shared with the frontend (lib/sim/impact.ts → Components).
+  // ps = proximity to GCT rejection (phosphate plume + pollution severity)
+  // df = depth fit (bathymetry)
+  // mo = meadow/posidonia overlap
+  // sl = salinity / dilution / distance from shipping lane
+  // sd = schools downwind
+  // pp = population reached
   const components = {
-    pollution_severity: pollutionSeverity,
-    depth_fit: clamp01(depthFit(depthM)),
-    meadow_overlap: meadow,
-    shipping_lane: clamp01(shippingDist / 1000),
-    school_downwind: schoolDownwind,
-    phosphate_plume: phosphatePlume,
+    ps: clamp01(0.55 * phosphatePlume + 0.45 * pollutionSeverity),
+    df: clamp01(depthFit(depthM)),
+    mo: meadow,
+    sl: clamp01(shippingDist / 1000),
+    sd: schoolDownwind,
+    pp: clamp01((dGct > 0 ? 1 - Math.min(1, dGct / 3500) : 0) * 0.8 + 0.2 * schoolDownwind),
   };
 
   const raw =
-    w.ps * components.pollution_severity +
-    w.df * components.depth_fit +
-    w.mo * components.meadow_overlap +
-    w.sl * components.shipping_lane +
-    w.sd * components.school_downwind +
-    w.pp * components.phosphate_plume;
+    w.ps * components.ps +
+    w.df * components.df +
+    w.mo * components.mo +
+    w.sl * components.sl +
+    w.sd * components.sd +
+    w.pp * components.pp;
   const wTot = w.ps + w.df + w.mo + w.sl + w.sd + w.pp;
   return { score: raw / wTot, components };
 }

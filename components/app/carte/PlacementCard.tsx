@@ -18,6 +18,8 @@ export interface PlacementCardProps {
   model_name: string;
   strategy: Strategy;
   totalZones: number;
+  active?: boolean;
+  onSelect?: () => void;
 }
 
 const STRATEGY_THEME: Record<
@@ -69,7 +71,7 @@ const COMP_SHORT: Record<string, string> = {
  * No external chart lib — bars are plain CSS. Cheap, fast, controllable.
  */
 export function PlacementCard(props: PlacementCardProps) {
-  const { index, location, score, components, rationale_md, model_name, strategy, totalZones } = props;
+  const { index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect } = props;
   const theme = STRATEGY_THEME[strategy] ?? STRATEGY_THEME.phosphate_recovery;
   const impact = useMemo(() => deriveImpact(components, strategy), [components, strategy]);
   const [revealed, setRevealed] = useState(false);
@@ -89,18 +91,49 @@ export function PlacementCard(props: PlacementCardProps) {
 
   return (
     <article
-      className="relative rounded-xl border border-white/10 bg-[color:var(--nafas-bg2)]/80 backdrop-blur-sm overflow-hidden transition-all duration-500 ease-[var(--ease-editorial)]"
+      onClick={onSelect}
+      role={onSelect ? "button" : undefined}
+      tabIndex={onSelect ? 0 : undefined}
+      onKeyDown={(e) => {
+        if (!onSelect) return;
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onSelect();
+        }
+      }}
+      className={`group relative rounded-xl border overflow-hidden transition-all duration-500 ease-[var(--ease-editorial)] ${
+        onSelect ? "cursor-pointer" : ""
+      } ${
+        active
+          ? "border-white/25 bg-[color:var(--nafas-bg2)]"
+          : "border-white/10 bg-[color:var(--nafas-bg2)]/80 hover:border-white/15"
+      } backdrop-blur-sm`}
       style={{
         transform: revealed ? "translateY(0)" : "translateY(8px)",
         opacity: revealed ? 1 : 0,
         transitionDelay: `${(index - 1) * 60}ms`,
+        boxShadow: active ? `0 0 0 1px ${theme.accent}66, 0 18px 40px -18px ${theme.accent}55` : undefined,
       }}
     >
       {/* left accent bar colored per strategy */}
       <div
-        className="absolute inset-y-0 left-0 w-[3px]"
-        style={{ background: `linear-gradient(180deg, ${theme.accent}, transparent 90%)` }}
+        aria-hidden
+        className="absolute inset-y-0 left-0 w-[3px] transition-opacity"
+        style={{
+          background: `linear-gradient(180deg, ${theme.accent}, transparent 90%)`,
+          opacity: active ? 1 : 0.6,
+        }}
       />
+      {/* active glow */}
+      {active ? (
+        <div
+          aria-hidden
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background: `radial-gradient(ellipse 60% 60% at 100% 0%, ${theme.tintStrong}, transparent 60%)`,
+          }}
+        />
+      ) : null}
 
       <div className="p-4 pl-5 space-y-4">
         {/* header row */}
@@ -262,6 +295,42 @@ export function PlacementCard(props: PlacementCardProps) {
               Narration LLM indisponible · chiffres dérivés des coefficients scientifiques
             </div>
           ) : null}
+        </div>
+
+        {/* action row */}
+        <div className="flex items-center gap-2 pt-1">
+          <div className="flex items-center gap-1.5 text-[10px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] tabular-nums">
+            {active ? (
+              <>
+                <span
+                  className="inline-block size-1.5 rounded-full"
+                  style={{ background: theme.accent }}
+                />
+                Caméra · focus
+              </>
+            ) : (
+              <>
+                <span className="inline-block size-1.5 rounded-full bg-[color:var(--nafas-ink3)]/40 group-hover:bg-[color:var(--nafas-ink3)]/80 transition-colors" />
+                {onSelect ? "Cliquer pour voir" : "Zone candidate"}
+              </>
+            )}
+          </div>
+          <div className="ml-auto flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                // Placeholder: deploy action lives on the server; wire in a
+                // follow-up step. Today we just confirm intent so the demo
+                // flows. No-op is safer than a partial write.
+              }}
+              className="text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] text-black px-3 py-1.5 rounded-md transition-opacity hover:opacity-90"
+              style={{ background: theme.accent }}
+              title="Marque cette zone comme plan retenu (brouillon)"
+            >
+              Déployer sur le terrain →
+            </button>
+          </div>
         </div>
       </div>
     </article>
