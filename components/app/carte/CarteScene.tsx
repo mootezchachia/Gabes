@@ -6,7 +6,6 @@ import { ToolRail } from "./ToolRail";
 import { PlacePanelFlow } from "./PlacePanelFlow";
 import { PlaceSensorFlow } from "./PlaceSensorFlow";
 import { DrawZoneFlow } from "./DrawZoneFlow";
-import { PlacementAIDialog } from "./PlacementAIDialog";
 import { EntityDrawer } from "./EntityDrawer";
 import { FocusUrlHandler } from "./FocusUrlHandler";
 
@@ -29,6 +28,15 @@ const CesiumScene = dynamic(
 );
 const CesiumClickBridge = dynamic(
   () => import("./CesiumClickBridge").then((m) => m.CesiumClickBridge),
+  { ssr: false },
+);
+// Loaded via next/dynamic so its top-level `cesium` import (needed for the
+// camera flyTo on card click) lives in a browser-only chunk, matching the
+// CesiumScene / CesiumClickBridge pattern and keeping the cesium module
+// graph (incl. KmlDataSource → @zip.js leaves) out of the page's static
+// client bundle.
+const PlacementAIDialog = dynamic(
+  () => import("./PlacementAIDialog").then((m) => m.PlacementAIDialog),
   { ssr: false },
 );
 

@@ -320,13 +320,15 @@ export function PlacementCard(props: PlacementCardProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
-                // Placeholder: deploy action lives on the server; wire in a
-                // follow-up step. Today we just confirm intent so the demo
-                // flows. No-op is safer than a partial write.
+                // Deploy-to-server is not wired yet; until it is, the button
+                // at least focuses the zone on the globe (closes the drawer,
+                // flies the camera, lights the halo/beam) so the operator
+                // sees exactly where this plan lands.
+                onSelect?.();
               }}
               className="text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] text-black px-3 py-1.5 rounded-md transition-opacity hover:opacity-90"
               style={{ background: theme.accent }}
-              title="Marque cette zone comme plan retenu (brouillon)"
+              title="Ferme le tiroir, caméra sur la zone, halo + faisceau verticaux"
             >
               Déployer sur le terrain →
             </button>

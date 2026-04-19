@@ -1,6 +1,10 @@
 "use client";
 
+// Must be first — sets window.CESIUM_BASE_URL before Cesium is imported.
+import "@/lib/cesium-env";
+
 import { useState, useRef, useEffect, useMemo } from "react";
+import * as Cesium from "cesium";
 import { Sparkles, AlertTriangle, Radar, X } from "lucide-react";
 import { AppSheet, Button, FormLabel, SelectField } from "@/components/app/ui/Primitives";
 import { useToolStore } from "./toolStore";
@@ -8,7 +12,9 @@ import { parseSseStream } from "@/lib/sse/parseStream";
 import { PlacementCard } from "./PlacementCard";
 import { PlacementRunSummary } from "./PlacementRunSummary";
 import { deriveImpact, type Components, type Strategy } from "@/lib/sim/impact";
-import { getViewer } from "@/lib/cesium-bus";
+import { getViewer, onViewer } from "@/lib/cesium-bus";
+
+const ORACLE_ACCENT_CSS = "#EF9F27";
 
 interface RunEvent {
   run_id: string;
@@ -106,6 +112,155 @@ export function PlacementAIDialog() {
     }
   }, [running, placements, activeId]);
 
+  // Render every streamed placement as a persistent amber marker on the
+  // globe so the user can see where the AI is proposing zones even with the
+  // drawer closed. Rebuilt whenever the placement list changes.
+  useEffect(() => {
+    if (placements.length === 0) return;
+    const entities: Cesium.Entity[] = [];
+    let disposed = false;
+
+    const unsubscribe = onViewer((viewer) => {
+      if (!viewer || disposed) return;
+      for (const e of entities) {
+        try { viewer.entities.remove(e); } catch { /* viewer destroyed */ }
+      }
+      entities.length = 0;
+
+      placements.forEach((p, i) => {
+        const { lon, lat } = p.location;
+        entities.push(viewer.entities.add({
+          id: `ai-placement-ring-${p.id}`,
+          position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+          ellipse: {
+            semiMajorAxis: 160,
+            semiMinorAxis: 160,
+            material: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.22),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            outline: true,
+            outlineColor: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.9),
+            outlineWidth: 2,
+          },
+        }));
+        entities.push(viewer.entities.add({
+          id: `ai-placement-label-${p.id}`,
+          position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+          label: {
+            text: String(i + 1).padStart(2, "0"),
+            font: "600 14px 'JetBrains Mono', monospace",
+            fillColor: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS),
+            outlineColor: Cesium.Color.fromCssColorString("rgba(10,15,20,0.95)"),
+            outlineWidth: 3,
+            style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+            verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+            pixelOffset: new Cesium.Cartesian2(0, -10),
+            heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+            disableDepthTestDistance: Number.POSITIVE_INFINITY,
+            scaleByDistance: new Cesium.NearFarScalar(1500, 1.2, 60000, 0.6),
+          },
+        }));
+      });
+    });
+
+    return () => {
+      disposed = true;
+      unsubscribe();
+      const viewer = getViewer();
+      if (!viewer) return;
+      for (const e of entities) {
+        try { viewer.entities.remove(e); } catch { /* viewer destroyed */ }
+      }
+      entities.length = 0;
+    };
+  }, [placements]);
+
+  // Loud highlight for the currently active placement: pulsing halo, solid
+  // core, vertical glow beam, and an apex dot. Makes the zone impossible to
+  // miss even over open water where visual anchors are scarce.
+  useEffect(() => {
+    if (!activeId) return;
+    const active = placements.find((x) => x.id === activeId);
+    if (!active) return;
+
+    const { lon, lat } = active.location;
+    const entities: Cesium.Entity[] = [];
+    let disposed = false;
+
+    const unsubscribe = onViewer((viewer) => {
+      if (!viewer || disposed) return;
+
+      entities.push(viewer.entities.add({
+        id: `ai-placement-active-halo-${active.id}`,
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+        ellipse: {
+          semiMajorAxis: 420,
+          semiMinorAxis: 420,
+          material: new Cesium.ColorMaterialProperty(
+            new Cesium.CallbackProperty(() => {
+              const t = Date.now() / 1000;
+              const a = 0.12 + 0.2 * (0.5 + 0.5 * Math.sin(t * 2));
+              return Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(a);
+            }, false),
+          ),
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+          outline: true,
+          outlineColor: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.95),
+          outlineWidth: 3,
+        },
+      }));
+
+      entities.push(viewer.entities.add({
+        id: `ai-placement-active-core-${active.id}`,
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+        ellipse: {
+          semiMajorAxis: 95,
+          semiMinorAxis: 95,
+          material: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.85),
+          heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
+        },
+      }));
+
+      entities.push(viewer.entities.add({
+        id: `ai-placement-active-beam-${active.id}`,
+        polyline: {
+          positions: [
+            Cesium.Cartesian3.fromDegrees(lon, lat, 0),
+            Cesium.Cartesian3.fromDegrees(lon, lat, 2400),
+          ],
+          width: 4,
+          material: new Cesium.PolylineGlowMaterialProperty({
+            color: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.95),
+            glowPower: 0.35,
+            taperPower: 0.4,
+          }),
+        },
+      }));
+
+      entities.push(viewer.entities.add({
+        id: `ai-placement-active-apex-${active.id}`,
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 2400),
+        point: {
+          pixelSize: 16,
+          color: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS),
+          outlineColor: Cesium.Color.fromCssColorString("rgba(10,15,20,0.9)"),
+          outlineWidth: 2,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+      }));
+    });
+
+    return () => {
+      disposed = true;
+      unsubscribe();
+      const viewer = getViewer();
+      if (!viewer) return;
+      for (const e of entities) {
+        try { viewer.entities.remove(e); } catch { /* viewer destroyed */ }
+      }
+      entities.length = 0;
+    };
+  }, [activeId, placements]);
+
   async function run() {
     setRunning(true);
     setProgress([]);
@@ -178,12 +333,13 @@ export function PlacementAIDialog() {
 
   function handleSelect(p: PlacementEvent) {
     setActiveId(p.id);
+    // Close the Oracle drawer first so the 680px sheet doesn't cover the
+    // flight target on the right half of the globe. The short delay lets
+    // the sheet's slide-out animation finish before the camera moves.
+    setTool("select");
     const viewer = getViewer();
     if (!viewer) return;
-    try {
-      // Lazy require so SSR bundles don't drag cesium in.
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const Cesium = require("cesium") as typeof import("cesium");
+    window.setTimeout(() => {
       viewer.camera.flyTo({
         destination: Cesium.Cartesian3.fromDegrees(p.location.lon, p.location.lat - 0.012, 1400),
         orientation: {
@@ -193,9 +349,7 @@ export function PlacementAIDialog() {
         },
         duration: 1.6,
       });
-    } catch {
-      /* cesium not yet mounted — harmless */
-    }
+    }, 260);
   }
 
   const aggregate = useMemo(() => {
