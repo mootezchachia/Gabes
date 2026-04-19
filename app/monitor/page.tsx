@@ -10,11 +10,8 @@ import { TimeStrip } from "@/components/monitor/TimeStrip";
 import { AminaModal } from "@/components/monitor/AminaModal";
 import { ColdOpen } from "@/components/monitor/ColdOpen";
 import { InspectCard } from "@/components/monitor/InspectCard";
-import { AudienceSwitcher } from "@/components/monitor/AudienceSwitcher";
-import { AudienceFraming } from "@/components/monitor/AudienceFraming";
 import { Atmosphere } from "@/components/monitor/Atmosphere";
 import { LeftSidebar } from "@/components/monitor/LeftSidebar";
-import { RightPanel } from "@/components/monitor/RightPanel";
 import { useMonitor } from "@/lib/monitor/store";
 
 const HAS_TOKEN = Boolean(process.env.NEXT_PUBLIC_MAPBOX_TOKEN);
@@ -53,9 +50,6 @@ export default function MonitorPage() {
             {HAS_TOKEN && (
               <>
                 <LeftSidebar />
-                <RightPanel />
-                <AudienceSwitcher />
-                <AudienceFraming />
                 <TimeStrip />
               </>
             )}
