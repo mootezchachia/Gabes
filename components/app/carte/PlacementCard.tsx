@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sparkles, MapPin, Info, AlertTriangle, Building2, TrendingUp, Loader2 } from "lucide-react";
+import { Sparkles, MapPin, Info, AlertTriangle, Building2, TrendingUp, Loader2, Film } from "lucide-react";
 import {
   deriveImpact,
   COMPONENT_LABEL,
   type Components,
   type Strategy,
 } from "@/lib/sim/impact";
+import { useCinematicStore, type CinematicProjection } from "./cinematicStore";
 
 export interface PlacementCardProps {
   placementId: string;
@@ -118,8 +119,23 @@ export function PlacementCard(props: PlacementCardProps) {
     return () => cancelAnimationFrame(t);
   }, []);
 
-  async function runForecast() {
+  const showCinema = useCinematicStore((s) => s.show);
+  const setCinemaResult = useCinematicStore((s) => s.setResult);
+  const setCinemaError = useCinematicStore((s) => s.setError);
+
+  async function runForecast(alsoCinema = false) {
     setForecastState({ status: "loading" });
+    if (alsoCinema) {
+      showCinema({
+        placementId,
+        building: building ?? null,
+        strategy,
+        accent: theme.accent,
+        components: components as Record<string, number>,
+        location,
+        index,
+      });
+    }
     try {
       const res = await fetch("/api/ai/forecast", {
         method: "POST",
@@ -137,8 +153,17 @@ export function PlacementCard(props: PlacementCardProps) {
       }
       const data = (await res.json()) as ForecastResult;
       setForecastState({ status: "ready", data });
+      if (alsoCinema) {
+        setCinemaResult({
+          brief_md: data.brief_md,
+          projections: (data.projections ?? []) as CinematicProjection[],
+          model_name: data.model_name ?? null,
+        });
+      }
     } catch (e) {
-      setForecastState({ status: "error", message: (e as Error).message });
+      const msg = (e as Error).message;
+      setForecastState({ status: "error", message: msg });
+      if (alsoCinema) setCinemaError(msg);
     }
   }
 
@@ -366,19 +391,49 @@ export function PlacementCard(props: PlacementCardProps) {
           ) : null}
         </div>
 
-        {/* 10-year AI projection (opens on demand — closes feedback loop
-             between "where will ORACLE put the panel" and "what does ORACLE
-             expect 10 years from now") */}
-        <ForecastPanel
-          state={forecastState}
-          onRun={runForecast}
-          accent={theme.accent}
-          tint={theme.tint}
-          strategy={strategy}
-        />
+        {/* HERO CTA — this is the jury-demo button. Click → drawer slides
+             out, camera flies to the rooftop, globe lights up a halo/beam
+             on the target, a full-viewport cinematic ORACLE dossier fades
+             in with 10-year counters, cumulative-CO₂ timeline, and LLM
+             orientation brief. One button, everything happens. */}
+        <button
+          type="button"
+          onClick={(e) => {
+            e.stopPropagation();
+            onSelect?.(); // camera fly + drawer close
+            if (forecastState.status !== "loading") runForecast(true);
+          }}
+          disabled={forecastState.status === "loading"}
+          className="group/cta relative w-full flex items-center gap-3 px-4 py-3 rounded-lg text-black font-[family-name:var(--font-jetbrains)] transition-transform hover:scale-[1.01] disabled:opacity-80 overflow-hidden"
+          style={{ background: theme.accent }}
+          title="Lance la projection 10 ans en mode cinéma (overlay + caméra + halo sur le bâtiment)"
+        >
+          <span
+            aria-hidden
+            className="absolute inset-y-0 w-24 -skew-x-12 opacity-40"
+            style={{
+              background: "linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)",
+              animation: "cta-sweep 2.4s linear infinite",
+            }}
+          />
+          {forecastState.status === "loading" ? (
+            <Loader2 className="size-4 animate-spin relative" />
+          ) : (
+            <Film className="size-4 relative" />
+          )}
+          <span className="flex-1 text-left relative">
+            <span className="block text-[13px] tracking-[0.1em] uppercase">
+              {forecastState.status === "loading" ? "ORACLE projette…" : "Lancer le dossier ORACLE · 10 ans"}
+            </span>
+            <span className="block text-[10.5px] opacity-80 font-normal normal-case tracking-normal mt-0.5">
+              Caméra + halo + projection cinématique pour la Municipalité
+            </span>
+          </span>
+          <span className="text-[20px] leading-none relative">→</span>
+        </button>
 
-        {/* action row */}
-        <div className="flex items-center gap-2 pt-1">
+        {/* action row — minor status + secondary focus link */}
+        <div className="flex items-center gap-2">
           <div className="flex items-center gap-1.5 text-[10px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] tabular-nums">
             {active ? (
               <>
@@ -386,61 +441,45 @@ export function PlacementCard(props: PlacementCardProps) {
                   className="inline-block size-1.5 rounded-full"
                   style={{ background: theme.accent }}
                 />
-                Caméra · focus
+                Caméra · focus actif
               </>
             ) : (
               <>
                 <span className="inline-block size-1.5 rounded-full bg-[color:var(--nafas-ink3)]/40 group-hover:bg-[color:var(--nafas-ink3)]/80 transition-colors" />
-                {onSelect ? "Cliquer pour voir" : "Bâtiment candidat"}
+                {onSelect ? "Zone candidate · cliquer pour voir" : "Bâtiment candidat"}
               </>
             )}
           </div>
-          <div className="ml-auto flex items-center gap-1.5">
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                if (forecastState.status !== "loading") runForecast();
-              }}
-              className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] px-3 py-1.5 rounded-md border transition-colors hover:bg-white/[0.03] disabled:opacity-60"
-              style={{
-                borderColor: `${theme.accent}55`,
-                color: theme.accent,
-              }}
-              disabled={forecastState.status === "loading"}
-              title="Projection 10 ans + note d'orientation ORACLE"
-            >
-              {forecastState.status === "loading" ? (
-                <>
-                  <Loader2 className="size-3 animate-spin" />
-                  Prévision…
-                </>
-              ) : (
-                <>
-                  <TrendingUp className="size-3" />
-                  Prévision IA · 10 ans
-                </>
-              )}
-            </button>
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                // Deploy-to-server is not wired yet; until it is, the button
-                // at least focuses the building on the globe (closes the
-                // drawer, flies the camera, lights the halo/beam) so the
-                // operator sees exactly where this plan lands.
-                onSelect?.();
-              }}
-              className="text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] text-black px-3 py-1.5 rounded-md transition-opacity hover:opacity-90"
-              style={{ background: theme.accent }}
-              title="Ferme le tiroir, caméra sur le bâtiment, halo + faisceau verticaux"
-            >
-              Déployer sur le terrain →
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect?.();
+            }}
+            className="ml-auto text-[10.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] hover:text-[color:var(--nafas-surface)] underline underline-offset-2 decoration-dotted"
+          >
+            Juste focaliser la caméra
+          </button>
         </div>
+
+        {/* Inline 10-year projection panel for when the user clicked through
+             without opening the cinematic overlay (e.g. pressed "juste
+             focaliser la caméra" then wants data without leaving the drawer). */}
+        <ForecastPanel
+          state={forecastState}
+          onRun={() => runForecast(false)}
+          accent={theme.accent}
+          tint={theme.tint}
+          strategy={strategy}
+        />
       </div>
+
+      <style jsx>{`
+        @keyframes cta-sweep {
+          from { left: -6rem; }
+          to { left: 120%; }
+        }
+      `}</style>
     </article>
   );
 }

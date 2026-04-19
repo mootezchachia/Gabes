@@ -39,6 +39,10 @@ const PlacementAIDialog = dynamic(
   () => import("./PlacementAIDialog").then((m) => m.PlacementAIDialog),
   { ssr: false },
 );
+const CinematicForecast = dynamic(
+  () => import("./CinematicForecast").then((m) => m.CinematicForecast),
+  { ssr: false },
+);
 
 function BootOverlay() {
   return (
@@ -84,6 +88,11 @@ export function CarteScene() {
 
       {/* Deep-link support: ?focus=panel:<id> opens the drawer on mount */}
       <FocusUrlHandler />
+
+      {/* Full-viewport ORACLE dossier — triggered by PlacementCard CTA.
+           Mounted at scene root so it can overlay both the globe and any
+           drawers. Renders nothing unless the cinematic store has data. */}
+      {isAdmin ? <CinematicForecast /> : null}
     </div>
   );
 }
