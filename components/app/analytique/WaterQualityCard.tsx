@@ -40,9 +40,10 @@ const SAFE_PREDICTION: Prediction = {
 };
 
 const DEFAULT_READING: Reading = {
-  pb: 0.025, cd: 0.002, as: 0.008, p: 0.15,
-  /* background params — safe baselines so they don't drive the verdict alone */
-  ni: 0.01, hg: 0.0002, cr: 0.005, n_ox: 0.1, n_other: 0.05,
+  /* GCT-controlled: P drives cd (SHAP #1) via phosphate co-release */
+  p: 0.10, cd: 0.001, pb: 0.005, as: 0.005,
+  /* background metals zeroed — hg/cr/ni/n_ox have high SHAP but aren't GCT-controlled */
+  ni: 0, hg: 0, cr: 0, n_ox: 0, n_other: 0,
   temp: 24, ph: 7.8, dgas: 6.5, optical: 12,
   month: new Date().getMonth() + 1,
   season_enc: Math.floor(((new Date().getMonth() + 1) % 12) / 3),
@@ -50,8 +51,8 @@ const DEFAULT_READING: Reading = {
 };
 
 const SLIDERS = [
-  { key: "p"  as SliderKey, label: "Phosphore (P)",  min: 0, max: 0.5,  step: 0.01,   who: null,  unit: "mg/L", note: "Rejet principal GCT" },
-  { key: "cd" as SliderKey, label: "Cadmium (Cd)",   min: 0, max: 0.01, step: 0.0001, who: 0.003, unit: "mg/L", note: "Sous-produit phosphate" },
+  { key: "p"  as SliderKey, label: "Phosphore (P)",  min: 0, max: 0.5,  step: 0.01,   who: null,  unit: "mg/L", note: "Rejet GCT → pilote Cd (SHAP #1)" },
+  { key: "cd" as SliderKey, label: "Cadmium (Cd)",   min: 0, max: 0.01, step: 0.0001, who: 0.003, unit: "mg/L", note: "Co-rejet phosphate · auto-corrélé P" },
   { key: "pb" as SliderKey, label: "Plomb (Pb)",     min: 0, max: 0.05, step: 0.001,  who: 0.01,  unit: "mg/L", note: "Métal lourd" },
   { key: "as" as SliderKey, label: "Arsenic (As)",   min: 0, max: 0.02, step: 0.0005, who: 0.01,  unit: "mg/L", note: "Roche phosphatée" },
 ] as const;
@@ -104,7 +105,11 @@ export function WaterQualityCard() {
   useEffect(() => { fetchPrediction(DEFAULT_READING); }, [fetchPrediction]);
 
   const handleSlider = (key: SliderKey, value: number) => {
-    const next = { ...reading, [key]: value };
+    // P drives cd (SHAP #1): phosphate processing co-releases cadmium at ~1:100 ratio
+    // cd hits WHO limit (0.003) when P ≈ 0.30 mg/L
+    const next = key === "p"
+      ? { ...reading, p: value, cd: parseFloat((value * 0.01).toFixed(4)) }
+      : { ...reading, [key]: value };
     setReading(next);
     if (debounceRef.current) clearTimeout(debounceRef.current);
     debounceRef.current = setTimeout(() => fetchPrediction(next), 300);

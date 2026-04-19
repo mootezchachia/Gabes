@@ -32,8 +32,9 @@ const SAFE_PREDICTION: Prediction = {
 };
 
 const BASE_READING: Reading = {
-  pb: 0.025, cd: 0.002, as: 0.008, p: 0.15,
-  ni: 0.01, hg: 0.0002, cr: 0.005, n_ox: 0.1, n_other: 0.05,
+  /* GCT metals at safe baseline; hg/cr/ni/n_ox zeroed (high SHAP but not GCT-controlled) */
+  p: 0.10, cd: 0.001, pb: 0.005, as: 0.005,
+  ni: 0, hg: 0, cr: 0, n_ox: 0, n_other: 0,
   temp: 24, ph: 7.8, dgas: 6.5, optical: 12,
   month: new Date().getMonth() + 1,
   season_enc: Math.floor(((new Date().getMonth() + 1) % 12) / 3),
