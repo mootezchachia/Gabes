@@ -57,3 +57,12 @@ next-env.d.ts
 
 .vercel
 tsc.log
+
+# datasets — large raw data files, not committed
+/datasets/GRQA_src-1.3/
+/datasets/UNEP\ GEMSWater\ Global\ Freshwater\ Quality\ Archive/
+/datasets/Impact\ of\ industrial\ phosphate\ waste\ discharge\ on\ the\ marine\ environment\ in\ the\ Gulf\ of\ Gabes\ (Tunisia)/
+/datasets/ml/nafas_features.parquet
+*.parquet
+*.csv
+*.zip
