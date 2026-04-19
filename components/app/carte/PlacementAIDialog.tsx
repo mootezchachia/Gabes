@@ -27,6 +27,13 @@ interface ProgressEvent {
   for?: { lon: number; lat: number };
   detail?: string;
 }
+interface PlacementBuilding {
+  id: string;
+  name: string;
+  type: string;
+  surface_m2: number;
+  occupants: number;
+}
 interface RawPlacementEvent {
   id: string;
   location: { lon: number; lat: number };
@@ -34,6 +41,7 @@ interface RawPlacementEvent {
   components: Record<string, number>;
   rationale_md: string | null;
   model_name: string;
+  building?: PlacementBuilding;
 }
 interface PlacementEvent extends Omit<RawPlacementEvent, "components"> {
   components: Components;
@@ -41,35 +49,32 @@ interface PlacementEvent extends Omit<RawPlacementEvent, "components"> {
 
 /** Pre-short-key servers (or future schema drift) — remap long names → short. */
 const KEY_REMAP: Record<string, keyof Components> = {
-  pollution_severity: "ps",
-  phosphate_plume: "ps",
-  depth_fit: "df",
-  meadow_overlap: "mo",
-  shipping_lane: "sl",
-  school_downwind: "sd",
-  population_reached: "pp",
-  people_reached: "pp",
+  air_exposure: "ae",
+  building_surface: "bs",
+  population: "po",
+  occupants: "po",
+  vulnerability: "vu",
+  heat_island: "hi",
+  greenery_gap: "gr",
 };
 
 function normalizeComponents(raw: Record<string, number>): Components {
   const out: Components = {};
   for (const [k, v] of Object.entries(raw)) {
     const short = KEY_REMAP[k] ?? (k as keyof Components);
-    // If we've already written a short key (e.g. server already normalized),
-    // prefer the higher-quality direct hit over a remap collision.
     if (out[short] == null) out[short] = v;
   }
   return out;
 }
 
 const STRATEGY_LABELS: Record<Strategy, string> = {
-  phosphate_recovery: "Récupération du phosphate",
-  school_protection: "Protection des écoles",
-  biodiversity: "Biodiversité marine",
+  air_quality: "Qualité de l'air urbain",
+  vulnerable_pop: "Populations vulnérables",
+  heat_resilience: "Résilience thermique",
 };
 
 /**
- * ORACLE · Placement IA — right-side drawer.
+ * ORACLE · Placement IA — right-side drawer (vegetal panels on buildings).
  *
  * Design intent:
  *  - Sheet (not modal) so the 3D globe stays visible on the left, giving the
@@ -77,19 +82,18 @@ const STRATEGY_LABELS: Record<Strategy, string> = {
  *  - `runStrategy` is frozen when the scan starts, so rate-editing the
  *    dropdown doesn't mislabel cards computed under a different strategy.
  *  - Components from the edge fn are normalized via `KEY_REMAP` — cards +
- *    impact deriver use short keys (ps/df/mo/sl/sd/pp) as their single source
- *    of truth, so any server-side schema drift degrades to a client-side fix
- *    rather than a UI full of zeros.
- *  - Click a zone card → Cesium camera flies to it; active card lights up
- *    with the strategy accent.
+ *    impact deriver use short keys (ae/bs/po/vu/hi/gr) as their single source
+ *    of truth.
+ *  - Click a zone card → drawer closes, camera flies to the building, loud
+ *    on-globe halo + beam light it up so it's impossible to miss.
  */
 export function PlacementAIDialog() {
   const tool = useToolStore((s) => s.tool);
   const setTool = useToolStore((s) => s.setTool);
   const open = tool === "ai";
 
-  const [strategy, setStrategy] = useState<Strategy>("phosphate_recovery");
-  const [runStrategy, setRunStrategy] = useState<Strategy>("phosphate_recovery");
+  const [strategy, setStrategy] = useState<Strategy>("air_quality");
+  const [runStrategy, setRunStrategy] = useState<Strategy>("air_quality");
   const [targetCount, setTargetCount] = useState(5);
   const [running, setRunning] = useState(false);
   const [progress, setProgress] = useState<ProgressEvent[]>([]);
@@ -104,7 +108,7 @@ export function PlacementAIDialog() {
     if (!open) abortRef.current?.abort();
   }, [open]);
 
-  // Auto-focus the highest-scoring zone when a run completes.
+  // Auto-focus the highest-scoring building when a run completes.
   useEffect(() => {
     if (!running && placements.length > 0 && !activeId) {
       const best = [...placements].sort((a, b) => b.score - a.score)[0];
@@ -113,8 +117,8 @@ export function PlacementAIDialog() {
   }, [running, placements, activeId]);
 
   // Render every streamed placement as a persistent amber marker on the
-  // globe so the user can see where the AI is proposing zones even with the
-  // drawer closed. Rebuilt whenever the placement list changes.
+  // globe so the user can see where ORACLE is proposing buildings even with
+  // the drawer closed. Rebuilt whenever the placement list changes.
   useEffect(() => {
     if (placements.length === 0) return;
     const entities: Cesium.Entity[] = [];
@@ -133,8 +137,8 @@ export function PlacementAIDialog() {
           id: `ai-placement-ring-${p.id}`,
           position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
           ellipse: {
-            semiMajorAxis: 160,
-            semiMinorAxis: 160,
+            semiMajorAxis: 90,
+            semiMinorAxis: 90,
             material: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.22),
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             outline: true,
@@ -146,14 +150,14 @@ export function PlacementAIDialog() {
           id: `ai-placement-label-${p.id}`,
           position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
           label: {
-            text: String(i + 1).padStart(2, "0"),
-            font: "600 14px 'JetBrains Mono', monospace",
+            text: `${String(i + 1).padStart(2, "0")} · ${p.building?.name ?? ""}`,
+            font: "600 12px 'JetBrains Mono', monospace",
             fillColor: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS),
             outlineColor: Cesium.Color.fromCssColorString("rgba(10,15,20,0.95)"),
             outlineWidth: 3,
             style: Cesium.LabelStyle.FILL_AND_OUTLINE,
             verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-            pixelOffset: new Cesium.Cartesian2(0, -10),
+            pixelOffset: new Cesium.Cartesian2(0, -14),
             heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
             disableDepthTestDistance: Number.POSITIVE_INFINITY,
             scaleByDistance: new Cesium.NearFarScalar(1500, 1.2, 60000, 0.6),
@@ -174,9 +178,9 @@ export function PlacementAIDialog() {
     };
   }, [placements]);
 
-  // Loud highlight for the currently active placement: pulsing halo, solid
+  // Loud highlight for the currently active building: pulsing halo, solid
   // core, vertical glow beam, and an apex dot. Makes the zone impossible to
-  // miss even over open water where visual anchors are scarce.
+  // miss even at low altitudes in a dense urban scene.
   useEffect(() => {
     if (!activeId) return;
     const active = placements.find((x) => x.id === activeId);
@@ -193,8 +197,8 @@ export function PlacementAIDialog() {
         id: `ai-placement-active-halo-${active.id}`,
         position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
         ellipse: {
-          semiMajorAxis: 420,
-          semiMinorAxis: 420,
+          semiMajorAxis: 220,
+          semiMinorAxis: 220,
           material: new Cesium.ColorMaterialProperty(
             new Cesium.CallbackProperty(() => {
               const t = Date.now() / 1000;
@@ -213,8 +217,8 @@ export function PlacementAIDialog() {
         id: `ai-placement-active-core-${active.id}`,
         position: Cesium.Cartesian3.fromDegrees(lon, lat, 0),
         ellipse: {
-          semiMajorAxis: 95,
-          semiMinorAxis: 95,
+          semiMajorAxis: 55,
+          semiMinorAxis: 55,
           material: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS).withAlpha(0.85),
           heightReference: Cesium.HeightReference.CLAMP_TO_GROUND,
         },
@@ -225,7 +229,7 @@ export function PlacementAIDialog() {
         polyline: {
           positions: [
             Cesium.Cartesian3.fromDegrees(lon, lat, 0),
-            Cesium.Cartesian3.fromDegrees(lon, lat, 2400),
+            Cesium.Cartesian3.fromDegrees(lon, lat, 2000),
           ],
           width: 4,
           material: new Cesium.PolylineGlowMaterialProperty({
@@ -238,13 +242,28 @@ export function PlacementAIDialog() {
 
       entities.push(viewer.entities.add({
         id: `ai-placement-active-apex-${active.id}`,
-        position: Cesium.Cartesian3.fromDegrees(lon, lat, 2400),
+        position: Cesium.Cartesian3.fromDegrees(lon, lat, 2000),
         point: {
           pixelSize: 16,
           color: Cesium.Color.fromCssColorString(ORACLE_ACCENT_CSS),
           outlineColor: Cesium.Color.fromCssColorString("rgba(10,15,20,0.9)"),
           outlineWidth: 2,
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        },
+        label: {
+          text: active.building?.name ?? "Bâtiment retenu",
+          font: "600 13px 'JetBrains Mono', monospace",
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.BLACK.withAlpha(0.85),
+          outlineWidth: 3,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          pixelOffset: new Cesium.Cartesian2(0, -22),
+          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          showBackground: true,
+          backgroundColor: Cesium.Color.BLACK.withAlpha(0.55),
+          backgroundPadding: new Cesium.Cartesian2(8, 4),
         },
       }));
     });
@@ -315,8 +334,6 @@ export function PlacementAIDialog() {
             break;
           }
           case "done":
-            // Keep drawer open on completion so the user can click through
-            // zones; they close it explicitly via ✕.
             break;
           default:
             break;
@@ -341,10 +358,10 @@ export function PlacementAIDialog() {
     if (!viewer) return;
     window.setTimeout(() => {
       viewer.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(p.location.lon, p.location.lat - 0.012, 1400),
+        destination: Cesium.Cartesian3.fromDegrees(p.location.lon, p.location.lat - 0.006, 900),
         orientation: {
           heading: Cesium.Math.toRadians(12),
-          pitch: Cesium.Math.toRadians(-32),
+          pitch: Cesium.Math.toRadians(-38),
           roll: 0,
         },
         duration: 1.6,
@@ -354,14 +371,24 @@ export function PlacementAIDialog() {
 
   const aggregate = useMemo(() => {
     if (placements.length === 0) return null;
-    const imp = placements.map((p) => deriveImpact(p.components, runStrategy));
-    const total_p = imp.reduce((s, i) => s + i.p_year1_kg, 0);
-    const total_schools = imp.reduce((s, i) => s + i.schools_sheltered, 0);
-    const total_people = imp.reduce((s, i) => s + i.people_reached_k, 0);
-    const total_ha = imp.reduce((s, i) => s + i.area_ha, 0);
+    const imp = placements.map((p) => deriveImpact(p.components, runStrategy, p.building?.surface_m2));
+    const total_surface_m2 = imp.reduce((s, i) => s + i.surface_m2, 0);
+    const total_co2_kg = imp.reduce((s, i) => s + i.co2_kg_yr, 0);
+    const total_nox_g = imp.reduce((s, i) => s + i.nox_g_yr, 0);
+    const total_occupants_k = imp.reduce((s, i) => s + i.occupants_k, 0);
     const total_capex = imp.reduce((s, i) => s + i.capex_keur, 0);
+    const avg_thermal_c =
+      imp.reduce((s, i) => s + i.thermal_c, 0) / Math.max(1, imp.length);
     const avg_score = placements.reduce((s, p) => s + p.score, 0) / placements.length;
-    return { total_p, total_schools, total_people, total_ha, total_capex, avg_score };
+    return {
+      total_surface_m2,
+      total_co2_kg,
+      total_nox_g,
+      total_occupants_k,
+      total_capex,
+      avg_thermal_c,
+      avg_score,
+    };
   }, [placements, runStrategy]);
 
   const llmWarn = progress.filter((p) => p.stage === "llm_warn").slice(-1)[0];
@@ -374,7 +401,7 @@ export function PlacementAIDialog() {
         if (!o) setTool("select");
       }}
       title="ORACLE · Placement IA"
-      description="Proposition spatialisée de panneaux à algues (scorer 6-critères + rationales FR streamées)."
+      description="Proposition spatialisée de panneaux végétaux sur bâtiments (scorer 6-critères + rationales FR streamées)."
       widthClassName="w-[min(680px,100vw)]"
       side="right"
     >
@@ -388,14 +415,14 @@ export function PlacementAIDialog() {
                 value={strategy}
                 onValueChange={(v) => setStrategy(v as Strategy)}
                 options={[
-                  { value: "phosphate_recovery", label: STRATEGY_LABELS.phosphate_recovery },
-                  { value: "school_protection", label: STRATEGY_LABELS.school_protection },
-                  { value: "biodiversity", label: STRATEGY_LABELS.biodiversity },
+                  { value: "air_quality", label: STRATEGY_LABELS.air_quality },
+                  { value: "vulnerable_pop", label: STRATEGY_LABELS.vulnerable_pop },
+                  { value: "heat_resilience", label: STRATEGY_LABELS.heat_resilience },
                 ]}
               />
             </div>
             <div>
-              <FormLabel htmlFor="target-count">Zones</FormLabel>
+              <FormLabel htmlFor="target-count">Bâtiments</FormLabel>
               <input
                 id="target-count"
                 type="number"
@@ -468,6 +495,7 @@ export function PlacementAIDialog() {
                     totalZones={runInfo?.picked ?? placements.length}
                     active={activeId === p.id}
                     onSelect={() => handleSelect(p)}
+                    building={p.building}
                   />
                 ))}
               </div>
@@ -507,31 +535,32 @@ function EmptyState() {
       </div>
 
       <p className="font-[family-name:var(--font-fraunces)] italic text-[28px] leading-[1.12] tracking-[-0.01em] text-[color:var(--nafas-surface)] max-w-[46ch]">
-        La baie.{" "}
-        <span className="text-[color:var(--nafas-ink3)]/80">169 km² de mer.</span>
+        La ville.{" "}
+        <span className="text-[color:var(--nafas-ink3)]/80">25 bâtiments candidats.</span>
         <br />
-        <span className="text-[color:var(--nafas-accent2)]">5 zones</span>{" "}
-        <span className="text-[color:var(--nafas-ink3)]/80">à choisir.</span>
+        <span className="text-[color:var(--nafas-accent2)]">5 toits</span>{" "}
+        <span className="text-[color:var(--nafas-ink3)]/80">à végétaliser.</span>
       </p>
 
       <div className="space-y-2.5 text-[13px] leading-[1.55] text-[color:var(--nafas-ink3)] max-w-[54ch]">
         <p>
-          ORACLE échantillonne ~400 emplacements candidats dans le golfe, les note sur
-          6&nbsp;critères (phosphate, bathymétrie, posidonie, dilution, écoles
-          sous-le-vent, population), diversifie à ≥&nbsp;500&nbsp;m puis narre chaque
-          choix en français via une chaîne de modèles OpenRouter gratuits.
+          ORACLE évalue 25 bâtiments-cibles de Gabès (écoles, hôpitaux, logements,
+          bureaux, mosquées) sur 6&nbsp;critères (exposition au panache GCT, surface
+          disponible, occupants desservis, vulnérabilité, îlot de chaleur, manque de
+          végétal), diversifie à ≥&nbsp;500&nbsp;m puis narre chaque choix en français
+          via une chaîne de modèles OpenRouter gratuits.
         </p>
         <p className="text-[color:var(--nafas-ink3)]/70">
-          Lancez le scan pour voir les 5 zones s&apos;allumer, puis cliquez une carte
+          Lancez le scan pour voir les bâtiments s&apos;allumer, puis cliquez une carte
           pour laisser la caméra s&apos;y poser.
         </p>
       </div>
 
       <ul className="grid grid-cols-3 gap-px bg-white/5 rounded-md overflow-hidden border border-white/5">
         {[
-          { k: "Récupération", v: "phosphate", hint: "optimisé P" },
-          { k: "Protection", v: "écoles", hint: "cône sous-vent" },
-          { k: "Biodiversité", v: "marine", hint: "Posidonia" },
+          { k: "Qualité", v: "de l'air", hint: "panache GCT" },
+          { k: "Protection", v: "vulnérables", hint: "écoles + hôpitaux" },
+          { k: "Résilience", v: "thermique", hint: "îlots de chaleur" },
         ].map((s) => (
           <li key={s.k} className="p-3 bg-[color:var(--nafas-bg2)]">
             <div className="text-[10px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
@@ -569,7 +598,7 @@ function ScanningBanner({ progress }: { progress: ProgressEvent[] }) {
         </span>
       </div>
       <div className="mt-2 font-[family-name:var(--font-fraunces)] italic text-[20px] leading-tight text-[color:var(--nafas-surface)]">
-        {candidatesMsg ?? "Sondage du golfe · pondération multi-critères…"}
+        {candidatesMsg ?? "Évaluation des bâtiments de Gabès · pondération multi-critères…"}
       </div>
     </div>
   );
@@ -591,7 +620,7 @@ function LiveTicker({ events }: { events: ProgressEvent[] }) {
         {events.map((e, i) => (
           <div key={i} className="text-[11px] text-[color:var(--nafas-ink3)] truncate">
             <span className="text-[color:var(--nafas-cyan)]/80">›</span> {e.stage}
-            {e.for ? ` — ${e.for.lat.toFixed(3)}°N ${e.for.lon.toFixed(3)}°E` : e.detail ? ` — ${e.detail}` : ""}
+            {e.detail ? ` — ${e.detail}` : e.for ? ` — ${e.for.lat.toFixed(3)}°N ${e.for.lon.toFixed(3)}°E` : ""}
           </div>
         ))}
       </div>

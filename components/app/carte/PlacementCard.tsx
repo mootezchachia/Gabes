@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sparkles, MapPin, Info, AlertTriangle } from "lucide-react";
+import { Sparkles, MapPin, Info, AlertTriangle, Building2 } from "lucide-react";
 import {
   deriveImpact,
   COMPONENT_LABEL,
@@ -20,60 +20,72 @@ export interface PlacementCardProps {
   totalZones: number;
   active?: boolean;
   onSelect?: () => void;
+  building?: {
+    id: string;
+    name: string;
+    type: string;
+    surface_m2: number;
+    occupants: number;
+  };
 }
 
 const STRATEGY_THEME: Record<
   Strategy,
   { label: string; accent: string; tint: string; tintStrong: string }
 > = {
-  phosphate_recovery: {
-    label: "Récupération phosphate",
+  air_quality: {
+    label: "Qualité de l'air",
     accent: "#EF9F27",
     tint: "rgba(239,159,39,0.08)",
     tintStrong: "rgba(239,159,39,0.22)",
   },
-  school_protection: {
-    label: "Protection écoles",
+  vulnerable_pop: {
+    label: "Populations vulnérables",
     accent: "#E24B4A",
     tint: "rgba(226,75,74,0.08)",
     tintStrong: "rgba(226,75,74,0.22)",
   },
-  biodiversity: {
-    label: "Biodiversité marine",
+  heat_resilience: {
+    label: "Résilience thermique",
     accent: "#3EC99A",
     tint: "rgba(62,201,154,0.08)",
     tintStrong: "rgba(62,201,154,0.22)",
   },
 };
 
-const COMP_ORDER: Array<keyof Components> = ["ps", "df", "mo", "sl", "sd", "pp"];
+const COMP_ORDER: Array<keyof Components> = ["ae", "bs", "po", "vu", "hi", "gr"];
 
 const COMP_SHORT: Record<string, string> = {
-  ps: "Phosphate",
-  df: "Bathymétrie",
-  mo: "Biodiversité",
-  sl: "Salinité",
-  sd: "Écoles ↓vent",
-  pp: "Population",
+  ae: "Exposition",
+  bs: "Surface",
+  po: "Occupants",
+  vu: "Vulnérabilité",
+  hi: "Chaleur",
+  gr: "Verdure↓",
+};
+
+const TYPE_LABEL: Record<string, string> = {
+  school: "École",
+  hospital: "Hôpital",
+  university: "Université",
+  housing: "Résidence",
+  office: "Administratif",
+  mosque: "Mosquée",
+  hotel: "Hôtel",
+  mall: "Commerce",
+  industrial: "Industriel",
 };
 
 /**
- * ORACLE placement — hero card.
- *
- * Design intent:
- *  - Big zone index (Fraunces display), strategy chip, model badge top row.
- *  - Giant score ring + top-2 drivers adjacent.
- *  - Full 6-criterion bar chart directly below.
- *  - 4 derived-impact tiles (kg P / posidonia / schools / people).
- *  - Rationale in Fraunces italic as the editorial closer. Falls back to a
- *    non-apologetic placeholder when LLM is down.
- *
- * No external chart lib — bars are plain CSS. Cheap, fast, controllable.
+ * ORACLE placement — hero card (vegetal panel on a building).
  */
 export function PlacementCard(props: PlacementCardProps) {
-  const { index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect } = props;
-  const theme = STRATEGY_THEME[strategy] ?? STRATEGY_THEME.phosphate_recovery;
-  const impact = useMemo(() => deriveImpact(components, strategy), [components, strategy]);
+  const { index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect, building } = props;
+  const theme = STRATEGY_THEME[strategy] ?? STRATEGY_THEME.air_quality;
+  const impact = useMemo(
+    () => deriveImpact(components, strategy, building?.surface_m2),
+    [components, strategy, building?.surface_m2],
+  );
   const [revealed, setRevealed] = useState(false);
 
   useEffect(() => {
@@ -88,6 +100,7 @@ export function PlacementCard(props: PlacementCardProps) {
     : "text-[color:var(--nafas-amber)]";
 
   const llmOk = !!rationale_md;
+  const typeLabel = building ? (TYPE_LABEL[building.type] ?? building.type) : null;
 
   return (
     <article
@@ -146,7 +159,7 @@ export function PlacementCard(props: PlacementCardProps) {
               {index.toString().padStart(2, "0")}
             </div>
             <div className="text-[9.5px] tracking-[0.2em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-              Zone · {totalZones}
+              Bât. · {totalZones}
             </div>
           </div>
 
@@ -170,11 +183,18 @@ export function PlacementCard(props: PlacementCardProps) {
               </span>
             </div>
 
+            {building ? (
+              <div className="flex items-center gap-1.5 text-[13px] font-[family-name:var(--font-fraunces)] italic text-[color:var(--nafas-surface)] leading-[1.25] mb-1">
+                <Building2 className="size-3 text-[color:var(--nafas-ink3)]" />
+                {building.name}
+              </div>
+            ) : null}
+
             <div className="flex items-center gap-1.5 text-[11px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] tabular-nums">
               <MapPin className="size-3" />
               {location.lat.toFixed(4)}°N &nbsp;·&nbsp; {location.lon.toFixed(4)}°E
               <span className="ml-auto text-[10px] tracking-[0.14em] uppercase">
-                {impact.area_ha} ha · {impact.capex_keur} k€
+                {typeLabel ? `${typeLabel} · ` : ""}{impact.surface_m2} m² · {impact.capex_keur} k€
               </span>
             </div>
           </div>
@@ -237,30 +257,30 @@ export function PlacementCard(props: PlacementCardProps) {
         {/* derived impact tiles */}
         <div className="grid grid-cols-4 gap-px bg-white/5 rounded-md overflow-hidden border border-white/5">
           <ImpactTile
-            value={impact.p_year1_kg.toFixed(1)}
-            unit="kg"
-            label="Phosphate / an"
+            value={impact.co2_kg_yr >= 1000 ? (impact.co2_kg_yr / 1000).toFixed(1) : impact.co2_kg_yr.toString()}
+            unit={impact.co2_kg_yr >= 1000 ? "t" : "kg"}
+            label="CO₂ / an"
             accent={theme.accent}
-            emphasize={strategy === "phosphate_recovery"}
+            emphasize={strategy === "air_quality"}
           />
           <ImpactTile
-            value={`+${impact.posidonia_gain_pp.toFixed(2)}`}
-            unit="pp"
-            label="Posidonia / an"
-            accent={theme.accent}
-            emphasize={strategy === "biodiversity"}
-          />
-          <ImpactTile
-            value={impact.schools_sheltered.toString()}
-            unit=""
-            label="Écoles protégées"
-            accent={theme.accent}
-            emphasize={strategy === "school_protection"}
-          />
-          <ImpactTile
-            value={impact.people_reached_k.toFixed(1)}
+            value={impact.occupants_k.toFixed(1)}
             unit="k"
-            label="Habitants"
+            label="Occupants desservis"
+            accent={theme.accent}
+            emphasize={strategy === "vulnerable_pop"}
+          />
+          <ImpactTile
+            value={`−${impact.thermal_c.toFixed(1)}`}
+            unit="°C"
+            label="Îlot de chaleur"
+            accent={theme.accent}
+            emphasize={strategy === "heat_resilience"}
+          />
+          <ImpactTile
+            value={impact.surface_m2.toString()}
+            unit="m²"
+            label="Surface végétale"
             accent={theme.accent}
             emphasize={false}
           />
@@ -283,9 +303,9 @@ export function PlacementCard(props: PlacementCardProps) {
               rationale_md
             ) : (
               <span className="text-[color:var(--nafas-ink3)]">
-                Zone retenue sur critères dominants : <strong className="not-italic text-[color:var(--nafas-surface)]">
+                Bâtiment retenu sur critères dominants : <strong className="not-italic text-[color:var(--nafas-surface)]">
                   {impact.drivers.map((d) => `${COMP_SHORT[d.key as string]} (${d.value.toFixed(2)})`).join(" + ")}
-                </strong>. Impact attendu première année : {impact.p_year1_kg.toFixed(1)} kg de phosphate retirés, {impact.schools_sheltered} école(s) dans le cône de protection.
+                </strong>. Impact attendu première année : {impact.co2_kg_yr} kg CO₂ absorbés, {impact.occupants_k.toFixed(1)} k occupants desservis, −{impact.thermal_c.toFixed(1)} °C en façade.
               </span>
             )}
           </p>
@@ -311,7 +331,7 @@ export function PlacementCard(props: PlacementCardProps) {
             ) : (
               <>
                 <span className="inline-block size-1.5 rounded-full bg-[color:var(--nafas-ink3)]/40 group-hover:bg-[color:var(--nafas-ink3)]/80 transition-colors" />
-                {onSelect ? "Cliquer pour voir" : "Zone candidate"}
+                {onSelect ? "Cliquer pour voir" : "Bâtiment candidat"}
               </>
             )}
           </div>
@@ -321,14 +341,14 @@ export function PlacementCard(props: PlacementCardProps) {
               onClick={(e) => {
                 e.stopPropagation();
                 // Deploy-to-server is not wired yet; until it is, the button
-                // at least focuses the zone on the globe (closes the drawer,
-                // flies the camera, lights the halo/beam) so the operator
-                // sees exactly where this plan lands.
+                // at least focuses the building on the globe (closes the
+                // drawer, flies the camera, lights the halo/beam) so the
+                // operator sees exactly where this plan lands.
                 onSelect?.();
               }}
               className="text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] text-black px-3 py-1.5 rounded-md transition-opacity hover:opacity-90"
               style={{ background: theme.accent }}
-              title="Ferme le tiroir, caméra sur la zone, halo + faisceau verticaux"
+              title="Ferme le tiroir, caméra sur le bâtiment, halo + faisceau verticaux"
             >
               Déployer sur le terrain →
             </button>

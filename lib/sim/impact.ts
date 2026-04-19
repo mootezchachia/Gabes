@@ -1,117 +1,128 @@
 /**
- * Derived impact metrics for a single placement, computed from the score
- * components + strategy, calibrated against lib/sim/coefficients.ts.
+ * Derived impact metrics for a single vegetal-panel placement on a Gabès
+ * building. Back-of-envelope first-year effects — not a forecast; those live
+ * in `ai_forecast`.
  *
- * These numbers are NOT predictions (that's ai_forecast's job). They are
- * back-of-envelope expected first-year effects used in the placement card
- * so the UI can show "what this zone does" before the user commits to a
- * full 10-year forecast. Conservative: every multiplier is ≤ 1.
+ * Domain: green facades / green roofs installed on schools, hospitals,
+ * housing blocks and public buildings in Gabès city, to reduce air pollution
+ * exposure near the GCT phosphate complex and mitigate urban heat islands.
  *
- * Ship-side invariant: if the LLM is unavailable, these numbers alone
- * should convey value. The rationale text is icing, not cake.
+ * Ship-side invariant: if the LLM is unavailable, these numbers alone should
+ * convey value. Rationale text is icing, not cake.
  */
 
-import { CALIBRATION } from "./coefficients";
-
 export interface Components {
-  ps?: number; // phosphate proximity (0..1)
-  df?: number; // depth fit (0..1)
-  mo?: number; // marine posidonia value (0..1)
-  sl?: number; // salinity / shoreline (0..1)
-  sd?: number; // school / downwind (0..1)
-  pp?: number; // people / population density (0..1)
+  /** air exposure — proximity + downwind of the GCT plume (0..1). */
+  ae?: number;
+  /** building surface available for panels, normalized (0..1). */
+  bs?: number;
+  /** daily occupants / people served, normalized (0..1). */
+  po?: number;
+  /** vulnerability by building type — schools/hospitals > housing > office (0..1). */
+  vu?: number;
+  /** urban heat-island severity, normalized (0..1). */
+  hi?: number;
+  /** greenery gap (1 − NDVI) — low existing greenery = high need (0..1). */
+  gr?: number;
 }
 
-export type Strategy =
-  | "phosphate_recovery"
-  | "school_protection"
-  | "biodiversity";
+export type Strategy = "air_quality" | "vulnerable_pop" | "heat_resilience";
 
 export interface DerivedImpact {
-  /** kg of phosphate removed during year 1 */
-  p_year1_kg: number;
-  /** expected posidonia cover recovery (percentage points, year 1) */
-  posidonia_gain_pp: number;
-  /** schools within the zone's protection cone (rough, 0..6) */
-  schools_sheltered: number;
-  /** people benefiting from reduced SO₂ exposure (k persons) */
-  people_reached_k: number;
-  /** area of this panel in hectares */
-  area_ha: number;
-  /** capex estimate in k€ (rule of thumb) */
+  /** effective vegetal surface installed (m²). */
+  surface_m2: number;
+  /** CO₂ absorbed year 1 (kg). */
+  co2_kg_yr: number;
+  /** NOx captured year 1 (g). */
+  nox_g_yr: number;
+  /** PM2.5 trapped year 1 (g). */
+  pm25_g_yr: number;
+  /** daily occupants benefiting (k persons). */
+  occupants_k: number;
+  /** local ambient temperature reduction (°C). */
+  thermal_c: number;
+  /** capex estimate (k€). */
   capex_keur: number;
-  /** two dominant drivers of the score, sorted */
+  /** two dominant drivers of the score, sorted. */
   drivers: Array<{ key: keyof Components; label: string; value: number }>;
 }
 
-const AREA_M2 = 500; // matches edge function: proposed_area_m2
-const AREA_HA = AREA_M2 / 10_000;
+/** Per-m² vegetal-facade annual effects (green-facade literature mid-range). */
+const CO2_KG_PER_M2_YR = 2.0;
+const NOX_G_PER_M2_YR = 5.0;
+const PM25_G_PER_M2_YR = 1.8;
+const COST_EUR_PER_M2 = 250;
 
-const CRIT_LABEL: Record<string, string> = {
-  ps: "Proximité rejet GCT",
-  df: "Compatibilité bathymétrique",
-  mo: "Valeur biodiversité (Posidonia)",
-  sl: "Salinité / dilution littorale",
-  sd: "Écoles sous le vent",
-  pp: "Population desservie",
+/** Fraction of the building's available surface actually covered by panels. */
+const PANEL_COVERAGE = 0.35;
+
+const CRIT_LABEL: Record<keyof Components, string> = {
+  ae: "Exposition pollution GCT",
+  bs: "Surface bâtiment disponible",
+  po: "Occupants desservis",
+  vu: "Vulnérabilité (école/hôpital)",
+  hi: "Îlot de chaleur urbain",
+  gr: "Manque de végétal existant",
 };
 
 const STRATEGY_TUNING: Record<
   Strategy,
-  { pMult: number; posMult: number; schoolMult: number; peopleMult: number; capexMult: number }
+  { co2Mult: number; noxMult: number; pm25Mult: number; occMult: number; thermalMult: number; capexMult: number }
 > = {
-  phosphate_recovery: { pMult: 1.35, posMult: 0.7, schoolMult: 0.5, peopleMult: 1.1, capexMult: 1.0 },
-  school_protection: { pMult: 0.9, posMult: 0.5, schoolMult: 1.6, peopleMult: 1.3, capexMult: 1.1 },
-  biodiversity: { pMult: 0.85, posMult: 1.5, schoolMult: 0.4, peopleMult: 0.8, capexMult: 0.95 },
+  air_quality:     { co2Mult: 1.25, noxMult: 1.35, pm25Mult: 1.25, occMult: 1.0,  thermalMult: 0.9,  capexMult: 1.0 },
+  vulnerable_pop:  { co2Mult: 1.0,  noxMult: 1.1,  pm25Mult: 1.1,  occMult: 1.35, thermalMult: 0.85, capexMult: 1.1 },
+  heat_resilience: { co2Mult: 0.85, noxMult: 0.85, pm25Mult: 0.85, occMult: 0.9,  thermalMult: 1.5,  capexMult: 0.95 },
 };
 
 /**
- * Back-of-envelope first-year effects from the deterministic scorer.
- * No LLM involved; no randomness; deterministic given (comps, strategy).
+ * Back-of-envelope first-year effects of installing vegetal panels on a
+ * scored building. Deterministic given (comps, strategy, surface_m2).
  */
 export function deriveImpact(
   comps: Components,
   strategy: Strategy,
+  /** Raw building surface available (m²) — if unknown, falls back to `bs` × 4000. */
+  surfaceM2Raw?: number,
 ): DerivedImpact {
-  const t = STRATEGY_TUNING[strategy] ?? STRATEGY_TUNING.phosphate_recovery;
+  const t = STRATEGY_TUNING[strategy] ?? STRATEGY_TUNING.air_quality;
 
-  // kg P/year = (theoretical max from calibration) × (ps + df weighted)
-  // CALIBRATION.p_uptake_kg_ha_yr = 45, area = 500 m² = 0.05 ha
-  // cap at ~90% of theoretical to stay honest.
-  const pEfficiency = 0.35 + 0.5 * (comps.ps ?? 0) + 0.2 * (comps.df ?? 0);
-  const p_year1_kg =
-    CALIBRATION.p_uptake_kg_ha_yr * AREA_HA * Math.min(0.9, pEfficiency) * t.pMult;
+  const rawSurface = surfaceM2Raw ?? (comps.bs ?? 0) * 4000;
+  const effective_m2 = Math.max(0, rawSurface * PANEL_COVERAGE);
 
-  // Posidonia gain (percentage points) = recovery rate × mo × (1 - pollution)
-  // CALIBRATION.posidonia_recovery_yr = 0.035 = 3.5% cover/year under ideal
-  const posidonia_gain_pp =
-    CALIBRATION.posidonia_recovery_yr * 100 * (comps.mo ?? 0) * t.posMult;
+  // Exposure amplifies absorption (plume-facing facades filter more polluted air).
+  const exposureBoost = 1 + 0.35 * (comps.ae ?? 0);
 
-  // Schools sheltered: sd value × 6 (max reasonable zones in cone) × strategy tuning
-  const schools_sheltered = Math.round((comps.sd ?? 0) * 6 * t.schoolMult);
+  const co2_kg_yr  = CO2_KG_PER_M2_YR  * effective_m2 * exposureBoost * t.co2Mult;
+  const nox_g_yr   = NOX_G_PER_M2_YR   * effective_m2 * exposureBoost * t.noxMult;
+  const pm25_g_yr  = PM25_G_PER_M2_YR  * effective_m2 * exposureBoost * t.pm25Mult;
 
-  // People reached: pp × 18k (max per zone, Ghannouch radius) × strategy tuning
-  const people_reached_k = Math.round((comps.pp ?? 0) * 18 * t.peopleMult * 10) / 10;
+  // Occupants served: po * 3k max per building * strategy tuning
+  const occupants_k = Math.round((comps.po ?? 0) * 3 * t.occMult * 10) / 10;
 
-  // Capex rule of thumb: 8 k€ per panel (500 m²), adjusted by strategy
-  const capex_keur = Math.round(8 * t.capexMult);
+  // Thermal reduction: vegetal facade cools up to ~2°C; scaled by building
+  // coverage (bs) and heat-island severity (hi), then the strategy tuning.
+  const thermal_c =
+    Math.min(2.2, 2 * (comps.bs ?? 0) * (0.4 + 0.6 * (comps.hi ?? 0))) * t.thermalMult;
+
+  const capex_keur = Math.round((effective_m2 * COST_EUR_PER_M2 * t.capexMult) / 1000);
 
   // Top-2 drivers
   const entries = (Object.entries(comps) as Array<[keyof Components, number | undefined]>)
     .filter(([, v]) => typeof v === "number")
-    .map(([k, v]) => ({ key: k, label: CRIT_LABEL[k as string] ?? (k as string), value: v ?? 0 }))
+    .map(([k, v]) => ({ key: k, label: CRIT_LABEL[k] ?? k, value: v ?? 0 }))
     .sort((a, b) => b.value - a.value)
     .slice(0, 2);
 
   return {
-    p_year1_kg: Math.round(p_year1_kg * 10) / 10,
-    posidonia_gain_pp: Math.round(posidonia_gain_pp * 100) / 100,
-    schools_sheltered,
-    people_reached_k,
-    area_ha: AREA_HA,
+    surface_m2: Math.round(effective_m2),
+    co2_kg_yr: Math.round(co2_kg_yr),
+    nox_g_yr: Math.round(nox_g_yr),
+    pm25_g_yr: Math.round(pm25_g_yr),
+    occupants_k,
+    thermal_c: Math.round(thermal_c * 10) / 10,
     capex_keur,
     drivers: entries,
   };
 }
 
-export const COMPONENT_LABEL = CRIT_LABEL;
+export const COMPONENT_LABEL: Record<string, string> = CRIT_LABEL;

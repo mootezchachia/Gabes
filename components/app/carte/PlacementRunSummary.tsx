@@ -10,29 +10,32 @@ interface RunInfo {
   picked: number;
 }
 
-interface Aggregate {
-  total_p: number;
-  total_schools: number;
-  total_people: number;
-  total_ha: number;
+export interface Aggregate {
+  total_surface_m2: number;
+  total_co2_kg: number;
+  total_nox_g: number;
+  total_occupants_k: number;
   total_capex: number;
+  avg_thermal_c: number;
   avg_score: number;
 }
 
 const STRAT_LEAD: Record<Strategy, { headline: (a: Aggregate, n: number) => string; tone: string }> = {
-  phosphate_recovery: {
-    headline: (a, n) =>
-      `${n} zones. ${a.total_p.toFixed(1)} kg de phosphate retirés chaque année.`,
+  air_quality: {
+    headline: (a, n) => {
+      const tons = a.total_co2_kg / 1000;
+      return `${n} bâtiments. ${tons >= 1 ? tons.toFixed(1) + " t" : Math.round(a.total_co2_kg) + " kg"} de CO₂ absorbés par an.`;
+    },
     tone: "#EF9F27",
   },
-  school_protection: {
+  vulnerable_pop: {
     headline: (a, n) =>
-      `${n} zones. ${a.total_schools} école${a.total_schools === 1 ? "" : "s"} sous le vent mieux protégée${a.total_schools === 1 ? "" : "s"}.`,
+      `${n} bâtiments. ${a.total_occupants_k.toFixed(1)} k occupants vulnérables mieux protégés.`,
     tone: "#E24B4A",
   },
-  biodiversity: {
+  heat_resilience: {
     headline: (a, n) =>
-      `${n} zones. +${(a.total_ha * 3.5).toFixed(1)} pp de Posidonia la première année.`,
+      `${n} bâtiments. −${a.avg_thermal_c.toFixed(1)} °C en moyenne sur les îlots de chaleur.`,
     tone: "#3EC99A",
   },
 };
@@ -40,7 +43,7 @@ const STRAT_LEAD: Record<Strategy, { headline: (a: Aggregate, n: number) => stri
 /**
  * ORACLE run verdict.
  *
- * Replaces the old 6-tile stat grid. Structure:
+ * Structure:
  *  1. Eyebrow (run-active · N/M retenus).
  *  2. Fraunces italic headline (strategy-specific, count-up on total metric).
  *  3. Tight supporting stats row in JetBrains Mono (4 tiles).
@@ -60,10 +63,10 @@ export function PlacementRunSummary({
   aggregate: Aggregate;
   running: boolean;
 }) {
-  const lead = STRAT_LEAD[strategy] ?? STRAT_LEAD.phosphate_recovery;
+  const lead = STRAT_LEAD[strategy] ?? STRAT_LEAD.air_quality;
 
   // Count-up for the headline number. Plays once per aggregate signature.
-  const sig = `${aggregate.total_p.toFixed(2)}|${aggregate.total_schools}|${aggregate.total_ha.toFixed(2)}`;
+  const sig = `${aggregate.total_co2_kg.toFixed(1)}|${aggregate.total_occupants_k.toFixed(1)}|${aggregate.avg_thermal_c.toFixed(2)}`;
   const [shown, setShown] = useState(aggregate);
   useEffect(() => {
     let raf = 0;
@@ -74,11 +77,12 @@ export function PlacementRunSummary({
       const k = Math.min(1, (t - start) / dur);
       const e = 1 - Math.pow(1 - k, 3); // ease-out-cubic
       setShown({
-        total_p: from.total_p + (aggregate.total_p - from.total_p) * e,
-        total_schools: Math.round(from.total_schools + (aggregate.total_schools - from.total_schools) * e),
-        total_people: from.total_people + (aggregate.total_people - from.total_people) * e,
-        total_ha: from.total_ha + (aggregate.total_ha - from.total_ha) * e,
+        total_surface_m2: Math.round(from.total_surface_m2 + (aggregate.total_surface_m2 - from.total_surface_m2) * e),
+        total_co2_kg: from.total_co2_kg + (aggregate.total_co2_kg - from.total_co2_kg) * e,
+        total_nox_g: from.total_nox_g + (aggregate.total_nox_g - from.total_nox_g) * e,
+        total_occupants_k: from.total_occupants_k + (aggregate.total_occupants_k - from.total_occupants_k) * e,
         total_capex: Math.round(from.total_capex + (aggregate.total_capex - from.total_capex) * e),
+        avg_thermal_c: from.avg_thermal_c + (aggregate.avg_thermal_c - from.avg_thermal_c) * e,
         avg_score: from.avg_score + (aggregate.avg_score - from.avg_score) * e,
       });
       if (k < 1) raf = requestAnimationFrame(tick);
@@ -129,8 +133,8 @@ export function PlacementRunSummary({
         {/* supporting stats */}
         <div className="grid grid-cols-4 gap-px bg-white/5 rounded-md overflow-hidden border border-white/5">
           <Stat label="Score moyen" value={(shown.avg_score * 100).toFixed(0)} unit="/100" />
-          <Stat label="Écoles couvertes" value={shown.total_schools.toString()} />
-          <Stat label="Habitants" value={shown.total_people.toFixed(1)} unit="k" />
+          <Stat label="Surface végétale" value={shown.total_surface_m2.toString()} unit="m²" />
+          <Stat label="Occupants" value={shown.total_occupants_k.toFixed(1)} unit="k" />
           <Stat label="Capex" value={shown.total_capex.toString()} unit="k€" />
         </div>
       </div>

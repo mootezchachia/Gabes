@@ -1,50 +1,51 @@
 /**
  * Placement candidate scoring — weighted sum of 6 normalized components,
- * per §6 of the brainstorming doc. Output is used by the AI placement
- * edge function to rank hexagonal grid candidates.
+ * for vegetal-panel installation on buildings in Gabès city.
  *
  * All components are in [0, 1]. Higher score = better placement.
  */
 
-export type Strategy =
-  | "phosphate_recovery"
-  | "school_protection"
-  | "biodiversity";
+export type Strategy = "air_quality" | "vulnerable_pop" | "heat_resilience";
+
+export interface BuildingProps {
+  id: string;
+  name: string;
+  type: BuildingType;
+  surface_m2: number;
+  occupants: number;
+  ndvi: number;
+  heat_island_c: number;
+}
+
+export type BuildingType =
+  | "school"
+  | "hospital"
+  | "university"
+  | "housing"
+  | "office"
+  | "mosque"
+  | "hotel"
+  | "mall"
+  | "industrial";
 
 export interface Candidate {
   location: { lon: number; lat: number };
-  area_m2: number;
-}
-
-export interface ScoringContext {
-  /** Current pollution magnitude at the candidate location, normalized 0..1
-   *  (e.g., mean SO2 over recent readings divided by the 99th percentile). */
-  pollution_severity: number;
-
-  /** Bathymetric depth in meters at the candidate location. */
-  depth_m: number;
-
-  /** Fraction of nearby (within 200m) cells historically covered by
-   *  Posidonia oceanica, 0..1. Higher = more valuable to protect. */
-  meadow_overlap: number;
-
-  /** Distance to nearest shipping lane in meters (higher is better). */
-  shipping_lane_distance_m: number;
-
-  /** Fraction of candidate area that is downwind of a school (0..1). */
-  school_downwind_coverage: number;
-
-  /** Overlap with GCT phosphate plume, 0..1. */
-  phosphate_plume_overlap: number;
+  props: BuildingProps;
 }
 
 export interface ScoreComponents {
-  pollution_severity: number;
-  depth_fit: number;
-  meadow_overlap: number;
-  shipping_lane: number;
-  school_downwind: number;
-  phosphate_plume: number;
+  /** air exposure — proximity to GCT + downwind bonus (0..1). */
+  ae: number;
+  /** building surface for panels, normalized (0..1). */
+  bs: number;
+  /** daily occupants served, normalized (0..1). */
+  po: number;
+  /** vulnerability by type — school/hospital > housing > office (0..1). */
+  vu: number;
+  /** urban heat-island severity, normalized (0..1). */
+  hi: number;
+  /** greenery gap (1 − NDVI) — low existing greenery = high need (0..1). */
+  gr: number;
 }
 
 export interface ScoreResult {
@@ -54,95 +55,99 @@ export interface ScoreResult {
 
 /** Strategy-specific weights. Sum need not equal 1; score is normalized. */
 export const STRATEGY_WEIGHTS: Record<Strategy, ScoreComponents> = {
-  phosphate_recovery: {
-    pollution_severity: 1.2,
-    depth_fit: 0.8,
-    meadow_overlap: 0.5,
-    shipping_lane: 0.6,
-    school_downwind: 0.4,
-    phosphate_plume: 1.3,
-  },
-  school_protection: {
-    pollution_severity: 1.0,
-    depth_fit: 0.6,
-    meadow_overlap: 0.3,
-    shipping_lane: 0.4,
-    school_downwind: 1.5,
-    phosphate_plume: 1.1,
-  },
-  biodiversity: {
-    pollution_severity: 0.7,
-    depth_fit: 0.9,
-    meadow_overlap: 1.4,
-    shipping_lane: 1.0,
-    school_downwind: 0.3,
-    phosphate_plume: 0.8,
-  },
+  air_quality:     { ae: 1.4, bs: 0.9, po: 1.0, vu: 0.6, hi: 0.5, gr: 0.6 },
+  vulnerable_pop:  { ae: 1.0, bs: 0.6, po: 1.0, vu: 1.5, hi: 0.4, gr: 0.5 },
+  heat_resilience: { ae: 0.5, bs: 0.9, po: 0.8, vu: 0.3, hi: 1.5, gr: 1.2 },
 };
 
-/** ideal depth range for algae panels: 3-8 m. triangular membership. */
-export function depthFit(depth: number): number {
-  if (depth <= 0) return 0;
-  if (depth < 3) return depth / 3;
-  if (depth <= 8) return 1;
-  if (depth < 15) return (15 - depth) / 7;
-  return 0;
-}
+/** GCT phosphate complex — pollution source. */
+const GCT = { lon: 10.1178, lat: 33.9312 };
 
-/** shipping lane distance → 0..1, saturates at 1000m. */
-export function shippingLaneScore(distM: number): number {
-  return clamp01(distM / 1000);
+/** Vulnerability weight per building type. */
+const TYPE_VULNERABILITY: Record<BuildingType, number> = {
+  school: 1.0,
+  hospital: 0.95,
+  university: 0.7,
+  mosque: 0.55,
+  housing: 0.55,
+  mall: 0.35,
+  hotel: 0.3,
+  office: 0.3,
+  industrial: 0.1,
+};
+
+/** Surface normalization — buildings above this count as "large". */
+const MAX_SURFACE_M2 = 4000;
+/** Occupants normalization — buildings above this count as "dense". */
+const MAX_OCCUPANTS = 3000;
+/** Heat-island normalization cap (°C above city mean). */
+const MAX_HEAT_C = 6;
+
+/**
+ * Air exposure:
+ *   — linear decay with distance to GCT (maxes out at 3.5 km)
+ *   — plus a downwind bonus for buildings roughly south/southwest of GCT
+ *     (prevailing winds in the Gulf of Gabès push the plume inland that way)
+ */
+function airExposure(loc: { lon: number; lat: number }): number {
+  const d = haversine(loc, GCT);
+  const proximity = clamp01(1 - d / 3500);
+
+  // Downwind cone: true if the building is south/southwest of GCT
+  // (lat less than GCT's, roughly within ±30° from due south).
+  const dLat = loc.lat - GCT.lat;
+  const dLon = loc.lon - GCT.lon;
+  let downwind = 0.3;
+  if (dLat < 0) {
+    // bearing in the south half-plane — we want roughly -180° (due south)
+    // which in atan2 terms is atan2(dLon, dLat). Since dLat<0 that's close to ±π.
+    const bearingFromSouth = Math.abs(Math.atan2(dLon, dLat) - Math.PI);
+    // Unwrap to [0, π]
+    const theta = Math.min(bearingFromSouth, Math.abs(bearingFromSouth - 2 * Math.PI));
+    // 0 = perfectly downwind, π = opposite. Bonus out to ~60° off-axis.
+    downwind = clamp01(1 - theta / (Math.PI / 3));
+  }
+  return clamp01(0.6 * proximity + 0.4 * downwind);
 }
 
 /**
  * scoreCandidate — weighted sum of 6 normalized components.
- * The returned `components` are the normalized 0..1 values (not weighted),
- * suitable for storage in `ai_placements.score_components::jsonb`.
+ * Returns normalized components suitable for `ai_placements.score_components::jsonb`.
  */
 export function scoreCandidate(
-  _candidate: Candidate,
+  candidate: Candidate,
   strategy: Strategy,
-  ctx: ScoringContext,
 ): ScoreResult {
   const w = STRATEGY_WEIGHTS[strategy];
+  const p = candidate.props;
 
   const components: ScoreComponents = {
-    pollution_severity: clamp01(ctx.pollution_severity),
-    depth_fit: clamp01(depthFit(ctx.depth_m)),
-    meadow_overlap: clamp01(ctx.meadow_overlap),
-    shipping_lane: clamp01(shippingLaneScore(ctx.shipping_lane_distance_m)),
-    school_downwind: clamp01(ctx.school_downwind_coverage),
-    phosphate_plume: clamp01(ctx.phosphate_plume_overlap),
+    ae: airExposure(candidate.location),
+    bs: clamp01(p.surface_m2 / MAX_SURFACE_M2),
+    po: clamp01(p.occupants / MAX_OCCUPANTS),
+    vu: clamp01(TYPE_VULNERABILITY[p.type] ?? 0.3),
+    hi: clamp01(p.heat_island_c / MAX_HEAT_C),
+    gr: clamp01(1 - p.ndvi),
   };
 
   const weightedSum =
-    w.pollution_severity * components.pollution_severity +
-    w.depth_fit * components.depth_fit +
-    w.meadow_overlap * components.meadow_overlap +
-    w.shipping_lane * components.shipping_lane +
-    w.school_downwind * components.school_downwind +
-    w.phosphate_plume * components.phosphate_plume;
+    w.ae * components.ae +
+    w.bs * components.bs +
+    w.po * components.po +
+    w.vu * components.vu +
+    w.hi * components.hi +
+    w.gr * components.gr;
 
-  const wTotal =
-    w.pollution_severity +
-    w.depth_fit +
-    w.meadow_overlap +
-    w.shipping_lane +
-    w.school_downwind +
-    w.phosphate_plume;
+  const wTotal = w.ae + w.bs + w.po + w.vu + w.hi + w.gr;
 
-  return {
-    score: weightedSum / wTotal,
-    components,
-  };
+  return { score: weightedSum / wTotal, components };
 }
 
 /**
- * farthestPointSelection — greedy spatial diversification.
- * Given a ranked list of candidates (best first), pick `k` that are at
- * least `minDistanceM` apart. Uses haversine distance.
+ * farthestPointSelection — greedy spatial diversification so the picked
+ * buildings aren't clustered in one neighbourhood. Uses haversine distance.
  */
-export function farthestPointSelection<T extends Candidate>(
+export function farthestPointSelection<T extends { location: { lon: number; lat: number } }>(
   ranked: T[],
   k: number,
   minDistanceM: number,

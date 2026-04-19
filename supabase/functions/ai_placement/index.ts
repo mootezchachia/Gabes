@@ -2,16 +2,18 @@
 /**
  * ai_placement — Supabase edge function (admin only)
  *
- * Implements §8.1 of the design doc:
- *   1. Verify caller is admin.
- *   2. Generate hex-grid candidates in Gabès bbox via PostGIS RPC.
- *   3. Score each candidate (lib/scoring/placement equivalent, inlined).
- *   4. Spatial diversification (farthest-point greedy, 500m min).
- *   5. LLM narration (streamed) via OpenRouter fallback chain.
- *   6. Insert rows into ai_placements sharing a single run_id.
- *   7. Respond with SSE stream — each `placement` event is a JSON blob.
+ * Pivoted domain: vegetal panels on Gabès buildings (green walls / green
+ * roofs) targeting air pollution exposure, vulnerable population, or urban
+ * heat islands.
  *
- * POST body: { strategy?: 'phosphate_recovery'|'school_protection'|'biodiversity',
+ *   1. Verify caller is admin.
+ *   2. Score each building in the curated list (inline below).
+ *   3. Spatial diversification (farthest-point greedy, 500 m min).
+ *   4. LLM narration (streamed) via OpenRouter fallback chain.
+ *   5. Insert rows into ai_placements sharing a single run_id.
+ *   6. Respond with SSE stream — each `placement` event is a JSON blob.
+ *
+ * POST body: { strategy?: 'air_quality'|'vulnerable_pop'|'heat_resilience',
  *              target_count?: number }
  */
 
@@ -29,17 +31,66 @@ const MODELS = [
   "google/gemma-2-9b-it:free",
 ] as const;
 
-const GABES_BBOX = { w: 9.80, s: 33.75, e: 10.35, n: 34.10 };
 const GCT = { lon: 10.1178, lat: 33.9312 };
-// Chatt Essalam as proxy for "school downwind" heuristic
-const CHATT_ESSALAM = { lon: 10.1054, lat: 33.9121 };
 
-type Strategy = "phosphate_recovery" | "school_protection" | "biodiversity";
+type Strategy = "air_quality" | "vulnerable_pop" | "heat_resilience";
+
+type BuildingType =
+  | "school" | "hospital" | "university" | "housing"
+  | "office" | "mosque" | "hotel" | "mall" | "industrial";
+
+interface Building {
+  id: string;
+  name: string;
+  type: BuildingType;
+  lon: number;
+  lat: number;
+  surface_m2: number;
+  occupants: number;
+  ndvi: number;
+  heat_island_c: number;
+}
+
+/** Curated set of 25 Gabès buildings — keep in sync with
+ *  `public/data/gabes-buildings.geojson`. Inlined here because edge functions
+ *  can't reach the Next.js public folder at runtime. */
+const BUILDINGS: Building[] = [
+  { id: "b-01", name: "École Primaire Bab Bhar", type: "school", lon: 10.1045, lat: 33.8832, surface_m2: 850, occupants: 420, ndvi: 0.08, heat_island_c: 3.2 },
+  { id: "b-02", name: "École Primaire Chatt Essalam", type: "school", lon: 10.1002, lat: 33.9105, surface_m2: 720, occupants: 380, ndvi: 0.04, heat_island_c: 4.6 },
+  { id: "b-03", name: "Collège Gabès Centre", type: "school", lon: 10.1051, lat: 33.8861, surface_m2: 1450, occupants: 850, ndvi: 0.11, heat_island_c: 3.8 },
+  { id: "b-04", name: "Lycée Farhat Hached", type: "school", lon: 10.0968, lat: 33.8898, surface_m2: 2200, occupants: 1200, ndvi: 0.12, heat_island_c: 3.4 },
+  { id: "b-05", name: "École Primaire Ghannouche", type: "school", lon: 10.1078, lat: 33.9289, surface_m2: 680, occupants: 340, ndvi: 0.05, heat_island_c: 5.1 },
+  { id: "b-06", name: "Lycée Ghannouche", type: "school", lon: 10.1045, lat: 33.9272, surface_m2: 1800, occupants: 950, ndvi: 0.06, heat_island_c: 5.0 },
+  { id: "b-07", name: "CHU Habib Bourguiba Gabès", type: "hospital", lon: 10.0884, lat: 33.8879, surface_m2: 3800, occupants: 2400, ndvi: 0.18, heat_island_c: 2.9 },
+  { id: "b-08", name: "Hôpital Régional Ghannouche", type: "hospital", lon: 10.1102, lat: 33.9245, surface_m2: 1600, occupants: 850, ndvi: 0.09, heat_island_c: 4.8 },
+  { id: "b-09", name: "Université de Gabès · Campus Central", type: "university", lon: 10.0825, lat: 33.8821, surface_m2: 4200, occupants: 3200, ndvi: 0.22, heat_island_c: 2.5 },
+  { id: "b-10", name: "Grande Mosquée de Jara", type: "mosque", lon: 10.1058, lat: 33.8864, surface_m2: 1100, occupants: 600, ndvi: 0.07, heat_island_c: 3.7 },
+  { id: "b-11", name: "Mosquée Ghannouche", type: "mosque", lon: 10.1089, lat: 33.9258, surface_m2: 680, occupants: 420, ndvi: 0.05, heat_island_c: 4.9 },
+  { id: "b-12", name: "Résidence El Khalij", type: "housing", lon: 10.1014, lat: 33.8762, surface_m2: 2800, occupants: 1900, ndvi: 0.10, heat_island_c: 3.6 },
+  { id: "b-13", name: "Cité Jedida · Bloc A", type: "housing", lon: 10.0929, lat: 33.8848, surface_m2: 2400, occupants: 1650, ndvi: 0.13, heat_island_c: 3.1 },
+  { id: "b-14", name: "Cité Olympique", type: "housing", lon: 10.0964, lat: 33.8929, surface_m2: 3200, occupants: 2100, ndvi: 0.14, heat_island_c: 3.3 },
+  { id: "b-15", name: "Cité El Menzah Gabès", type: "housing", lon: 10.0898, lat: 33.8793, surface_m2: 1900, occupants: 1150, ndvi: 0.16, heat_island_c: 2.8 },
+  { id: "b-16", name: "Résidence Chatt Essalam", type: "housing", lon: 10.0987, lat: 33.9118, surface_m2: 2600, occupants: 1550, ndvi: 0.05, heat_island_c: 4.5 },
+  { id: "b-17", name: "Logements Ghannouche Ouest", type: "housing", lon: 10.1012, lat: 33.9221, surface_m2: 2100, occupants: 1300, ndvi: 0.07, heat_island_c: 4.7 },
+  { id: "b-18", name: "Résidence Teboulbou", type: "housing", lon: 10.0912, lat: 33.8538, surface_m2: 1800, occupants: 1100, ndvi: 0.20, heat_island_c: 2.4 },
+  { id: "b-19", name: "Municipalité de Gabès", type: "office", lon: 10.1032, lat: 33.8874, surface_m2: 1250, occupants: 350, ndvi: 0.09, heat_island_c: 3.5 },
+  { id: "b-20", name: "Gouvernorat de Gabès", type: "office", lon: 10.1014, lat: 33.8891, surface_m2: 1480, occupants: 420, ndvi: 0.11, heat_island_c: 3.4 },
+  { id: "b-21", name: "Centre Commercial Gabès", type: "mall", lon: 10.0972, lat: 33.8905, surface_m2: 3500, occupants: 1800, ndvi: 0.05, heat_island_c: 3.9 },
+  { id: "b-22", name: "Hôtel Chems El Hana", type: "hotel", lon: 10.1082, lat: 33.8821, surface_m2: 1900, occupants: 300, ndvi: 0.15, heat_island_c: 2.9 },
+  { id: "b-23", name: "Marché Central de Gabès", type: "mall", lon: 10.1048, lat: 33.8858, surface_m2: 1350, occupants: 900, ndvi: 0.04, heat_island_c: 3.8 },
+  { id: "b-24", name: "Gare Routière de Gabès", type: "office", lon: 10.0992, lat: 33.8839, surface_m2: 1100, occupants: 500, ndvi: 0.06, heat_island_c: 3.6 },
+  { id: "b-25", name: "Centre Culturel de Gabès", type: "office", lon: 10.0945, lat: 33.8882, surface_m2: 950, occupants: 280, ndvi: 0.18, heat_island_c: 2.7 },
+];
 
 const WEIGHTS: Record<Strategy, Record<string, number>> = {
-  phosphate_recovery: { ps: 1.2, df: 0.8, mo: 0.5, sl: 0.6, sd: 0.4, pp: 1.3 },
-  school_protection:  { ps: 1.0, df: 0.6, mo: 0.3, sl: 0.4, sd: 1.5, pp: 1.1 },
-  biodiversity:       { ps: 0.7, df: 0.9, mo: 1.4, sl: 1.0, sd: 0.3, pp: 0.8 },
+  air_quality:     { ae: 1.4, bs: 0.9, po: 1.0, vu: 0.6, hi: 0.5, gr: 0.6 },
+  vulnerable_pop:  { ae: 1.0, bs: 0.6, po: 1.0, vu: 1.5, hi: 0.4, gr: 0.5 },
+  heat_resilience: { ae: 0.5, bs: 0.9, po: 0.8, vu: 0.3, hi: 1.5, gr: 1.2 },
+};
+
+const TYPE_VULNERABILITY: Record<BuildingType, number> = {
+  school: 1.0, hospital: 0.95, university: 0.7, mosque: 0.55,
+  housing: 0.55, mall: 0.35, hotel: 0.3, office: 0.3, industrial: 0.1,
 };
 
 function haversine(a: { lon: number; lat: number }, b: { lon: number; lat: number }) {
@@ -56,85 +107,44 @@ function clamp01(v: number) {
   return !isFinite(v) ? 0 : Math.max(0, Math.min(1, v));
 }
 
-function depthFit(d: number) {
-  if (d <= 0) return 0;
-  if (d < 3) return d / 3;
-  if (d <= 8) return 1;
-  if (d < 15) return (15 - d) / 7;
-  return 0;
-}
-
-/** Generate hexagonal candidate grid (~250m cells) in bbox, then filter
- *  to those within 200-2000m of the GCT complex (coastal strip proxy). */
-function generateCandidates(count = 400): Array<{ lon: number; lat: number }> {
-  const out: Array<{ lon: number; lat: number }> = [];
-  const step = 0.005; // ~500m in lat, ~465m in lon at 33.9°
-  for (let lat = GABES_BBOX.s; lat <= GABES_BBOX.n; lat += step) {
-    for (let lon = GABES_BBOX.w; lon <= GABES_BBOX.e; lon += step * 1.15) {
-      const d = haversine({ lon, lat }, GCT);
-      if (d < 200 || d > 4000) continue;
-      out.push({ lon, lat });
-      if (out.length >= count) return out;
-    }
+function airExposure(loc: { lon: number; lat: number }): number {
+  const d = haversine(loc, GCT);
+  const proximity = clamp01(1 - d / 3500);
+  const dLat = loc.lat - GCT.lat;
+  const dLon = loc.lon - GCT.lon;
+  let downwind = 0.3;
+  if (dLat < 0) {
+    const raw = Math.abs(Math.atan2(dLon, dLat) - Math.PI);
+    const theta = Math.min(raw, Math.abs(raw - 2 * Math.PI));
+    downwind = clamp01(1 - theta / (Math.PI / 3));
   }
-  return out;
+  return clamp01(0.6 * proximity + 0.4 * downwind);
 }
 
-function scoreCandidate(
-  cand: { lon: number; lat: number },
+function scoreBuilding(
+  b: Building,
   strategy: Strategy,
-  latestReadingsByRing: Record<number, number>,
 ): { score: number; components: Record<string, number> } {
   const w = WEIGHTS[strategy];
-  const dGct = haversine(cand, GCT);
-  const dSchool = haversine(cand, CHATT_ESSALAM);
+  const loc = { lon: b.lon, lat: b.lat };
 
-  // pollution severity proxy: ring-1 sensors' mean / 500
-  const pollutionMean = Object.values(latestReadingsByRing).length
-    ? Object.values(latestReadingsByRing).reduce((a, b) => a + b, 0) /
-      Object.values(latestReadingsByRing).length
-    : 50;
-  const pollutionSeverity = clamp01(pollutionMean / 500);
-
-  // Crude depth model: east-of-Gabès is deeper. Coastal strip = 2-5m.
-  const depthM = clamp01((cand.lon - 10.08) * 80) * 12;
-
-  // Meadow overlap — proxy: farther offshore = historically more posidonia
-  const meadow = clamp01((cand.lon - 10.08) * 4);
-
-  // Shipping lane distance — proxy: 2km offshore band is shipping
-  const shippingDist = Math.abs(cand.lon - 10.20) * 1000 * 90;
-
-  // School downwind coverage — proxy: closer to Chatt Essalam + south of GCT
-  const schoolDownwind = clamp01(1 - dSchool / 2000);
-
-  // Phosphate plume overlap — proxy: 1 at GCT, 0 at 3km
-  const phosphatePlume = clamp01(1 - dGct / 3000);
-
-  // Short keys shared with the frontend (lib/sim/impact.ts → Components).
-  // ps = proximity to GCT rejection (phosphate plume + pollution severity)
-  // df = depth fit (bathymetry)
-  // mo = meadow/posidonia overlap
-  // sl = salinity / dilution / distance from shipping lane
-  // sd = schools downwind
-  // pp = population reached
   const components = {
-    ps: clamp01(0.55 * phosphatePlume + 0.45 * pollutionSeverity),
-    df: clamp01(depthFit(depthM)),
-    mo: meadow,
-    sl: clamp01(shippingDist / 1000),
-    sd: schoolDownwind,
-    pp: clamp01((dGct > 0 ? 1 - Math.min(1, dGct / 3500) : 0) * 0.8 + 0.2 * schoolDownwind),
+    ae: airExposure(loc),
+    bs: clamp01(b.surface_m2 / 4000),
+    po: clamp01(b.occupants / 3000),
+    vu: clamp01(TYPE_VULNERABILITY[b.type] ?? 0.3),
+    hi: clamp01(b.heat_island_c / 6),
+    gr: clamp01(1 - b.ndvi),
   };
 
   const raw =
-    w.ps * components.ps +
-    w.df * components.df +
-    w.mo * components.mo +
-    w.sl * components.sl +
-    w.sd * components.sd +
-    w.pp * components.pp;
-  const wTot = w.ps + w.df + w.mo + w.sl + w.sd + w.pp;
+    w.ae * components.ae +
+    w.bs * components.bs +
+    w.po * components.po +
+    w.vu * components.vu +
+    w.hi * components.hi +
+    w.gr * components.gr;
+  const wTot = w.ae + w.bs + w.po + w.vu + w.hi + w.gr;
   return { score: raw / wTot, components };
 }
 
@@ -154,6 +164,7 @@ function farthestPoint<T extends { location: { lon: number; lat: number } }>(
 }
 
 async function llmRationale(
+  building: Building,
   comps: Record<string, number>,
   score: number,
   strategy: string,
@@ -163,32 +174,40 @@ async function llmRationale(
   const client = new OpenAI({
     apiKey: key,
     baseURL: "https://openrouter.ai/api/v1",
-    defaultHeaders: { "HTTP-Referer": "https://nafas.tn", "X-Title": "NAFAS" },
+    defaultHeaders: { "HTTP-Referer": "https://gabes.vercel.app", "X-Title": "GABES" },
   });
   const stratLabel: Record<string, string> = {
-    phosphate_recovery: "Récupération du phosphate",
-    school_protection: "Protection des écoles",
-    biodiversity: "Biodiversité marine",
+    air_quality: "Qualité de l'air urbain",
+    vulnerable_pop: "Protection des populations vulnérables",
+    heat_resilience: "Résilience aux îlots de chaleur",
+  };
+  const typeLabel: Record<BuildingType, string> = {
+    school: "école", hospital: "hôpital", university: "université",
+    housing: "résidence", office: "bâtiment administratif", mosque: "mosquée",
+    hotel: "hôtel", mall: "centre commercial", industrial: "bâtiment industriel",
   };
   const userPrompt =
-    `Tu es ORACLE, assistant scientifique de la plateforme NAFAS (Golfe de Gabès, Tunisie).
-Une zone de déploiement de panneaux à algues a été scorée par un algorithme multi-critères.
+    `Tu es ORACLE, assistant scientifique de la plateforme GABES (ville de Gabès, Tunisie).
+Un bâtiment a été scoré par un algorithme multi-critères pour l'installation de panneaux végétaux (murs/toits végétalisés).
 
-Stratégie choisie: ${stratLabel[strategy] ?? strategy}
-Score final: ${score.toFixed(2)} / 1.00
+Bâtiment : ${building.name} (${typeLabel[building.type] ?? building.type})
+Surface panneau disponible : ~${building.surface_m2} m²
+Occupants quotidiens : ~${building.occupants}
+Stratégie choisie : ${stratLabel[strategy] ?? strategy}
+Score final : ${score.toFixed(2)} / 1.00
 Composantes du score (chacune notée 0..1) :
-  ps (proximité rejet phosphaté GCT) : ${comps.ps?.toFixed(2) ?? "n/a"}
-  df (compatibilité bathymétrique)    : ${comps.df?.toFixed(2) ?? "n/a"}
-  mo (valeur biodiversité Posidonia) : ${comps.mo?.toFixed(2) ?? "n/a"}
-  sl (salinité / dilution littorale) : ${comps.sl?.toFixed(2) ?? "n/a"}
-  sd (écoles sous le vent)            : ${comps.sd?.toFixed(2) ?? "n/a"}
-  pp (population desservie)           : ${comps.pp?.toFixed(2) ?? "n/a"}
+  ae (exposition pollution GCT)        : ${comps.ae?.toFixed(2) ?? "n/a"}
+  bs (surface bâtiment disponible)     : ${comps.bs?.toFixed(2) ?? "n/a"}
+  po (occupants desservis)             : ${comps.po?.toFixed(2) ?? "n/a"}
+  vu (vulnérabilité école/hôpital)     : ${comps.vu?.toFixed(2) ?? "n/a"}
+  hi (îlot de chaleur urbain)          : ${comps.hi?.toFixed(2) ?? "n/a"}
+  gr (manque de végétal existant)      : ${comps.gr?.toFixed(2) ?? "n/a"}
 
-Rédige une justification en français de 60 mots MAXIMUM pour cette zone.
+Rédige une justification en français de 60 mots MAXIMUM pour installer des panneaux végétaux sur ce bâtiment.
 Commence par un verbe d'action fort.
 Nomme EXACTEMENT DEUX critères dominants (les deux plus hauts) et cite leurs valeurs numériques.
 Si le score < 0.6, termine par une courte mise en garde.
-N'invente aucune donnée absente du tableau ci-dessus. Pas de noms de lieux inventés.`;
+N'invente aucune donnée absente du tableau ci-dessus. Pas de noms inventés.`;
   let lastErr: string | undefined;
   for (const model of MODELS) {
     try {
@@ -206,8 +225,6 @@ N'invente aucune donnée absente du tableau ci-dessus. Pas de noms de lieux inve
     } catch (e: unknown) {
       const err = e as { status?: number; message?: string; code?: string };
       lastErr = `${model}: ${err.status ?? err.code ?? "?"} ${err.message ?? ""}`.slice(0, 180);
-      // Continue on ANY error, not just 429/5xx. Keeps the fallback chain alive
-      // when OpenRouter returns 400/401/404 for a specific model id.
       continue;
     }
   }
@@ -224,64 +241,56 @@ Deno.serve(async (req: Request) => {
 
   let body: { strategy?: Strategy; target_count?: number } = {};
   try { body = await req.json(); } catch { /* empty */ }
-  const strategy = (body.strategy ?? "phosphate_recovery") as Strategy;
+  const strategy = (body.strategy ?? "air_quality") as Strategy;
   const targetCount = Math.max(1, Math.min(10, body.target_count ?? 5));
 
   const supa = createServiceClient();
 
-  // Pull latest ring-1 SO2 readings for a rough pollution context.
-  const { data: recent } = await supa
-    .from("sensor_readings")
-    .select("sensor_id, value, taken_at, sensors!inner(metadata, type, org_id)")
-    .eq("sensors.org_id", ctx.org_id)
-    .eq("sensors.type", "so2")
-    .order("taken_at", { ascending: false })
-    .limit(400);
-
-  const latestByRing: Record<number, number> = {};
-  for (const row of recent ?? []) {
-    const ring = Number(
-      (row as unknown as { sensors: { metadata: { ring?: number } } })
-        .sensors?.metadata?.ring ?? 0,
-    );
-    if (!latestByRing[ring]) latestByRing[ring] = Number(row.value);
-  }
-
-  const candidates = generateCandidates(400);
-  const scored = candidates
-    .map((location) => {
-      const { score, components } = scoreCandidate(location, strategy, latestByRing);
-      return { location, score, components };
+  const scored = BUILDINGS
+    .map((b) => {
+      const { score, components } = scoreBuilding(b, strategy);
+      return {
+        building: b,
+        location: { lon: b.lon, lat: b.lat },
+        score,
+        components,
+      };
     })
     .sort((a, b) => b.score - a.score);
 
-  const top = scored.slice(0, 40);
+  const top = scored.slice(0, Math.min(scored.length, 20));
   const chosen = farthestPoint(top, targetCount, 500);
 
   const runId = crypto.randomUUID();
 
-  // SSE streaming response
   const encoder = new TextEncoder();
   const stream = new ReadableStream({
     async start(controller) {
       const send = (ev: string, data: unknown) => {
         controller.enqueue(encoder.encode(`event: ${ev}\ndata: ${JSON.stringify(data)}\n\n`));
       };
-      send("run", { run_id: runId, strategy, candidates: candidates.length, picked: chosen.length });
+      send("run", { run_id: runId, strategy, candidates: BUILDINGS.length, picked: chosen.length });
+      send("progress", { stage: "candidates", detail: `${BUILDINGS.length} bâtiments évalués · top ${top.length} retenus pour diversification` });
 
       const results: Array<{
-        id: string; location: { lon: number; lat: number }; score: number;
-        components: Record<string, number>; rationale_md: string | null; model_name: string;
+        id: string;
+        location: { lon: number; lat: number };
+        score: number;
+        components: Record<string, number>;
+        rationale_md: string | null;
+        model_name: string;
+        building: { id: string; name: string; type: string; surface_m2: number; occupants: number };
       }> = [];
 
       for (const c of chosen) {
-        send("progress", { stage: "rationale", for: c.location });
-        const { text, model_used, last_error } = await llmRationale(c.components, c.score, strategy);
+        send("progress", { stage: "rationale", for: c.location, detail: c.building.name });
+        const { text, model_used, last_error } = await llmRationale(
+          c.building, c.components, c.score, strategy,
+        );
         if (!text && last_error) {
           send("progress", { stage: "llm_warn", detail: last_error });
         }
         const modelName = model_used ?? "none";
-        const area = 500;
 
         const { data: ins, error } = await supa
           .from("ai_placements")
@@ -289,9 +298,9 @@ Deno.serve(async (req: Request) => {
             org_id: ctx.org_id,
             run_id: runId,
             proposed_location: `SRID=4326;POINT(${c.location.lon} ${c.location.lat})`,
-            proposed_area_m2: area,
+            proposed_area_m2: c.building.surface_m2,
             score: c.score,
-            score_components: c.components,
+            score_components: { ...c.components, building: { id: c.building.id, name: c.building.name, type: c.building.type, surface_m2: c.building.surface_m2, occupants: c.building.occupants } },
             rationale_md: text,
             strategy,
             status: "draft",
@@ -312,6 +321,13 @@ Deno.serve(async (req: Request) => {
           components: c.components,
           rationale_md: text,
           model_name: modelName,
+          building: {
+            id: c.building.id,
+            name: c.building.name,
+            type: c.building.type,
+            surface_m2: c.building.surface_m2,
+            occupants: c.building.occupants,
+          },
         };
         results.push(item);
         send("placement", item);
