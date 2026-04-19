@@ -1,10 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
-import { Sparkles } from "lucide-react";
+import { Sparkles, AlertTriangle } from "lucide-react";
 import { AppDialog, Button, FormLabel, SelectField } from "@/components/app/ui/Primitives";
 import { useToolStore } from "./toolStore";
 import { parseSseStream } from "@/lib/sse/parseStream";
+import { PlacementCard } from "./PlacementCard";
+import { PlacementRunSummary } from "./PlacementRunSummary";
+import type { Strategy } from "@/lib/sim/impact";
 
 interface RunEvent {
   run_id: string;
@@ -129,7 +132,7 @@ export function PlacementAIDialog() {
       }}
       title="ORACLE · Placement IA"
       description="Proposition spatialisée de panneaux à algues (scorer + rationales FR)."
-      widthClassName="w-[min(640px,calc(100vw-2rem))]"
+      widthClassName="w-[min(820px,calc(100vw-2rem))]"
     >
       <div className="space-y-5">
         <div className="grid grid-cols-2 gap-4">
@@ -177,62 +180,82 @@ export function PlacementAIDialog() {
         </div>
 
         {hasFeed && (
-          <div className="rounded-md border border-white/5 bg-white/[0.02] p-3 max-h-[320px] overflow-y-auto space-y-3">
+          <div className="space-y-3 max-h-[calc(100vh-18rem)] overflow-y-auto pr-1">
             {runInfo ? (
-              <div className="text-[11.5px] font-[family-name:var(--font-jetbrains)] tracking-[0.12em] uppercase text-[color:var(--nafas-cyan)]">
-                Run · {runInfo.candidates} candidats → {runInfo.picked} retenus
+              <PlacementRunSummary
+                run={runInfo}
+                placements={placements.map((p) => ({ score: p.score, components: p.components }))}
+                strategy={strategy as Strategy}
+              />
+            ) : null}
+
+            {/* Live progress ticker (compact, collapses to last 2 events) */}
+            {running && progress.length > 0 ? (
+              <LiveTicker events={progress.slice(-2)} />
+            ) : null}
+
+            {/* Any LLM warnings collected from progress events (llm_warn stage) */}
+            {progress.some((p) => p.stage === "llm_warn") ? (
+              <div className="flex items-start gap-2 rounded-md border border-[color:var(--nafas-amber)]/25 bg-[color:var(--nafas-amber)]/5 px-3 py-2">
+                <AlertTriangle className="size-3.5 text-[color:var(--nafas-amber)] mt-0.5 shrink-0" />
+                <div className="text-[11px] leading-[1.45] text-[color:var(--nafas-ink3)]">
+                  <span className="text-[color:var(--nafas-amber)] font-medium">
+                    Fallback LLM partiel
+                  </span>{" "}
+                  · {progress.filter((p) => p.stage === "llm_warn").slice(-1)[0]?.detail}. Les chiffres restent calculés depuis les coefficients scientifiques.
+                </div>
               </div>
             ) : null}
 
-            {progress.map((p, i) => (
-              <div
-                key={`p-${i}`}
-                className="text-[12.5px] text-[color:var(--nafas-ink3)] font-[family-name:var(--font-jetbrains)]"
-              >
-                <span className="text-[color:var(--nafas-cyan)]">◦</span> {p.stage}
-                {p.for ? (
-                  <span className="text-[color:var(--nafas-ink3)]/70">
-                    {" "}
-                    — {p.for.lat.toFixed(4)}°N {p.for.lon.toFixed(4)}°E
-                  </span>
-                ) : p.detail ? (
-                  <span className="text-[color:var(--nafas-ink3)]/70"> — {p.detail}</span>
-                ) : null}
-              </div>
-            ))}
-
-            {placements.map((p, i) => (
-              <div
-                key={`r-${p.id}`}
-                className="rounded-md border border-[color:var(--nafas-accent)]/20 bg-[color:var(--nafas-accent)]/5 p-3"
-              >
-                <div className="flex items-center gap-2 mb-1.5">
-                  <div className="text-[11px] font-[family-name:var(--font-jetbrains)] tracking-[0.18em] uppercase text-[color:var(--nafas-accent2)]">
-                    Placement #{i + 1}
-                  </div>
-                  <div className="ml-auto text-[11px] font-[family-name:var(--font-jetbrains)] tabular-nums text-[color:var(--nafas-ink3)]">
-                    score · {p.score.toFixed(2)}
-                  </div>
-                </div>
-                <p className="text-[13px] leading-[1.55] text-[color:var(--nafas-surface)]">
-                  {p.rationale_md ?? (
-                    <span className="italic text-[color:var(--nafas-ink3)]">
-                      Aucune justification LLM (modèle indisponible) — score brut uniquement.
-                    </span>
-                  )}
-                </p>
-                <div className="mt-2 text-[11px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]/70">
-                  {p.location.lat.toFixed(4)}°N {p.location.lon.toFixed(4)}°E · modèle: {p.model_name}
-                </div>
-              </div>
-            ))}
+            {/* Hero cards */}
+            <div className="space-y-3">
+              {placements.map((p, i) => (
+                <PlacementCard
+                  key={p.id}
+                  index={i + 1}
+                  location={p.location}
+                  score={p.score}
+                  components={p.components}
+                  rationale_md={p.rationale_md}
+                  model_name={p.model_name}
+                  strategy={strategy as Strategy}
+                  totalZones={runInfo?.picked ?? placements.length}
+                />
+              ))}
+            </div>
 
             {err ? (
-              <div className="text-[12.5px] text-[color:var(--nafas-danger)]">Erreur : {err}</div>
+              <div className="rounded-md border border-[color:var(--nafas-danger)]/25 bg-[color:var(--nafas-danger)]/5 px-3 py-2 text-[12.5px] text-[color:var(--nafas-danger)]">
+                Erreur : {err}
+              </div>
             ) : null}
           </div>
         )}
       </div>
     </AppDialog>
+  );
+}
+
+function LiveTicker({ events }: { events: ProgressEvent[] }) {
+  return (
+    <div className="rounded-md border border-white/5 bg-black/20 px-3 py-2 font-[family-name:var(--font-jetbrains)]">
+      <div className="flex items-center gap-2">
+        <span className="relative flex size-1.5">
+          <span className="absolute inline-flex size-full rounded-full bg-[color:var(--nafas-cyan)] opacity-75 animate-ping" />
+          <span className="relative inline-flex size-1.5 rounded-full bg-[color:var(--nafas-cyan)]" />
+        </span>
+        <span className="text-[9.5px] tracking-[0.22em] uppercase text-[color:var(--nafas-cyan)]">
+          Stream
+        </span>
+      </div>
+      <div className="mt-1 space-y-0.5">
+        {events.map((e, i) => (
+          <div key={i} className="text-[11px] text-[color:var(--nafas-ink3)] truncate">
+            <span className="text-[color:var(--nafas-cyan)]/80">›</span> {e.stage}
+            {e.for ? ` — ${e.for.lat.toFixed(3)}°N ${e.for.lon.toFixed(3)}°E` : e.detail ? ` — ${e.detail}` : ""}
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

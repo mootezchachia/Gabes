@@ -149,41 +149,62 @@ function farthestPoint<T extends { location: { lon: number; lat: number } }>(
 async function llmRationale(
   comps: Record<string, number>,
   score: number,
-): Promise<{ text: string | null; model_used: string | null }> {
+  strategy: string,
+): Promise<{ text: string | null; model_used: string | null; last_error?: string }> {
   const key = Deno.env.get("OPENROUTER_API_KEY");
-  if (!key) return { text: null, model_used: null };
+  if (!key) return { text: null, model_used: null, last_error: "OPENROUTER_API_KEY not set" };
   const client = new OpenAI({
     apiKey: key,
     baseURL: "https://openrouter.ai/api/v1",
     defaultHeaders: { "HTTP-Referer": "https://nafas.tn", "X-Title": "NAFAS" },
   });
+  const stratLabel: Record<string, string> = {
+    phosphate_recovery: "Récupération du phosphate",
+    school_protection: "Protection des écoles",
+    biodiversity: "Biodiversité marine",
+  };
   const userPrompt =
-    `Tu es ORACLE, assistant scientifique de la plateforme NAFAS (Golfe de Gabès).
-Un score de placement a été calculé par un algorithme multi-critères :
-${JSON.stringify(comps, null, 2)}
+    `Tu es ORACLE, assistant scientifique de la plateforme NAFAS (Golfe de Gabès, Tunisie).
+Une zone de déploiement de panneaux à algues a été scorée par un algorithme multi-critères.
 
+Stratégie choisie: ${stratLabel[strategy] ?? strategy}
 Score final: ${score.toFixed(2)} / 1.00
+Composantes du score (chacune notée 0..1) :
+  ps (proximité rejet phosphaté GCT) : ${comps.ps?.toFixed(2) ?? "n/a"}
+  df (compatibilité bathymétrique)    : ${comps.df?.toFixed(2) ?? "n/a"}
+  mo (valeur biodiversité Posidonia) : ${comps.mo?.toFixed(2) ?? "n/a"}
+  sl (salinité / dilution littorale) : ${comps.sl?.toFixed(2) ?? "n/a"}
+  sd (écoles sous le vent)            : ${comps.sd?.toFixed(2) ?? "n/a"}
+  pp (population desservie)           : ${comps.pp?.toFixed(2) ?? "n/a"}
 
-Écris une justification en français de 60 mots MAXIMUM pour cette zone.
-Cite au moins DEUX chiffres précis du JSON dans ta réponse.
-Si le score est inférieur à 0.6, ajoute une phrase de mise en garde.
-N'invente aucune donnée absente du JSON.`;
+Rédige une justification en français de 60 mots MAXIMUM pour cette zone.
+Commence par un verbe d'action fort.
+Nomme EXACTEMENT DEUX critères dominants (les deux plus hauts) et cite leurs valeurs numériques.
+Si le score < 0.6, termine par une courte mise en garde.
+N'invente aucune donnée absente du tableau ci-dessus. Pas de noms de lieux inventés.`;
+  let lastErr: string | undefined;
   for (const model of MODELS) {
     try {
       const r = await client.chat.completions.create({
         model,
         messages: [{ role: "user", content: userPrompt }],
-        max_tokens: 160,
-        temperature: 0.3,
+        max_tokens: 180,
+        temperature: 0.4,
       });
-      return { text: r.choices[0]?.message?.content ?? null, model_used: model };
+      const text = r.choices[0]?.message?.content ?? null;
+      if (text && text.trim().length > 0) {
+        return { text: text.trim(), model_used: model };
+      }
+      lastErr = `${model}: empty response`;
     } catch (e: unknown) {
-      const s = (e as { status?: number }).status;
-      if (s === 429 || (typeof s === "number" && s >= 500)) continue;
-      return { text: null, model_used: null };
+      const err = e as { status?: number; message?: string; code?: string };
+      lastErr = `${model}: ${err.status ?? err.code ?? "?"} ${err.message ?? ""}`.slice(0, 180);
+      // Continue on ANY error, not just 429/5xx. Keeps the fallback chain alive
+      // when OpenRouter returns 400/401/404 for a specific model id.
+      continue;
     }
   }
-  return { text: null, model_used: null };
+  return { text: null, model_used: null, last_error: lastErr };
 }
 
 Deno.serve(async (req: Request) => {
@@ -248,7 +269,10 @@ Deno.serve(async (req: Request) => {
 
       for (const c of chosen) {
         send("progress", { stage: "rationale", for: c.location });
-        const { text, model_used } = await llmRationale(c.components, c.score);
+        const { text, model_used, last_error } = await llmRationale(c.components, c.score, strategy);
+        if (!text && last_error) {
+          send("progress", { stage: "llm_warn", detail: last_error });
+        }
         const modelName = model_used ?? "none";
         const area = 500;
 
