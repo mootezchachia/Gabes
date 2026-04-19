@@ -105,9 +105,9 @@ async function llmBrief(
   projections: unknown,
   metadata: Record<string, unknown>,
   urban?: { strategy: string; components: Record<string, number>; building?: { name?: string; type?: string; surface_m2?: number; occupants?: number } | null },
-): Promise<{ text: string | null; model_used: string | null }> {
+): Promise<{ text: string | null; model_used: string | null; last_error?: string }> {
   const key = Deno.env.get("OPENROUTER_API_KEY");
-  if (!key) return { text: null, model_used: null };
+  if (!key) return { text: null, model_used: null, last_error: "OPENROUTER_API_KEY not set" };
   const client = new OpenAI({
     apiKey: key,
     baseURL: "https://openrouter.ai/api/v1",
@@ -126,28 +126,35 @@ async function llmBrief(
       hotel: "hôtel", mall: "centre commercial", industrial: "bâtiment industriel",
     };
     const b = urban.building ?? {};
-    const last = Array.isArray(projections) && projections.length > 0 ? projections[projections.length - 1] : null;
+    const arr = Array.isArray(projections) ? projections as Array<Record<string, number>> : [];
+    const last = arr.length > 0 ? arr[arr.length - 1] : null;
+    const first = arr.length > 0 ? arr[0] : null;
+    const mid = arr.length > 4 ? arr[Math.floor(arr.length / 2) - 1] : null;
+    // Compact summary instead of full JSON so the free models (Llama-3.3,
+    // Gemma-2) don't hit their smaller context budget or refuse to parse.
+    const compact = {
+      horizon_years: arr.length,
+      year_1: first,
+      year_mid: mid,
+      year_final: last,
+    };
     prompt = `Tu es ORACLE, assistant scientifique de la plateforme GABES (ville de Gabès, Tunisie).
-Voici la projection décennale de l'installation de panneaux végétaux (murs/toits végétalisés) sur un bâtiment :
 
-Bâtiment : ${b.name ?? "—"} (${typeLabel[b.type ?? ""] ?? b.type ?? "—"})
-Surface disponible : ~${b.surface_m2 ?? 0} m²
+Bâtiment cible : ${b.name ?? "—"} (${typeLabel[b.type ?? ""] ?? b.type ?? "—"})
+Surface disponible pour panneaux végétaux : ~${b.surface_m2 ?? 0} m²
 Occupants quotidiens : ~${b.occupants ?? 0}
-Stratégie : ${stratLabel[urban.strategy] ?? urban.strategy}
+Stratégie retenue : ${stratLabel[urban.strategy] ?? urban.strategy}
 
-Projection année par année (année 1 à ${Array.isArray(projections) ? projections.length : "?"}):
-${JSON.stringify(projections, null, 2)}
+Projection décennale (valeurs clés) :
+${JSON.stringify(compact, null, 2)}
 
-Cumul 10 ans (dernière ligne) :
-${JSON.stringify(last, null, 2)}
+Rédige une note d'orientation en français de 180 mots MAXIMUM destinée à la Municipalité de Gabès. Structure :
+- 1 phrase de contexte nommant le bâtiment et la stratégie
+- 1 paragraphe sur l'impact principal sur 10 ans (cite au moins un chiffre du cumul)
+- 3 bullets d'impacts secondaires quantifiés (chaque bullet cite un chiffre)
+- 1 phrase de limite méthodologique
 
-Rédige une note d'orientation en français de 200 mots MAXIMUM destinée à la Municipalité de Gabès :
-- Contexte (1 phrase nommant le bâtiment et la stratégie)
-- Principal impact attendu sur 10 ans (avec chiffre clé : CO₂ cumulé OU occupants cumulés OU Δ°C selon la stratégie)
-- 3 impacts quantifiés secondaires (liste à puces, chiffres tirés de la projection ci-dessus)
-- 1 limite méthodologique (ex: hypothèse de croissance de couverture, absence de prise en compte des cycles saisonniers)
-
-Cite uniquement les chiffres présents dans les projections. N'invente aucune donnée.`;
+Cite uniquement les chiffres présents ci-dessus. N'invente aucune donnée. Commence directement par la note (pas d'en-tête).`;
   } else {
     prompt = `Tu es ORACLE. Voici la projection décennale pour un panneau à algues dans le Golfe de Gabès :
 ${JSON.stringify(projections, null, 2)}
@@ -161,20 +168,31 @@ Rédige une note d'orientation en français de 200 mots MAXIMUM destinée à la 
 
 Cite uniquement les chiffres présents dans les projections. N'invente aucune donnée.`;
   }
+  let lastErr: string | undefined;
   for (const model of MODELS) {
     try {
       const r = await client.chat.completions.create({
-        model, messages: [{ role: "user", content: prompt }],
-        max_tokens: 500, temperature: 0.35,
+        model,
+        messages: [{ role: "user", content: prompt }],
+        max_tokens: 500,
+        temperature: 0.35,
       });
-      return { text: r.choices[0]?.message?.content ?? null, model_used: model };
+      const text = r.choices[0]?.message?.content;
+      if (text && text.trim().length > 0) {
+        return { text: text.trim(), model_used: model };
+      }
+      lastErr = `${model}: empty response`;
     } catch (e: unknown) {
-      const s = (e as { status?: number }).status;
-      if (s === 429 || (typeof s === "number" && s >= 500)) continue;
-      return { text: null, model_used: null };
+      const err = e as { status?: number; message?: string; code?: string };
+      lastErr = `${model}: ${err.status ?? err.code ?? "?"} ${err.message ?? ""}`.slice(0, 180);
+      // Continue on any error — fallback chain alive even on 400/401/404, just
+      // like llmRationale in ai_placement. The previous early-return on
+      // non-429/5xx was the root cause of "note LLM indisponible" being
+      // sticky even when a later model would have succeeded.
+      continue;
     }
   }
-  return { text: null, model_used: null };
+  return { text: null, model_used: null, last_error: lastErr };
 }
 
 Deno.serve(async (req: Request) => {
@@ -253,10 +271,19 @@ Deno.serve(async (req: Request) => {
     .limit(1)
     .maybeSingle();
 
-  if (
+  // Only serve the cache when (a) it's fresh AND (b) it has the artifacts
+  // the caller requested. A cached row with `brief_md = null` would
+  // otherwise be sticky: the user asks for `with_brief=true`, we cache the
+  // failed brief once, every subsequent request returns `null` from cache
+  // and we never retry the LLM. The `withBrief` part of the cache key
+  // already isolates brief-vs-no-brief calls, but if an earlier brief call
+  // failed we want to retry — so require a non-null brief_md here.
+  const cacheUsable =
     cached &&
-    Date.now() - new Date(cached.created_at).getTime() < 24 * 3600_000
-  ) {
+    Date.now() - new Date(cached.created_at).getTime() < 24 * 3600_000 &&
+    (!withBrief || !!cached.brief_md);
+
+  if (cacheUsable) {
     return json({
       forecast_id: cached.id,
       projections: cached.projections,
@@ -293,8 +320,9 @@ Deno.serve(async (req: Request) => {
 
   let briefMd: string | null = null;
   let modelUsed: string | null = null;
+  let briefLastError: string | undefined;
   if (withBrief) {
-    const { text, model_used } = await llmBrief(
+    const r = await llmBrief(
       projections,
       { area_m2: area, horizon_years: horizon, target_kind: targetKind },
       isUrban
@@ -305,8 +333,9 @@ Deno.serve(async (req: Request) => {
           }
         : undefined,
     );
-    briefMd = text;
-    modelUsed = model_used;
+    briefMd = r.text;
+    modelUsed = r.model_used;
+    briefLastError = r.last_error;
   }
 
   const { data: ins, error: insErr } = await supa
@@ -334,5 +363,6 @@ Deno.serve(async (req: Request) => {
     model_name: modelUsed,
     mode: isUrban ? "urban" : "marine",
     cached: false,
+    brief_error: briefLastError ?? null,
   });
 });

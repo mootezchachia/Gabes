@@ -79,6 +79,12 @@ verify_jwt = false
 [functions.ai_forecast]
 verify_jwt = false
 
+# `/api/notifications/simulate` proxies a signed-in user's JWT to this
+# function. Same ES256 problem as above → 401 from the gateway. Disable the
+# gateway verifier and rely on the caller's Next.js route to enforce admin.
+[functions.notify_threshold_cross]
+verify_jwt = false
+
 [analytics]
 enabled = false
 

@@ -43,6 +43,14 @@ const CinematicForecast = dynamic(
   () => import("./CinematicForecast").then((m) => m.CinematicForecast),
   { ssr: false },
 );
+const DefenseTicker = dynamic(
+  () => import("./DefenseTicker").then((m) => m.DefenseTicker),
+  { ssr: false },
+);
+const AlertCinematic = dynamic(
+  () => import("./AlertCinematic").then((m) => m.AlertCinematic),
+  { ssr: false },
+);
 
 function BootOverlay() {
   return (
@@ -93,6 +101,17 @@ export function CarteScene() {
            Mounted at scene root so it can overlay both the globe and any
            drawers. Renders nothing unless the cinematic store has data. */}
       {isAdmin ? <CinematicForecast /> : null}
+
+      {/* DEFENSE · danger-detection status + « déclencher une alerte · démo »
+           admin button. Polls /api/notifications/log every 6 s, fires the
+           red AlertCinematic below whenever a new ntfy notification lands. */}
+      {canSeeRail ? <DefenseTicker /> : null}
+
+      {/* Red-mode full-viewport dossier — shown the instant DEFENSE detects
+           a fresh threshold crossing. Camera flies to the sensor, halo +
+           beam light up the globe, phone mockup shows the ntfy notification
+           exactly as it lands on a citizen's device. */}
+      {canSeeRail ? <AlertCinematic /> : null}
     </div>
   );
 }
