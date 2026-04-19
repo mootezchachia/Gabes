@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import * as Cesium from "cesium";
-import { X, Siren, Radio, Bell, ExternalLink, Wind, MapPin, Zap, Smartphone, Copy, Check, QrCode } from "lucide-react";
+import { X, Siren, Radio, Bell, ExternalLink, Wind, MapPin, Zap } from "lucide-react";
 import { useAlertStore } from "./alertStore";
 import { getViewer } from "@/lib/cesium-bus";
-import { ntfySubscribeDeepLink, ntfyWebUrl } from "@/lib/dawa/ntfy";
 
 const TYPE_LABEL: Record<string, string> = {
   so2: "SO₂ · Dioxyde de soufre",
@@ -218,8 +217,7 @@ export function AlertCinematic() {
           transformOrigin: "center 38%",
         }}
       >
-        <div className="max-w-[1180px] mx-auto px-8 py-10 md:py-14 grid md:grid-cols-[1.35fr_0.65fr] gap-10 items-start">
-          {/* LEFT — alert detail */}
+        <div className="max-w-[960px] mx-auto px-8 py-10 md:py-14">
           <div className="space-y-8">
             <div
               className="flex items-center gap-2.5 text-[11px] tracking-[0.34em] uppercase font-[family-name:var(--font-jetbrains)]"
@@ -372,19 +370,6 @@ export function AlertCinematic() {
             </div>
           </div>
 
-          {/* RIGHT — subscribe-on-your-phone panel. The ntfy pipeline really
-               published to ntfy.sh; scan the QR or tap the deep link on a
-               phone with ntfy installed and the next demo press rings your
-               device for real. */}
-          <div
-            className="hidden md:flex justify-center items-start"
-            style={{ animation: "alert-rise 750ms cubic-bezier(0.22,1,0.36,1) 360ms both" }}
-          >
-            <SubscribePanel
-              topic={pickSubscribeTopic(current.sent_topics)}
-              accent={accent}
-            />
-          </div>
         </div>
       </div>
 
@@ -428,136 +413,6 @@ function AlertStat({
       </div>
       <div className="mt-2.5 text-[10px] tracking-[0.22em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
         {label}
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------- Topic helpers --------------------------- */
-
-/** Pick the topic most useful for the jury to subscribe to. Prefer the
- *  general org-wide topic because every critical alert lands on it — a
- *  single subscription covers every future demo press. */
-function pickSubscribeTopic(topics: string[]): string {
-  return (
-    topics.find((t) => t === "nafas-gabes-general") ||
-    topics[0] ||
-    "nafas-gabes-general"
-  );
-}
-
-/* --------------------------- SubscribePanel --------------------------- */
-
-function SubscribePanel({ topic, accent }: { topic: string; accent: string }) {
-  const [copied, setCopied] = useState(false);
-  const webUrl = ntfyWebUrl(topic);
-  const deepLink = ntfySubscribeDeepLink(topic);
-  // QR encodes the web URL — the ntfy app recognises ntfy.sh/<topic> URLs
-  // and offers to subscribe. Works with any generic QR scanner too.
-  const qrSrc = `https://api.qrserver.com/v1/create-qr-code/?size=220x220&bgcolor=11-15-22&color=FF-FF-FF&margin=10&data=${encodeURIComponent(webUrl)}`;
-
-  async function copy() {
-    try {
-      await navigator.clipboard?.writeText(topic);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 1500);
-    } catch {
-      /* clipboard blocked — ignore */
-    }
-  }
-
-  return (
-    <div
-      className="relative w-[300px] rounded-2xl border overflow-hidden"
-      style={{
-        borderColor: `${accent}33`,
-        background: "linear-gradient(180deg, rgba(18,22,28,0.9), rgba(10,14,20,0.85))",
-        boxShadow: `0 40px 100px -30px ${accent}55, 0 14px 32px -16px rgba(0,0,0,0.8), inset 0 0 0 1px rgba(255,255,255,0.03)`,
-      }}
-    >
-      {/* header */}
-      <div
-        className="px-5 py-4 border-b border-white/5 flex items-center gap-2"
-        style={{ background: `linear-gradient(180deg, ${accent}14, transparent)` }}
-      >
-        <Smartphone className="size-3.5" style={{ color: accent }} />
-        <span
-          className="text-[10px] tracking-[0.28em] uppercase font-[family-name:var(--font-jetbrains)]"
-          style={{ color: accent }}
-        >
-          Recevoir sur votre téléphone
-        </span>
-      </div>
-
-      {/* QR code — white card so a phone camera reads it cleanly */}
-      <div className="px-5 pt-5 pb-4 flex flex-col items-center gap-3">
-        <div
-          className="rounded-xl p-3 bg-white"
-          style={{ boxShadow: `0 10px 24px -10px ${accent}66` }}
-        >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={qrSrc}
-            alt={`QR code pour s'abonner au topic ntfy ${topic}`}
-            width={200}
-            height={200}
-            className="block"
-          />
-        </div>
-        <div className="text-center">
-          <div className="text-[9.5px] tracking-[0.22em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-            topic ntfy.sh
-          </div>
-          <button
-            type="button"
-            onClick={copy}
-            className="mt-1 inline-flex items-center gap-1.5 px-2 py-1 rounded-md text-[12px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-surface)] hover:bg-white/5 transition-colors"
-            title="Copier"
-          >
-            {topic}
-            {copied ? (
-              <Check className="size-3 text-[color:var(--nafas-accent2)]" />
-            ) : (
-              <Copy className="size-3 opacity-60" />
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Action CTAs */}
-      <div className="px-5 pb-4 grid grid-cols-2 gap-2">
-        <a
-          href={deepLink}
-          className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md text-black text-[11px] font-[family-name:var(--font-jetbrains)] tracking-[0.12em] uppercase transition-transform hover:scale-[1.01]"
-          style={{ background: accent, boxShadow: `0 8px 18px -8px ${accent}99` }}
-        >
-          <Bell className="size-3" />
-          Ouvrir ntfy
-        </a>
-        <a
-          href={webUrl}
-          target="_blank"
-          rel="noreferrer"
-          className="inline-flex items-center justify-center gap-1.5 h-9 rounded-md border text-[11px] font-[family-name:var(--font-jetbrains)] tracking-[0.12em] uppercase text-[color:var(--nafas-surface)] hover:bg-white/5 transition-colors"
-          style={{ borderColor: `${accent}44` }}
-        >
-          <ExternalLink className="size-3" />
-          ntfy.sh
-        </a>
-      </div>
-
-      {/* How-to — tiny, factual */}
-      <div className="px-5 pb-5 text-[11px] leading-[1.55] text-[color:var(--nafas-ink3)]">
-        <ol className="space-y-1 list-decimal list-inside marker:text-[color:var(--nafas-ink3)]/60">
-          <li>Installez l&apos;app <span className="text-[color:var(--nafas-surface)]">ntfy</span> (iOS, Android).</li>
-          <li>Scannez le QR · votre téléphone vous propose de vous abonner.</li>
-          <li>Toute alerte critique de GABES arrive en notification push.</li>
-        </ol>
-      </div>
-
-      <div className="px-5 py-3 border-t border-white/5 flex items-center gap-2 text-[9.5px] tracking-[0.2em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-        <QrCode className="size-3" style={{ color: accent }} />
-        Abonnement public · ntfy.sh
       </div>
     </div>
   );

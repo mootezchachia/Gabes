@@ -161,6 +161,40 @@ export async function POST(req: NextRequest) {
     );
   }
 
+  const sentByPipeline =
+    (upstreamJson.sent_topics as string[] | undefined) ?? [];
+
+  // Safety net: always push straight to the public demo topic so the user's
+  // phone rings even if the pipeline silenced the general topic (sensor had
+  // no critical threshold, wrong zone kind, anti-spam stale row, etc.).
+  // Cheap — one extra HTTP POST to ntfy.sh.
+  const demoTopic = "nafas-gabes-general";
+  const sensorLabel = picked.label ?? String(picked.id).slice(0, 8);
+  const title = `SO₂ critique — ${sensorLabel}`;
+  const ntfyBody = `SO₂ ${simValue} µg/m³ au capteur « ${sensorLabel} ». Seuil critique: ${baseThreshold} µg/m³. Évitez les déplacements en extérieur et suivez les consignes officielles.`;
+  const ntfyBase = process.env.NTFY_URL?.replace(/\/+$/, "") || "https://ntfy.sh";
+  let directFired = false;
+  try {
+    const directRes = await fetch(`${ntfyBase}/${demoTopic}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        Title: title,
+        Priority: "urgent",
+        Tags: "rotating_light,warning",
+      },
+      body: ntfyBody,
+    });
+    directFired = directRes.ok;
+  } catch {
+    /* swallow — pipeline push already fired */
+  }
+
+  // De-duplicate the topic list returned to the UI.
+  const mergedTopics = Array.from(
+    new Set([...sentByPipeline, ...(directFired ? [demoTopic] : [])]),
+  );
+
   return NextResponse.json({
     ok: true,
     sensor: {
@@ -175,6 +209,7 @@ export async function POST(req: NextRequest) {
     threshold: baseThreshold,
     severity,
     crossed: upstreamJson.crossed ?? severity,
-    sent_topics: (upstreamJson.sent_topics as string[] | undefined) ?? [],
+    sent_topics: mergedTopics,
+    direct_push: directFired,
   });
 }
