@@ -16,7 +16,7 @@ type Prediction = {
   who_threshold_breaches: string[];
 };
 
-type SliderKey = "p" | "cd" | "pb" | "as";
+type SliderKey = "p" | "pb" | "as";
 
 type Reading = {
   pb: number; cd: number; ni: number; hg: number;
@@ -51,10 +51,9 @@ const DEFAULT_READING: Reading = {
 };
 
 const SLIDERS = [
-  { key: "p"  as SliderKey, label: "Phosphore (P)",  min: 0, max: 0.5,  step: 0.01,   who: null,  unit: "mg/L", note: "Rejet GCT → pilote Cd (SHAP #1)" },
-  { key: "cd" as SliderKey, label: "Cadmium (Cd)",   min: 0, max: 0.01, step: 0.0001, who: 0.003, unit: "mg/L", note: "Co-rejet phosphate · auto-corrélé P" },
-  { key: "pb" as SliderKey, label: "Plomb (Pb)",     min: 0, max: 0.05, step: 0.001,  who: 0.01,  unit: "mg/L", note: "Métal lourd" },
-  { key: "as" as SliderKey, label: "Arsenic (As)",   min: 0, max: 0.02, step: 0.0005, who: 0.01,  unit: "mg/L", note: "Roche phosphatée" },
+  { key: "p"  as SliderKey, label: "Phosphore (P)",  min: 0, max: 0.5,  step: 0.01,   who: null, unit: "mg/L", note: "Rejet GCT principal" },
+  { key: "pb" as SliderKey, label: "Plomb (Pb)",     min: 0, max: 0.05, step: 0.001,  who: 0.01, unit: "mg/L", note: "Métal lourd" },
+  { key: "as" as SliderKey, label: "Arsenic (As)",   min: 0, max: 0.02, step: 0.0005, who: 0.01, unit: "mg/L", note: "Roche phosphatée" },
 ] as const;
 
 function isSafe(r: Reading) {
@@ -208,6 +207,23 @@ export function WaterQualityCard() {
                       Seuil OMS : {s.who} {s.unit} <span className="text-[color:var(--nafas-amber)]/60">(barre verticale)</span>
                     </div>
                   )}
+                  {/* After P slider: show derived Cd value */}
+                  {s.key === "p" && (() => {
+                    const cdVal = reading.p * 0.01;
+                    const cdDepasse = cdVal > WHO.cd;
+                    return (
+                      <div className="flex items-center justify-between mt-0.5 rounded bg-white/[0.03] px-2 py-1">
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[8.5px] text-[color:var(--nafas-ink3)]/60">
+                          ↳ Cd co-libéré (SHAP #1)
+                        </span>
+                        <span className="font-[family-name:var(--font-jetbrains)] text-[8.5px] tabular-nums"
+                          style={{ color: cdDepasse ? "var(--nafas-danger)" : "var(--nafas-ink3)" }}>
+                          {cdDepasse && "⚠ "}{cdVal.toFixed(4)} mg/L
+                          <span className="text-[color:var(--nafas-ink3)]/40 ml-1">/ OMS 0.003</span>
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </div>
               );
             })}
@@ -326,8 +342,8 @@ export function WaterQualityCard() {
                     fontFamily: "var(--font-jetbrains)",
                   }}
                   labelStyle={{ color: "var(--nafas-ink3)" }}
-                  formatter={(value: number, name: string) => [
-                    `${value} t/mois`,
+                  formatter={(value, name) => [
+                    `${value ?? ""} t/mois`,
                     name === "declare" ? "Déclaré GCT" : "Estimé NAFAS",
                   ]}
                 />

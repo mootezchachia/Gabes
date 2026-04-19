@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { Droplets, ChevronDown, ChevronUp } from "lucide-react";
 
 type Prediction = {
@@ -56,22 +56,32 @@ export function WaterQualityBadge() {
   const [modelData, setModelData] = useState<Prediction | null>(null);
   const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
-  const [pConc, setPConc] = useState(BASE_READING.p); // C in the load equation (mg/L)
+  const [pConc, setPConc] = useState(BASE_READING.p);
+  const [currentReading, setCurrentReading] = useState<Reading>(BASE_READING);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const fetchPrediction = useCallback(() => {
+  const fetchPrediction = useCallback((r: Reading) => {
     fetch("/api/water-quality", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(BASE_READING),
+      body: JSON.stringify(r),
     })
       .then((res) => (res.ok ? res.json() : Promise.reject()))
       .then((d: Prediction) => { setModelData(d); setLoading(false); })
       .catch(() => setLoading(false));
   }, []);
 
-  useEffect(() => { fetchPrediction(); }, [fetchPrediction]);
+  useEffect(() => { fetchPrediction(BASE_READING); }, [fetchPrediction]);
 
-  const display: Prediction | null = loading ? null : isSafe(BASE_READING) ? SAFE_PREDICTION : modelData;
+  const handlePConc = (value: number) => {
+    setPConc(value);
+    const next = { ...BASE_READING, p: value, cd: parseFloat((value * 0.01).toFixed(4)) };
+    setCurrentReading(next);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => fetchPrediction(next), 300);
+  };
+
+  const display: Prediction | null = loading ? null : isSafe(currentReading) ? SAFE_PREDICTION : modelData;
   const color = display ? (RISK_COLOR[display.risk_level] ?? "#888") : "var(--nafas-ink3)";
 
   return (
@@ -150,7 +160,7 @@ export function WaterQualityBadge() {
                   </div>
                   <input
                     type="range" min={0} max={0.5} step={0.01} value={pConc}
-                    onChange={(e) => setPConc(parseFloat(e.target.value))}
+                    onChange={(e) => handlePConc(parseFloat(e.target.value))}
                     className="w-full h-1 rounded-full appearance-none cursor-ew-resize bg-white/10"
                     style={{ accentColor: "var(--nafas-amber)" }}
                   />
