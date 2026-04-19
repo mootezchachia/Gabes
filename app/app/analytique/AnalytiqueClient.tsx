@@ -8,6 +8,7 @@ import { AiHistoryPanel } from "@/components/app/analytique/AiHistoryPanel";
 import { NtfyAlertsPanel } from "@/components/app/analytique/NtfyAlertsPanel";
 import { ScenarioCompareDialog } from "@/components/app/analytique/ScenarioCompareDialog";
 import { PdfExportButton } from "@/components/app/analytique/PdfExportButton";
+import { WaterQualityCard } from "@/components/app/analytique/WaterQualityCard";
 
 export function AnalytiqueClient() {
   const [compareOpen, setCompareOpen] = useState(false);
@@ -35,6 +36,8 @@ export function AnalytiqueClient() {
           <SensorTrendsChart />
           <AiHistoryPanel onCompare={() => setCompareOpen(true)} />
         </div>
+
+        <WaterQualityCard />
 
         <NtfyAlertsPanel />
 
