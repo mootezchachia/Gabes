@@ -51,6 +51,10 @@ const AlertCinematic = dynamic(
   () => import("./AlertCinematic").then((m) => m.AlertCinematic),
   { ssr: false },
 );
+const WaterQualityBadge = dynamic(
+  () => import("./WaterQualityBadge").then((m) => m.WaterQualityBadge),
+  { ssr: false },
+);
 
 function BootOverlay() {
   return (
@@ -112,6 +116,9 @@ export function CarteScene() {
            beam light up the globe, phone mockup shows the ntfy notification
            exactly as it lands on a citizen's device. */}
       {canSeeRail ? <AlertCinematic /> : null}
+
+      {/* Water quality badge — bottom-right, clickable for detail */}
+      <WaterQualityBadge />
     </div>
   );
 }
