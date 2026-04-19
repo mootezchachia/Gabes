@@ -49,7 +49,7 @@ const PORTALS = [
     id: "monitor",
     side: "left" as const,
     label: "01 · Surveillance",
-    title: "Moniteur NAFAS",
+    title: "Moniteur HealiX",
     body: "42 capteurs SO₂/PM, satellite TROPOMI et modélisation de panache en temps réel.",
     href: "/monitor3d",
     cta: "Ouvrir le moniteur",
@@ -230,7 +230,7 @@ export function JourneySection() {
             className="text-[10px] font-[family-name:var(--font-jetbrains)] tracking-[0.28em] uppercase mb-4"
             style={{ color: "#8FC87A" }}
           >
-            NAFAS · Plateforme
+            HealiX · Plateforme
           </div>
           <h2
             className="font-[family-name:var(--font-fraunces)] font-normal tracking-[-0.025em] leading-[1.0] text-[clamp(28px,4.5vw,54px)] mb-4"

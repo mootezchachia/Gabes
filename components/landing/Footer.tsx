@@ -11,7 +11,7 @@ export function Footer() {
                 N
               </div>
               <div className="text-[14px] font-medium tracking-wide">
-                NAFAS <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
+                HealiX <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
               </div>
             </div>
             <p className="text-[14px] leading-[1.6] text-[color:var(--nafas-ink3)] max-w-md">
@@ -46,7 +46,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-white/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="text-[11px] font-[family-name:var(--font-jetbrains)] tracking-wider uppercase text-[color:var(--nafas-ink3)]/80">
-            © 2026 NAFAS · Tunisie
+            © 2026 HealiX · Tunisie
           </div>
           <div className="text-[11px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]/60 max-w-xl md:text-right leading-[1.55]">
             Prototype. Données Sentinel-5P publiques + simulations calibrées sur littérature scientifique citée. Aucun conseil médical. Les mesures ne remplacent ni un médecin, ni un suivi environnemental officiel.

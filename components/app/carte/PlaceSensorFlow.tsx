@@ -201,7 +201,7 @@ function SensorFormBody({
 
       <div>
         <FormLabel htmlFor="device_id">Identifiant appareil</FormLabel>
-        <Input id="device_id" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} placeholder="NAFAS-CAP-001" />
+        <Input id="device_id" value={deviceId} onChange={(e) => setDeviceId(e.target.value)} placeholder="HealiX-CAP-001" />
       </div>
 
       <div>

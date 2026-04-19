@@ -4,7 +4,7 @@ import { formatAlt, formatDMS, formatHeading, useCesiumCamera } from "@/lib/moni
 
 /**
  * Top-left identity + live camera telemetry.
- * NAFAS mark, DMS coords, altitude, heading, zoom — all tabular-nums mono.
+ * HealiX mark, DMS coords, altitude, heading, zoom — all tabular-nums mono.
  */
 export function TacticalStatus() {
   const cam = useCesiumCamera();
@@ -24,7 +24,7 @@ export function TacticalStatus() {
         </div>
         <div className="flex-1 min-w-0">
           <div className="tac-label text-[color:var(--nafas-surface)] tracking-[0.32em]">
-            NAFAS · 3D
+            HealiX · 3D
           </div>
           <div className="mt-1 tac-label text-[8px] text-[color:var(--nafas-ink3)]/80 tracking-[0.26em]">
             Gabès sector · tactical

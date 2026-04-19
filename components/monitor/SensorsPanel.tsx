@@ -111,7 +111,7 @@ export function SensorsPanel() {
           className="font-mono uppercase tracking-[0.2em] text-[color:var(--nafas-ink3)]"
           style={{ fontSize: 10.5 }}
         >
-          Capteurs NAFAS · Live
+          Capteurs HealiX · Live
         </span>
       </div>
 

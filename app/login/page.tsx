@@ -4,8 +4,8 @@ import Link from "next/link";
 import { isSupabaseConfigured } from "@/lib/supabase/env";
 
 export const metadata: Metadata = {
-  title: "Se connecter · NAFAS",
-  description: "Connexion à la plateforme NAFAS · Municipalité de Gabès",
+  title: "Se connecter · HealiX",
+  description: "Connexion à la plateforme HealiX · Municipalité de Gabès",
 };
 
 type SearchParams = Promise<{ next?: string; reason?: string }>;
@@ -41,7 +41,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
               N
             </div>
             <div className="text-[14px] font-medium tracking-wide">
-              NAFAS <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
+              HealiX <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
             </div>
           </Link>
 

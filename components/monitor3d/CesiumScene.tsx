@@ -249,7 +249,7 @@ export function CesiumScene() {
           id: entity.id,
           lon,
           lat,
-          title: `${sensorName ?? code ?? "Capteur NAFAS"}${critical ? " · CRITIQUE" : ""}`,
+          title: `${sensorName ?? code ?? "Capteur HealiX"}${critical ? " · CRITIQUE" : ""}`,
           body: `${address ?? ""}${district ? ` · ${district}` : ""}${category ? ` · ${category}` : ""}\nSO₂ ${so2} µg/m³ · NO₂ ${no2} µg/m³${pm25 ? ` · PM2.5 ${pm25} µg/m³` : ""}${uptime ? ` · uptime ${uptime}%` : ""}`,
           date: new Date().toISOString(),
           severity: critical || so2 > 250 ? "high" : so2 > 100 ? "medium" : "low",
@@ -270,7 +270,7 @@ export function CesiumScene() {
           lon,
           lat,
           title: `${infraKind === "hospital" ? "Hôpital" : "École"} · ${name}`,
-          body: `${city}. Infrastructure sensible indexée par NAFAS. ${
+          body: `${city}. Infrastructure sensible indexée par HealiX. ${
             infraKind === "hospital"
               ? "Tensions pédiatriques corrélées aux pics SO₂."
               : "Évacuations recommandées si panache < 2 km."

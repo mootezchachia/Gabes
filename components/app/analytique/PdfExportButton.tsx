@@ -6,7 +6,7 @@ import { Button } from "@/components/app/ui/Primitives";
 /**
  * Minimal PDF export using @react-pdf/renderer. We lazy-load both the pdf
  * generator AND the Supabase payload so the initial Analytique bundle stays
- * slim. The document intentionally keeps typography restrained — NAFAS
+ * slim. The document intentionally keeps typography restrained — HealiX
  * tone, not corporate-report cliché.
  */
 export function PdfExportButton() {
@@ -46,8 +46,8 @@ export function PdfExportButton() {
       const doc = (
         <Document>
           <Page size="A4" style={styles.page}>
-            <Text style={styles.eyebrow}>NAFAS · Rapport · Analytique</Text>
-            <Text style={styles.h1}>Plateforme NAFAS — instantané</Text>
+            <Text style={styles.eyebrow}>HealiX · Rapport · Analytique</Text>
+            <Text style={styles.h1}>Plateforme HealiX — instantané</Text>
             <Text style={styles.kbd}>Généré le {new Date().toLocaleString("fr-FR")}</Text>
 
             <View style={styles.section}>

@@ -4,7 +4,7 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { WelcomeForm } from "./WelcomeForm";
 
 export const metadata: Metadata = {
-  title: "Bienvenue · NAFAS",
+  title: "Bienvenue · HealiX",
 };
 
 export default async function WelcomePage() {

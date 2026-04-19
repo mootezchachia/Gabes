@@ -233,7 +233,7 @@ export function InspectCard() {
             className="text-[10px] tracking-[0.2em] uppercase text-[color:var(--nafas-ink3)]/60"
             style={{ fontFamily: MONO }}
           >
-            NAFAS · Moniteur
+            HealiX · Moniteur
           </span>
           {selected.sourceUrl ? (
             <a

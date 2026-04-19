@@ -1,5 +1,5 @@
 export const metadata = {
-  title: "NAFAS · Gabès 3D — moniteur atmosphérique volumétrique",
+  title: "HealiX · Gabès 3D — moniteur atmosphérique volumétrique",
 };
 
 export default function Monitor3DLayout({ children }: { children: React.ReactNode }) {

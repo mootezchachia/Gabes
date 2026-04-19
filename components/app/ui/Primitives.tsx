@@ -3,7 +3,7 @@
 /**
  * Thin, opinionated primitives for the /app shell. We avoid pulling in
  * Radix UI (it's not installed) and instead compose @base-ui/react with
- * NAFAS tokens so every dialog/sheet/tab looks editorial by default.
+ * HealiX tokens so every dialog/sheet/tab looks editorial by default.
  *
  * These are NOT a replacement for a full shadcn install — they cover the
  * ~8 patterns the app shell actually needs and nothing more.

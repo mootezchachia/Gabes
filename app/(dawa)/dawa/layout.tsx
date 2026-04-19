@@ -2,9 +2,9 @@ import type { Metadata, Viewport } from "next";
 import { DawaProviders } from "@/components/dawa/DawaProviders";
 
 export const metadata: Metadata = {
-  title: "NAFAS · Dawa’",
+  title: "HealiX · Dawa’",
   description:
-    "Dawa’ — Compagnon citoyen NAFAS. Qualité de l’air, alertes et trajet sûr à Gabès.",
+    "Dawa’ — Compagnon citoyen HealiX. Qualité de l’air, alertes et trajet sûr à Gabès.",
   applicationName: "Dawa’",
   manifest: "/manifest.webmanifest",
   appleWebApp: {

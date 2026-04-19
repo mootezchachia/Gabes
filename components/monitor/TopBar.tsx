@@ -14,7 +14,7 @@ function BrandMark() {
   return (
     <Link
       href="/"
-      aria-label="Retour à l'accueil NAFAS"
+      aria-label="Retour à l'accueil HealiX"
       className="nafas-brand group flex shrink-0 items-center gap-[7px] select-none outline-none rounded-[4px]"
     >
       <span
@@ -32,7 +32,7 @@ function BrandMark() {
         style={{ fontFamily: "var(--font-inter), sans-serif" }}
         className="text-[12px] font-[600] tracking-[0.02em] text-[color:var(--nafas-surface)]"
       >
-        NAFAS
+        HealiX
       </span>
     </Link>
   );

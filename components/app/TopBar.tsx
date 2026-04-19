@@ -44,7 +44,7 @@ export function TopBar() {
           N
         </div>
         <div className="text-[13px] font-medium tracking-wide">
-          NAFAS{" "}
+          HealiX{" "}
           <span className="text-[color:var(--nafas-ink3)] font-normal">
             · {org?.name ?? "Gabès"}
           </span>

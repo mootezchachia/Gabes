@@ -87,7 +87,7 @@ export function Audiences() {
             </h2>
           </div>
           <p className="md:max-w-[420px] text-[15px] leading-[1.6] text-[color:var(--nafas-ink3)]">
-            NAFAS ne fournit pas un rapport — il fournit cinq interfaces différentes qui regardent toutes les mêmes mesures, chacune taillée pour une décision concrète.
+            HealiX ne fournit pas un rapport — il fournit cinq interfaces différentes qui regardent toutes les mêmes mesures, chacune taillée pour une décision concrète.
           </p>
         </div>
 

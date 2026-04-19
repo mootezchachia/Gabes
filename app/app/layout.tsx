@@ -3,10 +3,10 @@ import { AppShell } from "@/components/app/AppShell";
 
 export const metadata: Metadata = {
   title: {
-    default: "NAFAS",
-    template: "%s · NAFAS",
+    default: "HealiX",
+    template: "%s · HealiX",
   },
-  description: "Plateforme NAFAS — surveillance et remédiation · Municipalité de Gabès",
+  description: "Plateforme HealiX — surveillance et remédiation · Municipalité de Gabès",
 };
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {

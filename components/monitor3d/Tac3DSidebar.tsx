@@ -45,7 +45,7 @@ export function Tac3DSidebar() {
             className="tac-label text-[7.5px] tracking-[0.35em] opacity-35"
             style={{ writingMode: "vertical-rl", transform: "rotate(180deg)" }}
           >
-            HUD · NAFAS
+            HUD · HealiX
           </span>
         </div>
       )}

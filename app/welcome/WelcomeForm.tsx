@@ -207,7 +207,7 @@ export function WelcomeForm({
       ) : null}
 
       <Button type="submit" size="lg" className="w-full" disabled={loading}>
-        {loading ? "Enregistrement…" : "Accéder à NAFAS"}
+        {loading ? "Enregistrement…" : "Accéder à HealiX"}
       </Button>
       <FormMessage help="Vous pourrez modifier ces informations à tout moment depuis Paramètres · Moi." />
     </form>

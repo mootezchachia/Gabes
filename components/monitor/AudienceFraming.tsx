@@ -53,7 +53,7 @@ const FRAMINGS: Record<AudienceKey, Framing> = {
   architecte: {
     key: "architecte",
     role: "Architecte",
-    persona: "Atelier NAFAS — catalogue ORACLE",
+    persona: "Atelier HealiX — catalogue ORACLE",
     ar: "معمار",
     icon: Ruler,
     accent: "var(--nafas-cyan)",

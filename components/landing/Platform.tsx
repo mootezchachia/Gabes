@@ -75,7 +75,7 @@ export function Platform() {
             </h2>
           </div>
           <p className="max-w-md text-[15.5px] leading-[1.55] text-[color:var(--nafas-ink3)]">
-            Neuf projets européens ont déjà étudié Gabès — sans jamais se parler. NAFAS est leur tissu conjonctif. Chaque axe est lié à un capteur, un seuil, un citoyen.
+            Neuf projets européens ont déjà étudié Gabès — sans jamais se parler. HealiX est leur tissu conjonctif. Chaque axe est lié à un capteur, un seuil, un citoyen.
           </p>
         </div>
 

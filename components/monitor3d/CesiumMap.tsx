@@ -27,7 +27,7 @@ export interface CesiumMapProps {
  *
  *  - Cesium World Terrain (real DEM, global) — requires Ion auth
  *  - Bing Maps Aerial imagery draped on the terrain (Google Earth-esque base) — requires Ion auth
- *  - NAFAS atmosphere config: dimmed fog, warm horizon, night sky off
+ *  - HealiX atmosphere config: dimmed fog, warm horizon, night sky off
  *  - Camera flies to Gabès on mount
  *  - Default widgets (animation, timeline, credit, selection) disabled
  *
@@ -128,7 +128,7 @@ export function CesiumMap({ onReady, skipIntro = false }: CesiumMapProps) {
       })();
     }
 
-    // ── NAFAS atmosphere tuning ──────────────────────────────────────
+    // ── HealiX atmosphere tuning ──────────────────────────────────────
     const scene = viewer.scene;
     // Lighting off — without vertex normals (see terrain config) it adds
     // no visible shading at this altitude band but still ticks the globe.

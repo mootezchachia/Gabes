@@ -1,5 +1,5 @@
 /**
- * NAFAS · Dawa' — hand-rolled service worker.
+ * HealiX · Dawa' — hand-rolled service worker.
  *
  * Scope: /dawa
  * Strategy:

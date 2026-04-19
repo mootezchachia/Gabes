@@ -1,7 +1,7 @@
 {
-  "name": "NAFAS · Dawa’",
+  "name": "HealiX · Dawa’",
   "short_name": "Dawa’",
-  "description": "Compagnon citoyen NAFAS pour la qualité de l’air à Gabès.",
+  "description": "Compagnon citoyen HealiX pour la qualité de l’air à Gabès.",
   "id": "/dawa",
   "start_url": "/dawa",
   "scope": "/dawa",

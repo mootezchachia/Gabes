@@ -43,7 +43,7 @@ export function FinalCTA() {
             <em className="not-italic italic font-light text-[color:var(--nafas-accent2)]">
               attend
             </em>
-            . NAFAS est prêt.
+            . HealiX est prêt.
           </h2>
 
           <p className="mt-8 text-[16px] md:text-[17.5px] leading-[1.6] text-[color:var(--nafas-ink3)] max-w-[62ch]">

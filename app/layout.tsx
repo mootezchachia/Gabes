@@ -25,7 +25,7 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "NAFAS · Gabès — La ville qui respire du phosphate",
+  title: "HealiX · Gabès — La ville qui respire du phosphate",
   description:
     "Plateforme IA de surveillance et remédiation de la pollution industrielle à Gabès, Tunisie. Capteurs, diagnostic, interventions, forecast.",
 };

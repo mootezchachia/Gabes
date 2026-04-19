@@ -57,7 +57,7 @@ const AUDIENCES: AudienceDef[] = [
   {
     key: "architecte", label: "Architecte", ar: "معمار", icon: Ruler,
     accent: "var(--nafas-cyan)", hotkey: "4",
-    role: "Architecte", persona: "Atelier NAFAS — catalogue ORACLE",
+    role: "Architecte", persona: "Atelier HealiX — catalogue ORACLE",
     headline: "Cinq sites, trois matériaux, une saison.",
     body: "Mashrabiyya sur quatre façades scolaires en phosphogypse stabilisé + grignons d'olive : −40% PM₂.₅. Hizam Akhdar 2 km × 30 m — Tamarix, Atriplex, Phragmites. Tahallub : cinq hectares d'Ulva posidonia, 225 kg phosphore retirés par an. Rhino + Grasshopper paramétrés, exports chantier prêts.",
   },

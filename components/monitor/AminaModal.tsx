@@ -133,7 +133,7 @@ export function AminaModal() {
           {/* CTA */}
           <div className="mt-8 flex items-center justify-between gap-4">
             <div className="font-[family-name:var(--font-jetbrains)] text-[10px] uppercase tracking-wider text-[color:var(--nafas-ink3)]/70">
-              Source · dossier NAFAS · oct. 2025
+              Source · dossier HealiX · oct. 2025
             </div>
             <button
               type="button"

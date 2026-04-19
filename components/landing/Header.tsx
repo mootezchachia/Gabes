@@ -18,7 +18,7 @@ export function Header() {
             N
           </div>
           <div className="text-[14px] font-medium tracking-wide">
-            NAFAS <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
+            HealiX <span className="text-[color:var(--nafas-ink3)] font-normal">· Gabès</span>
           </div>
         </Link>
 

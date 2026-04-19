@@ -61,7 +61,7 @@ export function Hero() {
         {/* caption - subordinate mono eyebrow for the solution */}
         <div className="mt-6 flex items-baseline gap-3">
           <div className="text-[11px] font-[family-name:var(--font-jetbrains)] tracking-[0.22em] uppercase text-[color:var(--nafas-accent2)]">
-            NAFAS
+            HealiX
           </div>
           <div className="text-[13.5px] text-[color:var(--nafas-ink3)] tracking-wide">
             L&apos;outil qui la fait respirer.

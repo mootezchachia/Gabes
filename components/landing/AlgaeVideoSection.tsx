@@ -27,7 +27,7 @@ export function AlgaeVideoSection() {
           className="text-[10px] font-[family-name:var(--font-jetbrains)] tracking-[0.28em] uppercase mb-4"
           style={{ color: "rgba(140,195,120,0.7)" }}
         >
-          NAFAS · Phycoremédiation
+          HealiX · Phycoremédiation
         </div>
         <h2
           className="font-[family-name:var(--font-fraunces)] font-normal tracking-[-0.02em] leading-[1.0] text-[clamp(28px,4.5vw,56px)] mb-3"

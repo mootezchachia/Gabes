@@ -16,7 +16,7 @@ type LayerRow = {
 const LAYERS: LayerRow[] = [
   { key: "plume", label: "Plume SO₂ TROPOMI", tone: "amber", count: "36j" },
   { key: "emitters", label: "Émetteurs industriels", tone: "danger", count: "71" },
-  { key: "sensors", label: "Capteurs NAFAS", tone: "cyan", count: "42" },
+  { key: "sensors", label: "Capteurs HealiX", tone: "cyan", count: "42" },
   { key: "incidents", label: "Incidents", tone: "danger", count: "38" },
   { key: "infra", label: "Écoles & hôpitaux", tone: "blue", count: "147" },
   { key: "wind", label: "Vent dominant", tone: "surface", count: "mean" },

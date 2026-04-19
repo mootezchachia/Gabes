@@ -19,7 +19,7 @@ const CAPTIONS = [
     id: 3,
     range: [0.68, 1.0] as [number, number],
     title: "Du toxique au filtre vivant",
-    sub: "NAFAS · Catalogue ORACLE",
+    sub: "HealiX · Catalogue ORACLE",
   },
 ];
 
@@ -132,7 +132,7 @@ export function ScrollVideoSection() {
             className="text-[10px] font-[family-name:var(--font-jetbrains)] tracking-[0.28em] uppercase"
             style={{ color: "rgba(150,200,130,0.65)" }}
           >
-            NAFAS · Phycoremédiation
+            HealiX · Phycoremédiation
           </div>
         </div>
 
