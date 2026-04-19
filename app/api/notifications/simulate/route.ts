@@ -170,25 +170,70 @@ export async function POST(req: NextRequest) {
   // Cheap — one extra HTTP POST to ntfy.sh.
   const demoTopic = "nafas-gabes-general";
   const sensorLabel = picked.label ?? String(picked.id).slice(0, 8);
-  const title = `SO₂ critique — ${sensorLabel}`;
+  // Strip non-ASCII for HTTP headers (SO₂, —, µ would break the header
+  // encoder on Vercel/Node's fetch and get the push silently rejected).
+  // The message body itself stays full UTF-8.
+  const toAscii = (s: string): string =>
+    s
+      .replace(/₂/g, "2").replace(/µ/g, "u")
+      .replace(/²/g, "2").replace(/³/g, "3")
+      .replace(/[—–]/g, "-").replace(/[«»]/g, "")
+      .replace(/[éèê]/gi, "e").replace(/[àâ]/gi, "a").replace(/[îï]/gi, "i").replace(/[ôö]/gi, "o").replace(/[ûü]/gi, "u").replace(/[ç]/gi, "c")
+      .replace(/[^\x20-\x7e]/g, "");
+  const titleAscii = toAscii(`SO2 critique - ${sensorLabel}`);
   const ntfyBody = `SO₂ ${simValue} µg/m³ au capteur « ${sensorLabel} ». Seuil critique: ${baseThreshold} µg/m³. Évitez les déplacements en extérieur et suivez les consignes officielles.`;
   const ntfyBase = process.env.NTFY_URL?.replace(/\/+$/, "") || "https://ntfy.sh";
+
+  // First attempt: full payload with headers. Errors surface, not swallowed.
   let directFired = false;
+  let directError: string | null = null;
   try {
     const directRes = await fetch(`${ntfyBase}/${demoTopic}`, {
       method: "POST",
       headers: {
         "Content-Type": "text/plain; charset=utf-8",
-        Title: title,
+        Title: titleAscii,
         Priority: "urgent",
         Tags: "rotating_light,warning",
       },
       body: ntfyBody,
     });
     directFired = directRes.ok;
-  } catch {
-    /* swallow — pipeline push already fired */
+    if (!directRes.ok) {
+      directError = `ntfy ${directRes.status} on ${demoTopic}: ${(await directRes.text().catch(() => "")).slice(0, 120)}`;
+    }
+  } catch (e) {
+    directError = `ntfy fetch: ${(e as Error).message}`.slice(0, 160);
   }
+
+  // Bulletproof fallback: if the fancy push failed for ANY reason, send the
+  // simplest possible POST — no custom headers at all, just a plain text
+  // body. ntfy accepts that and the body becomes the notification text. No
+  // demo should ever not ring because of a header parse bug.
+  if (!directFired) {
+    try {
+      const fallbackRes = await fetch(`${ntfyBase}/${demoTopic}`, {
+        method: "POST",
+        body: ntfyBody,
+      });
+      directFired = fallbackRes.ok;
+      if (!directFired) {
+        directError = `${directError ?? ""} | fallback ${fallbackRes.status}`.slice(0, 200);
+      } else {
+        directError = null;
+      }
+    } catch (e) {
+      directError = `${directError ?? ""} | fallback fetch: ${(e as Error).message}`.slice(0, 200);
+    }
+  }
+
+  console.log("[simulate]", {
+    sensor: picked.id,
+    value: simValue,
+    sentByPipeline,
+    directFired,
+    directError,
+  });
 
   // De-duplicate the topic list returned to the UI.
   const mergedTopics = Array.from(
@@ -211,5 +256,6 @@ export async function POST(req: NextRequest) {
     crossed: upstreamJson.crossed ?? severity,
     sent_topics: mergedTopics,
     direct_push: directFired,
+    direct_error: directError,
   });
 }
