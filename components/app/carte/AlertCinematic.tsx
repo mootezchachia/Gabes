@@ -217,8 +217,7 @@ export function AlertCinematic() {
           transformOrigin: "center 38%",
         }}
       >
-        <div className="max-w-[1180px] mx-auto px-8 py-10 md:py-14 grid md:grid-cols-[1.35fr_0.65fr] gap-10 items-start">
-          {/* LEFT — alert detail */}
+        <div className="max-w-[960px] mx-auto px-8 py-10 md:py-14">
           <div className="space-y-8">
             <div
               className="flex items-center gap-2.5 text-[11px] tracking-[0.34em] uppercase font-[family-name:var(--font-jetbrains)]"
@@ -371,24 +370,6 @@ export function AlertCinematic() {
             </div>
           </div>
 
-          {/* RIGHT — phone mockup showing the ntfy notification */}
-          <div
-            className="hidden md:flex justify-center items-start"
-            style={{ animation: "alert-rise 750ms cubic-bezier(0.22,1,0.36,1) 360ms both" }}
-          >
-            <PhoneMockup
-              title={`${current.severity === "critical" ? typeLbl.split(" · ")[0] + " critique" : typeLbl.split(" · ")[0] + " élevé"} — ${sensorLabel}`}
-              body={
-                current.threshold > 0
-                  ? `${typeLbl.split(" · ")[0]} ${current.value.toFixed(1)} ${unit} au capteur « ${sensorLabel} ». Seuil ${current.severity === "critical" ? "critique" : "d'alerte"} : ${current.threshold} ${unit}. Évitez les déplacements en extérieur.`
-                  : `${typeLbl.split(" · ")[0]} anormal au capteur « ${sensorLabel} ». Consignes officielles disponibles dans l'app Gabès.`
-              }
-              topic={current.sent_topics[0] ?? "gabes-general"}
-              severity={current.severity}
-              timestamp={new Date(current.sent_at).toLocaleTimeString("fr-FR")}
-              accent={accent}
-            />
-          </div>
         </div>
       </div>
 
@@ -432,123 +413,6 @@ function AlertStat({
       </div>
       <div className="mt-2.5 text-[10px] tracking-[0.22em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
         {label}
-      </div>
-    </div>
-  );
-}
-
-/* --------------------------- PhoneMockup --------------------------- */
-
-function PhoneMockup({
-  title, body, topic, severity, timestamp, accent,
-}: {
-  title: string;
-  body: string;
-  topic: string;
-  severity: "warning" | "critical";
-  timestamp: string;
-  accent: string;
-}) {
-  return (
-    <div className="relative w-[260px]">
-      {/* phone frame */}
-      <div
-        className="relative rounded-[36px] border border-white/10 bg-[color:var(--nafas-bg)]/90 backdrop-blur-xl overflow-hidden"
-        style={{
-          aspectRatio: "9/19",
-          boxShadow: `0 50px 120px -30px ${accent}55, 0 20px 60px -20px rgba(0,0,0,0.8), inset 0 0 0 2px rgba(255,255,255,0.04)`,
-        }}
-      >
-        {/* status bar */}
-        <div className="absolute inset-x-0 top-0 h-10 flex items-center justify-between px-5 text-[10px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-surface)]/80">
-          <span>{timestamp}</span>
-          <span className="flex items-center gap-1">
-            <span className="size-1 rounded-full bg-white/80" />
-            <span className="size-1 rounded-full bg-white/60" />
-            <span className="size-1 rounded-full bg-white/40" />
-          </span>
-        </div>
-        {/* notch */}
-        <div
-          aria-hidden
-          className="absolute left-1/2 -translate-x-1/2 top-1.5 w-24 h-5 rounded-full bg-black/95"
-        />
-
-        {/* lockscreen wallpaper */}
-        <div
-          aria-hidden
-          className="absolute inset-0"
-          style={{
-            background: `radial-gradient(ellipse 80% 60% at 50% 0%, ${accent}22, transparent 60%), linear-gradient(180deg, #121620, #0a0d14)`,
-          }}
-        />
-
-        {/* big time */}
-        <div className="absolute inset-x-0 top-16 text-center">
-          <div className="font-[family-name:var(--font-fraunces)] italic text-[50px] leading-none text-[color:var(--nafas-surface)]">
-            {timestamp.slice(0, 5)}
-          </div>
-          <div className="mt-1 text-[10px] tracking-[0.2em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-            dim. 19 avr.
-          </div>
-        </div>
-
-        {/* notification card — the hero */}
-        <div
-          className="absolute left-3 right-3 top-[48%] rounded-2xl p-3 border text-left backdrop-blur-xl"
-          style={{
-            borderColor: `${accent}33`,
-            background: `linear-gradient(180deg, rgba(30,10,12,0.82), rgba(12,10,14,0.85))`,
-            boxShadow: `0 12px 32px -12px ${accent}99, inset 0 0 0 1px ${accent}22`,
-            animation: "ntfy-in 700ms cubic-bezier(0.22,1,0.36,1) 700ms both",
-          }}
-        >
-          <div className="flex items-center gap-2 mb-1.5">
-            <div
-              className="size-5 rounded-md grid place-items-center"
-              style={{ background: severity === "critical" ? accent : "#EF9F27" }}
-            >
-              <Bell className="size-3 text-black" />
-            </div>
-            <div className="text-[10.5px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-surface)] flex-1 truncate">
-              ntfy.sh
-            </div>
-            <div className="text-[9.5px] font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-              maintenant
-            </div>
-          </div>
-          <div className="text-[12px] leading-tight font-[family-name:var(--font-fraunces)] italic text-[color:var(--nafas-surface)] mb-1">
-            {title}
-          </div>
-          <div className="text-[10.5px] leading-[1.4] text-[color:var(--nafas-ink3)] line-clamp-4">
-            {body}
-          </div>
-          <div className="mt-2 text-[9px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] opacity-80" style={{ color: accent }}>
-            topic · {topic.replace(/^nafas-gabes-/, "")}
-          </div>
-        </div>
-
-        {/* swipe up hint */}
-        <div className="absolute inset-x-0 bottom-3 text-center text-[9px] tracking-[0.24em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]/80">
-          · notification push · parents · gabes app ·
-        </div>
-
-        <style jsx>{`
-          @keyframes ntfy-in {
-            from { opacity: 0; transform: translateY(14px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-          }
-        `}</style>
-      </div>
-
-      {/* phone label */}
-      <div className="mt-4 text-center">
-        <div className="text-[9.5px] tracking-[0.28em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
-          telephone citoyen
-        </div>
-        <div className="mt-1 text-[11.5px] text-[color:var(--nafas-surface)] font-[family-name:var(--font-fraunces)] italic">
-          Reçu en moins de 2 s
-        </div>
       </div>
     </div>
   );
