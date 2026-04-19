@@ -16,12 +16,61 @@ import { useToolStore } from "./toolStore";
 import { zoneSchema } from "@/lib/app/objets/zones";
 import { useProfile } from "@/lib/auth/useProfile";
 
+/**
+ * Planar shoelace signed area on [lon, lat] pairs. Positive = counter-clockwise,
+ * negative = clockwise. The ring passed in must be OPEN (last != first).
+ *
+ * Small enough polygons to treat lon/lat as planar — the Gabès admin flow
+ * never draws zones larger than a few km, so this is fine for winding detection.
+ */
+function shoelaceSignedArea(openRing: Array<[number, number]>): number {
+  let a = 0;
+  for (let i = 0; i < openRing.length; i++) {
+    const [x1, y1] = openRing[i]!;
+    const [x2, y2] = openRing[(i + 1) % openRing.length]!;
+    a += x1 * y2 - x2 * y1;
+  }
+  return a / 2;
+}
+
+/**
+ * Convert click vertices → WKT safe for PostGIS `GEOGRAPHY(POLYGON, 4326)`.
+ *
+ * Why the CCW dance: GEOGRAPHY is stricter than GEOMETRY — the outer ring
+ * MUST be counter-clockwise on the sphere, otherwise PostGIS interprets
+ * a small CW loop as "a polygon covering the entire globe except this patch"
+ * and rejects it as "Invalid or unclosed GEOGRAPHY" (surfaced to the user
+ * as « géographie invalide »). Users draw freely in either direction, so we
+ * normalize here.
+ *
+ * Also strips duplicate consecutive vertices — double-click to close often
+ * leaves the closure point at the same spot as the penultimate click.
+ */
 function verticesToWkt(vertices: Array<[number, number]>): string {
-  const closed =
-    vertices.length >= 3 && vertices[0]![0] === vertices[vertices.length - 1]![0] && vertices[0]![1] === vertices[vertices.length - 1]![1]
-      ? vertices
-      : [...vertices, vertices[0]!];
-  const ring = closed.map(([lng, lat]) => `${lng} ${lat}`).join(", ");
+  // Dedupe consecutive identical points
+  const unique: Array<[number, number]> = [];
+  for (const v of vertices) {
+    const last = unique[unique.length - 1];
+    if (!last || last[0] !== v[0] || last[1] !== v[1]) unique.push(v);
+  }
+  if (unique.length < 3) {
+    throw new Error("Polygone invalide : au moins 3 sommets distincts sont requis.");
+  }
+
+  // Work on the open ring (no duplicated closing point).
+  const isClosed =
+    unique.length > 3 &&
+    unique[0]![0] === unique[unique.length - 1]![0] &&
+    unique[0]![1] === unique[unique.length - 1]![1];
+  const openRing = isClosed ? unique.slice(0, -1) : unique;
+
+  // Reverse to CCW if the user drew clockwise.
+  if (shoelaceSignedArea(openRing) < 0) openRing.reverse();
+
+  // Close the ring for WKT output.
+  const ring = [...openRing, openRing[0]!]
+    .map(([lng, lat]) => `${lng} ${lat}`)
+    .join(", ");
   return `SRID=4326;POLYGON((${ring}))`;
 }
 
@@ -65,16 +114,28 @@ export function DrawZoneFlow() {
         title="Nouvelle zone"
         description={`${polygon.length} sommets`}
       >
-        {open && profile?.orgId ? (
-          <ZoneFormBody
-            wkt={verticesToWkt(polygon)}
-            orgId={profile.orgId}
-            onDone={() => {
-              clearPolygon();
-              setTool("select");
-            }}
-          />
-        ) : null}
+        {open && profile?.orgId ? (() => {
+          let wkt: string;
+          try {
+            wkt = verticesToWkt(polygon);
+          } catch (e) {
+            return (
+              <div className="p-5 text-[13px] text-[color:var(--nafas-danger)]">
+                {(e as Error).message}
+              </div>
+            );
+          }
+          return (
+            <ZoneFormBody
+              wkt={wkt}
+              orgId={profile.orgId}
+              onDone={() => {
+                clearPolygon();
+                setTool("select");
+              }}
+            />
+          );
+        })() : null}
       </AppSheet>
     </>
   );

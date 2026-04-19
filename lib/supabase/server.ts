@@ -2,8 +2,12 @@ import "server-only";
 
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
-import type { SupabaseClient } from "@supabase/supabase-js";
-import { requireSupabaseUrl, requireSupabaseAnonKey } from "./env";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import {
+  requireSupabaseUrl,
+  requireSupabaseAnonKey,
+  requireSupabaseServiceRoleKey,
+} from "./env";
 
 /**
  * Server-side Supabase client for RSC + route handlers + server actions.
@@ -36,5 +40,17 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient> {
         }
       },
     },
+  });
+}
+
+/**
+ * Service-role client — bypasses RLS. NEVER expose to the browser and NEVER
+ * use in code paths that echo data the caller isn't entitled to. Always
+ * authenticate + authorize the request first via `createSupabaseServerClient`
+ * and apply org-level filters explicitly before returning rows.
+ */
+export function createServiceRoleClient(): SupabaseClient {
+  return createClient(requireSupabaseUrl(), requireSupabaseServiceRoleKey(), {
+    auth: { persistSession: false, autoRefreshToken: false },
   });
 }

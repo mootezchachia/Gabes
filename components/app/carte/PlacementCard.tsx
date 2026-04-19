@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Sparkles, MapPin, Info, AlertTriangle, Building2 } from "lucide-react";
+import { Sparkles, MapPin, Info, AlertTriangle, Building2, TrendingUp, Loader2 } from "lucide-react";
 import {
   deriveImpact,
   COMPONENT_LABEL,
@@ -10,6 +10,7 @@ import {
 } from "@/lib/sim/impact";
 
 export interface PlacementCardProps {
+  placementId: string;
   index: number; // 1-based
   location: { lon: number; lat: number };
   score: number;
@@ -27,6 +28,24 @@ export interface PlacementCardProps {
     surface_m2: number;
     occupants: number;
   };
+}
+
+interface ForecastYear {
+  year: number;
+  co2_kg: number;
+  nox_g: number;
+  occupants_k: number;
+  thermal_c: number;
+  cumulative_co2_kg: number;
+  cumulative_occupants_k_years: number;
+  cumulative_nox_g: number;
+}
+
+interface ForecastResult {
+  brief_md: string | null;
+  projections: ForecastYear[];
+  mode?: string;
+  model_name?: string | null;
 }
 
 const STRATEGY_THEME: Record<
@@ -80,18 +99,48 @@ const TYPE_LABEL: Record<string, string> = {
  * ORACLE placement — hero card (vegetal panel on a building).
  */
 export function PlacementCard(props: PlacementCardProps) {
-  const { index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect, building } = props;
+  const { placementId, index, location, score, components, rationale_md, model_name, strategy, totalZones, active, onSelect, building } = props;
   const theme = STRATEGY_THEME[strategy] ?? STRATEGY_THEME.air_quality;
   const impact = useMemo(
     () => deriveImpact(components, strategy, building?.surface_m2),
     [components, strategy, building?.surface_m2],
   );
   const [revealed, setRevealed] = useState(false);
+  const [forecastState, setForecastState] = useState<
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ready"; data: ForecastResult }
+    | { status: "error"; message: string }
+  >({ status: "idle" });
 
   useEffect(() => {
     const t = requestAnimationFrame(() => setRevealed(true));
     return () => cancelAnimationFrame(t);
   }, []);
+
+  async function runForecast() {
+    setForecastState({ status: "loading" });
+    try {
+      const res = await fetch("/api/ai/forecast", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({
+          target_kind: "placement",
+          target_id: placementId,
+          horizon_years: 10,
+          with_brief: true,
+        }),
+      });
+      if (!res.ok) {
+        const j = await res.json().catch(() => ({} as Record<string, unknown>));
+        throw new Error((j.error as string) || `HTTP ${res.status}`);
+      }
+      const data = (await res.json()) as ForecastResult;
+      setForecastState({ status: "ready", data });
+    } catch (e) {
+      setForecastState({ status: "error", message: (e as Error).message });
+    }
+  }
 
   const scorePct = Math.round(score * 100);
   const scoreTone =
@@ -317,6 +366,17 @@ export function PlacementCard(props: PlacementCardProps) {
           ) : null}
         </div>
 
+        {/* 10-year AI projection (opens on demand — closes feedback loop
+             between "where will ORACLE put the panel" and "what does ORACLE
+             expect 10 years from now") */}
+        <ForecastPanel
+          state={forecastState}
+          onRun={runForecast}
+          accent={theme.accent}
+          tint={theme.tint}
+          strategy={strategy}
+        />
+
         {/* action row */}
         <div className="flex items-center gap-2 pt-1">
           <div className="flex items-center gap-1.5 text-[10px] tracking-[0.16em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] tabular-nums">
@@ -340,6 +400,32 @@ export function PlacementCard(props: PlacementCardProps) {
               type="button"
               onClick={(e) => {
                 e.stopPropagation();
+                if (forecastState.status !== "loading") runForecast();
+              }}
+              className="inline-flex items-center gap-1.5 text-[11px] tracking-[0.08em] uppercase font-[family-name:var(--font-jetbrains)] px-3 py-1.5 rounded-md border transition-colors hover:bg-white/[0.03] disabled:opacity-60"
+              style={{
+                borderColor: `${theme.accent}55`,
+                color: theme.accent,
+              }}
+              disabled={forecastState.status === "loading"}
+              title="Projection 10 ans + note d'orientation ORACLE"
+            >
+              {forecastState.status === "loading" ? (
+                <>
+                  <Loader2 className="size-3 animate-spin" />
+                  Prévision…
+                </>
+              ) : (
+                <>
+                  <TrendingUp className="size-3" />
+                  Prévision IA · 10 ans
+                </>
+              )}
+            </button>
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
                 // Deploy-to-server is not wired yet; until it is, the button
                 // at least focuses the building on the globe (closes the
                 // drawer, flies the camera, lights the halo/beam) so the
@@ -356,6 +442,187 @@ export function PlacementCard(props: PlacementCardProps) {
         </div>
       </div>
     </article>
+  );
+}
+
+/* --------------------------- ForecastPanel ---------------------------- */
+
+function ForecastPanel({
+  state,
+  onRun,
+  accent,
+  tint,
+  strategy,
+}: {
+  state:
+    | { status: "idle" }
+    | { status: "loading" }
+    | { status: "ready"; data: ForecastResult }
+    | { status: "error"; message: string };
+  onRun: () => void;
+  accent: string;
+  tint: string;
+  strategy: Strategy;
+}) {
+  if (state.status === "idle") return null;
+
+  if (state.status === "loading") {
+    return (
+      <div
+        className="rounded-md border border-white/5 px-4 py-3 flex items-center gap-2 text-[12px] text-[color:var(--nafas-ink3)] font-[family-name:var(--font-jetbrains)]"
+        style={{ background: tint }}
+      >
+        <Loader2 className="size-3 animate-spin" style={{ color: accent }} />
+        ORACLE projette 10 ans d&apos;exploitation…
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="rounded-md border border-[color:var(--nafas-danger)]/30 bg-[color:var(--nafas-danger)]/5 px-3 py-2 flex items-center justify-between gap-2">
+        <span className="text-[12px] text-[color:var(--nafas-danger)]">
+          Prévision indisponible · {state.message}
+        </span>
+        <button
+          type="button"
+          onClick={onRun}
+          className="text-[10.5px] tracking-[0.12em] uppercase text-[color:var(--nafas-ink3)] hover:text-[color:var(--nafas-surface)] underline"
+        >
+          Réessayer
+        </button>
+      </div>
+    );
+  }
+
+  const { data } = state;
+  const last = data.projections[data.projections.length - 1];
+  const maxCumCo2 = data.projections.reduce((m, p) => Math.max(m, p.cumulative_co2_kg), 0) || 1;
+
+  const strategyKey: Record<Strategy, string> = {
+    air_quality: "co2",
+    vulnerable_pop: "occupants",
+    heat_resilience: "thermal",
+  };
+  const keyMetric = strategyKey[strategy];
+
+  return (
+    <div
+      className="relative rounded-lg border overflow-hidden"
+      style={{
+        borderColor: `${accent}33`,
+        background: `linear-gradient(180deg, ${tint}, rgba(0,0,0,0.15))`,
+      }}
+    >
+      <div className="px-4 py-3 space-y-3">
+        {/* eyebrow */}
+        <div className="flex items-center gap-2">
+          <TrendingUp className="size-3" style={{ color: accent }} />
+          <span
+            className="text-[10px] tracking-[0.22em] uppercase font-[family-name:var(--font-jetbrains)]"
+            style={{ color: accent }}
+          >
+            Prévision ORACLE · 10 ans
+          </span>
+          {data.model_name ? (
+            <span className="ml-auto text-[9.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)]">
+              {data.model_name.split("/").pop()?.replace(":free", "")}
+            </span>
+          ) : null}
+        </div>
+
+        {/* headline numbers */}
+        <div className="grid grid-cols-3 gap-px bg-white/5 rounded-md overflow-hidden border border-white/5">
+          <ForecastTile
+            value={
+              last && last.cumulative_co2_kg >= 1000
+                ? (last.cumulative_co2_kg / 1000).toFixed(1)
+                : String(last?.cumulative_co2_kg ?? 0)
+            }
+            unit={last && last.cumulative_co2_kg >= 1000 ? "t" : "kg"}
+            label="CO₂ cumulé"
+            accent={accent}
+            emphasize={keyMetric === "co2"}
+          />
+          <ForecastTile
+            value={String(last?.cumulative_occupants_k_years ?? 0)}
+            unit="k·an"
+            label="Occupants-an"
+            accent={accent}
+            emphasize={keyMetric === "occupants"}
+          />
+          <ForecastTile
+            value={`−${(last?.thermal_c ?? 0).toFixed(1)}`}
+            unit="°C"
+            label="Écart thermique stabilisé"
+            accent={accent}
+            emphasize={keyMetric === "thermal"}
+          />
+        </div>
+
+        {/* mini bar chart — cumulative CO2 per year */}
+        <div>
+          <div className="flex items-center justify-between text-[9.5px] tracking-[0.14em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] mb-1.5">
+            <span>CO₂ cumulé · année 1 → 10</span>
+            <span className="tabular-nums">max {Math.round(maxCumCo2)} kg</span>
+          </div>
+          <div className="grid grid-cols-10 gap-1 h-10 items-end">
+            {data.projections.map((y) => {
+              const h = Math.round((y.cumulative_co2_kg / maxCumCo2) * 100);
+              return (
+                <div key={y.year} className="relative h-full group/bar">
+                  <div
+                    className="absolute inset-x-0 bottom-0 rounded-t-sm transition-all"
+                    style={{
+                      height: `${h}%`,
+                      background: `linear-gradient(180deg, ${accent}, ${accent}55)`,
+                    }}
+                    title={`An ${y.year} · ${y.cumulative_co2_kg} kg CO₂`}
+                  />
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* narrative */}
+        {data.brief_md ? (
+          <div className="pt-1 text-[13px] leading-[1.55] font-[family-name:var(--font-fraunces)] italic text-[color:var(--nafas-surface)] whitespace-pre-wrap">
+            {data.brief_md}
+          </div>
+        ) : (
+          <div className="pt-1 text-[12px] leading-[1.5] text-[color:var(--nafas-ink3)] font-[family-name:var(--font-jetbrains)]">
+            Chiffres dérivés déterministes · note LLM indisponible.
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ForecastTile({
+  value, unit, label, accent, emphasize,
+}: {
+  value: string; unit: string; label: string; accent: string; emphasize: boolean;
+}) {
+  return (
+    <div
+      className="relative p-2.5 bg-[color:var(--nafas-bg2)]"
+      style={emphasize ? { background: `linear-gradient(180deg, ${accent}18, transparent 80%)` } : undefined}
+    >
+      <div
+        className="text-[18px] leading-none font-[family-name:var(--font-fraunces)] tracking-tight tabular-nums"
+        style={{ color: emphasize ? accent : "var(--nafas-surface)" }}
+      >
+        {value}
+        <span className="text-[10px] font-[family-name:var(--font-jetbrains)] tracking-normal opacity-70 ml-1">
+          {unit}
+        </span>
+      </div>
+      <div className="text-[9px] tracking-[0.12em] uppercase font-[family-name:var(--font-jetbrains)] text-[color:var(--nafas-ink3)] leading-tight mt-1">
+        {label}
+      </div>
+    </div>
   );
 }
 

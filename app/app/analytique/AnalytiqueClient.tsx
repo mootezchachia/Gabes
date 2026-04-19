@@ -5,6 +5,7 @@ import { Eyebrow } from "@/components/app/ui/Primitives";
 import { KpiStrip } from "@/components/app/analytique/KpiStrip";
 import { SensorTrendsChart } from "@/components/app/analytique/SensorTrendsChart";
 import { AiHistoryPanel } from "@/components/app/analytique/AiHistoryPanel";
+import { NtfyAlertsPanel } from "@/components/app/analytique/NtfyAlertsPanel";
 import { ScenarioCompareDialog } from "@/components/app/analytique/ScenarioCompareDialog";
 import { PdfExportButton } from "@/components/app/analytique/PdfExportButton";
 
@@ -34,6 +35,8 @@ export function AnalytiqueClient() {
           <SensorTrendsChart />
           <AiHistoryPanel onCompare={() => setCompareOpen(true)} />
         </div>
+
+        <NtfyAlertsPanel />
 
         <ScenarioCompareDialog open={compareOpen} onOpenChange={setCompareOpen} />
       </div>
