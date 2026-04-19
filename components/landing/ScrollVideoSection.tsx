@@ -59,7 +59,7 @@ export function ScrollVideoSection() {
       if (!video.duration || video.readyState < 2) return;
       const t = p * video.duration;
       // fastSeek is optimised for scrubbing (nearest keyframe, no interpolation wait)
-      if ("fastSeek" in video) {
+      if ("fastSeek" in (video as object)) {
         (video as HTMLVideoElement & { fastSeek(t: number): void }).fastSeek(t);
       } else if (Math.abs(video.currentTime - t) > 1 / 30) {
         video.currentTime = t;
