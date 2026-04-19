@@ -5,6 +5,7 @@ import * as Cesium from "cesium";
 import { getViewer } from "@/lib/cesium-bus";
 import { useMonitor } from "@/lib/monitor/store";
 import { GABES } from "@/lib/tokens";
+import { isTypingTarget } from "@/lib/app/inputTarget";
 
 /**
  * Registers tactical keybinds:
@@ -38,9 +39,7 @@ export function TacticalKeybinds() {
 
     const onKey = (e: KeyboardEvent) => {
       if (e.metaKey || e.ctrlKey || e.altKey) return;
-      // ignore when typing into an input
-      const tgt = e.target as HTMLElement | null;
-      if (tgt && (tgt.tagName === "INPUT" || tgt.tagName === "TEXTAREA" || tgt.isContentEditable)) return;
+      if (isTypingTarget(e.target)) return;
 
       const v = getViewer();
       switch (e.key.toLowerCase()) {

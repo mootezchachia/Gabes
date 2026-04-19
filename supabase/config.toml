@@ -1,0 +1,86 @@
+# NAFAS V2 — Supabase CLI config (local dev)
+# Docs: https://supabase.com/docs/guides/local-development/cli/config
+
+project_id = "nafas"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 17
+
+[db.pooler]
+enabled = false
+port = 54329
+pool_mode = "transaction"
+default_pool_size = 20
+max_client_conn = 100
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+file_size_limit = "50MiB"
+
+[auth]
+enabled = true
+site_url = "http://localhost:3000"
+additional_redirect_urls = [
+  "http://localhost:3000/**",
+  "https://nafas.tn/**",
+  "https://nafas.vercel.app/**",
+]
+jwt_expiry = 3600
+enable_signup = true
+enable_anonymous_sign_ins = false
+enable_manual_linking = false
+
+[auth.email]
+enable_signup = true
+double_confirm_changes = true
+enable_confirmations = false
+
+[auth.sms]
+enable_signup = false
+enable_confirmations = false
+
+[edge_runtime]
+enabled = true
+policy = "per_worker"
+inspector_port = 8083
+
+# ──────────────────────────────────────────────────────────────────────
+# Per-function overrides
+#
+# verify_jwt = false on our two AI endpoints disables the Supabase edge
+# GATEWAY's JWT algorithm check. Rationale: the project is on asymmetric
+# signing (ES256) but the legacy gateway verifier in our region's runtime
+# doesn't recognise ES256 and rejects with "Unsupported JWT algorithm".
+# The functions themselves still enforce auth via `getCallerContext` →
+# `supabase.auth.getUser()` which hits GoTrue and does support ES256.
+# Result: gateway passes the request through, function validates the
+# caller, role is enforced.
+# ──────────────────────────────────────────────────────────────────────
+[functions.ai_placement]
+verify_jwt = false
+
+[functions.ai_forecast]
+verify_jwt = false
+
+[analytics]
+enabled = false
+
+# Extensions (postgis, pg_cron, pg_net, pgcrypto) are enabled via
+# `CREATE EXTENSION IF NOT EXISTS ...` in supabase/migrations/0001_init.sql.

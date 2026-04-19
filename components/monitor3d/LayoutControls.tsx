@@ -7,6 +7,7 @@ import {
   usePanelLayout,
 } from "@/lib/monitor3d/panelLayout";
 import { Unlock, Lock, RotateCcw, LayoutGrid } from "lucide-react";
+import { isTypingTarget } from "@/lib/app/inputTarget";
 
 /**
  * Keyboard choreography + edit-mode surface for the movable HUD.
@@ -31,15 +32,8 @@ export function LayoutControls() {
   const [chooserOpen, setChooserOpen] = useState(false);
 
   useEffect(() => {
-    const isTyping = () => {
-      const el = document.activeElement as HTMLElement | null;
-      if (!el) return false;
-      const tag = el.tagName;
-      if (tag === "INPUT" || tag === "TEXTAREA" || el.isContentEditable) return true;
-      return false;
-    };
     function onKey(e: KeyboardEvent) {
-      if (isTyping()) return;
+      if (isTypingTarget(e.target) || isTypingTarget(document.activeElement)) return;
       // Reset (Shift+R)
       if (e.shiftKey && (e.key === "R" || e.key === "r")) {
         e.preventDefault();

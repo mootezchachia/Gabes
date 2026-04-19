@@ -364,6 +364,12 @@ html, body {
   0%, 100% { transform: scale(1); opacity: 0.6; }
   50% { transform: scale(1.6); opacity: 0; }
 }
+
+@keyframes scan {
+  0% { transform: translateX(-100%); opacity: 0; }
+  30%, 70% { opacity: 1; }
+  100% { transform: translateX(100%); opacity: 0; }
+}
 .tac-pulse-ring {
   position: absolute;
   inset: -4px;

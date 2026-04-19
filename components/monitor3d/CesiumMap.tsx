@@ -13,6 +13,13 @@ import { startCinematicDrive } from "@/lib/monitor3d/cinematicDrive";
 
 export interface CesiumMapProps {
   onReady?: (viewer: Cesium.Viewer) => void;
+  /**
+   * When true, skip the 10s cinematic from-space intro and snap the camera
+   * directly to the final Gabès pose. The admin shell (`/app/carte`) uses
+   * this — no HUD boot overlay lives there, so the intro would just be a
+   * blocking swing. Defaults to false to preserve the `/monitor3d` experience.
+   */
+  skipIntro?: boolean;
 }
 
 /**
@@ -49,7 +56,7 @@ function installOsmFallback(viewer: Cesium.Viewer) {
   }
 }
 
-export function CesiumMap({ onReady }: CesiumMapProps) {
+export function CesiumMap({ onReady, skipIntro = false }: CesiumMapProps) {
   const ref = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Cesium.Viewer | null>(null);
 
@@ -59,10 +66,18 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
     // Cesium's default Ion token was removed in 1.104 — if no NEXT_PUBLIC_
     // variable was baked at build time, every Ion call 401s. We only run the
     // Ion code path when we actually have a token.
-    const token = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
-    const hasIon = Boolean(token && token.length > 0);
+    //
+    // `.trim()` is critical: PowerShell pipes (`$v | vercel env add`) and
+    // manual paste into Vercel's dashboard frequently leave a trailing \r\n
+    // on the stored value. Cesium appends the raw token to the Ion endpoint
+    // URL, so the newline becomes `%0D%0A`, which the Ion API rejects with
+    // 401 INVALID_TOKEN. Trim here = self-heal regardless of how the var
+    // was set.
+    const rawToken = process.env.NEXT_PUBLIC_CESIUM_ION_TOKEN;
+    const token = rawToken ? rawToken.trim() : "";
+    const hasIon = token.length > 0;
     if (hasIon) {
-      Cesium.Ion.defaultAccessToken = token!;
+      Cesium.Ion.defaultAccessToken = token;
     }
 
     const viewer = new Cesium.Viewer(ref.current, {
@@ -88,29 +103,27 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
             requestVertexNormals: false,
           })
         : undefined,
-      // When we have Ion, let the Viewer's default imagery initialize —
-      // we immediately swap it for Ion Bing Aerial below. Without Ion,
-      // install OSM synchronously via baseLayer so we never flash void.
-      baseLayer: hasIon
-        ? undefined
-        : new Cesium.ImageryLayer(osmProvider()),
+      // Always seed OSM as the base layer. With Ion we stack Bing Aerial on
+      // top async; if that call fails or returns an empty provider, OSM keeps
+      // the globe visible. Previously we relied on Cesium's default imagery
+      // with `baseLayer: undefined` which in 1.129 can be empty on some
+      // token scopes, producing a black globe.
+      baseLayer: new Cesium.ImageryLayer(osmProvider()),
     });
 
-    // With Ion, upgrade imagery to Bing Aerial with Labels (async). On any
-    // Ion failure (bad token, domain-restricted token, outage), fall back
-    // to OSM so the deployment never shows an empty globe.
+    // With Ion, add Bing Aerial with Labels ON TOP of the OSM base (not a
+    // removeAll + add — that would briefly flash an empty scene). If Bing
+    // fails, OSM remains and the user sees a usable (if lower-fidelity) map.
     if (hasIon) {
       (async () => {
         try {
           const bing = await Cesium.IonImageryProvider.fromAssetId(3);
-          viewer.imageryLayers.removeAll();
           viewer.imageryLayers.addImageryProvider(bing);
         } catch (err) {
           console.warn(
-            "[CesiumMap] Ion Bing imagery failed, falling back to OSM:",
+            "[CesiumMap] Ion Bing imagery failed; staying on OSM base:",
             err,
           );
-          installOsmFallback(viewer);
         }
       })();
     }
@@ -137,7 +150,9 @@ export function CesiumMap({ onReady }: CesiumMapProps) {
     scene.backgroundColor = Cesium.Color.fromCssColorString("#0A0F14");
 
     // ── Camera: cinematic intro or direct snap ───────────────────────
-    const introActive = useIntro.getState().active;
+    // `skipIntro` (used by /app/carte) always wins — admin shell never wants
+    // the 10s fly-in because no CinematicBoot HUD lives there to rationalise it.
+    const introActive = skipIntro ? false : useIntro.getState().active;
     let cancelDrive: (() => void) | null = null;
 
     if (introActive) {
